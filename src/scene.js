@@ -208,8 +208,16 @@
       //execute the beforeRender method once.
       !multiplePrograms && this.beforeRender(renderProgram || program);
       
+      //
+      // sort models by the matrix
+      //
+      models= this.models.sort (function (a, b)
+          {
+              return PhiloGL.Mat4.compareToMat4(a.matrix, b.matrix);
+          });
       //Go through each model and render it.
-      for (var i = 0, models = this.models, l = models.length; i < l; ++i) {
+      var lastRenderObj = {};
+      for (var i = 0, l = models.length; i < l; ++i) {
         var elem = models[i];
         if (elem.display) {
           var program = renderProgram || this.getProgram(elem);
@@ -218,9 +226,10 @@
           multiplePrograms && this.beforeRender(program);
           elem.onBeforeRender(program, camera);
           options.onBeforeRender(elem, i);
-          this.renderObject(elem, program);
+          this.renderObject(elem, program, lastRenderObj[program]);
           options.onAfterRender(elem, i);
           elem.onAfterRender(program, camera);
+          lastRenderObj[program] = elem;
         }
       }
     },
@@ -237,26 +246,29 @@
       gl.bindTexture(texMemo.textureType, null);
     },
 
-    renderObject: function(obj, program) {
+    renderObject: function(obj, program, lastObj) {
+      obj.setState(program);
       var camera = this.camera,
-          view = camera.view,
-          projection = camera.projection,
+          view = camera.view;
+      if (!lastObj || (lastObj && PhiloGL.Mat4.compareToMat4 (obj.matrix, lastObj.matrix)))
+      {
+          var projection = camera.projection,
           object = obj.matrix,
           world = PhiloGL.Mat4.mulMat4 (view, object),
           worldInverse = PhiloGL.Mat4.invert (world),
           worldInverseTranspose = PhiloGL.Mat4.transpose (worldInverse);
 
-      obj.setState(program);
 
-      //Now set view and normal matrices
-      program.setUniforms({
-        objectMatrix: object,
-        worldMatrix: world,
-        worldInverseMatrix: worldInverse,
-        worldInverseTransposeMatrix: worldInverseTranspose
-//        worldViewProjection:  view.mulMat4(object).$mulMat4(view.mulMat4(projection))
-      });
-      
+          //Now set view and normal matrices
+          program.setUniforms({
+                  objectMatrix: object,
+                  worldMatrix: world,
+                  worldInverseMatrix: worldInverse,
+                  worldInverseTransposeMatrix: worldInverseTranspose
+                  //        worldViewProjection:  view.mulMat4(object).$mulMat4(view.mulMat4(projection))
+              });
+      }
+
       //Draw
       //TODO(nico): move this into O3D, but, somehow, abstract the gl.draw* methods inside that object.
       if (obj.render) {

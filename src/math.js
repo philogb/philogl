@@ -785,6 +785,20 @@
           ans[15] = dest[15];
 
           return ans;
+    },
+ 
+    compareToMat4 : function (m1, m2)
+    {
+        for (var i = 0; i < 16; i++)
+        {
+            if (m1[i] == m2[i])
+                continue;
+            else if (m1[i] > m2[i])
+            return 1;
+            else 
+                return -1;
+        }
+        return 0;
     }
   };
   
