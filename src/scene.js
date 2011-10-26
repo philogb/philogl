@@ -98,15 +98,15 @@
           pos = camera.position,
           view = camera.view,
           projection = camera.projection,
-          viewProjection = view.mulMat4(projection),
-          viewProjectionInverse = viewProjection.invert();
+          viewProjection = PhiloGL.Mat4.mulMat4 (view, projection),
+          viewProjectionInverse = PhiloGL.Mat4.invert (viewProjection);
 
       program.setUniforms({
         cameraPosition: [pos.x, pos.y, pos.z],
         projectionMatrix: projection,
         viewMatrix: view,
         viewProjectionMatrix: viewProjection,
-        viewInverseMatrix: view.invert(),
+        viewInverseMatrix: PhiloGL.Mat4.invert (view),
         viewProjectionInverseMatrix: viewProjectionInverse
       });
     },
@@ -242,9 +242,9 @@
           view = camera.view,
           projection = camera.projection,
           object = obj.matrix,
-          world = view.mulMat4(object),
-          worldInverse = world.invert(),
-          worldInverseTranspose = worldInverse.transpose();
+          world = PhiloGL.Mat4.mulMat4 (view, object),
+          worldInverse = PhiloGL.Mat4.invert (world),
+          worldInverseTranspose = PhiloGL.Mat4.transpose (worldInverse);
 
       obj.setState(program);
 
