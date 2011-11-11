@@ -292,8 +292,8 @@
           floor = Math.floor;
       //create framebuffer
       app.setFrameBuffer('$picking', {
-        width: floor(app.canvas.width / pickingRes),
-        height: floor(app.canvas.height / pickingRes),
+        width: 5,
+        height: 1,
         bindToTexture: {
           parameters: [{
             name: 'TEXTURE_MAG_FILTER',
@@ -323,6 +323,16 @@
       if (lazy && this.capture) {
         return this.lazyPick(x, y);
       }
+
+      var oldtarget = this.camera.target;
+      var oldaspect = this.camera.aspect;
+      var ndcx = x * 2 / gl.canvas.width - 1;
+      var ndcy = 1 - y * 2 / gl.canvas.height;
+      var origin = PhiloGL.unproject ([ndcx, ndcy, -1.0], this.camera);
+      var target = PhiloGL.unproject ([ndcx, ndcy, 1.0], this.camera);
+      this.camera.target = target;
+      this.camera.aspect = 5; //picking width / picking height
+      this.camera.update ();
 
       //normal picking
       var o3dHash = {},
@@ -392,7 +402,10 @@
         pindex = floor((x + (height - y) * resWidth) / pickingRes) * 4;
         pixel = [capture[pindex], capture[pindex + 1], capture[pindex + 2], capture[pindex + 3]];
       } else {
-        gl.readPixels(floor(x / pickingRes), floor((height - y) / pickingRes), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+          //
+          // the target point is in the center of the screen,
+          // so it should be the center point.
+        gl.readPixels(2, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
       } 
 
       var stringColor = [pixel[0], pixel[1], pixel[2]].join(),
@@ -422,6 +435,10 @@
       if (program) program.use();
       //restore the viewport size to original size
       gl.viewport(0, 0, app.canvas.width, app.canvas.height);
+      this.camera.target = oldtarget;
+      //restore the aspect
+      this.camera.aspect = oldaspect;
+      this.camera.update ();
 
       //store model hash and pixel array
       this.o3dHash = o3dHash;
