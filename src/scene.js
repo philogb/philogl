@@ -328,8 +328,7 @@
       var oldaspect = this.camera.aspect;
       var ndcx = x * 2 / gl.canvas.width - 1;
       var ndcy = 1 - y * 2 / gl.canvas.height;
-      var origin = PhiloGL.unproject ([ndcx, ndcy, -1.0], this.camera);
-      var target = PhiloGL.unproject ([ndcx, ndcy, 1.0], this.camera);
+      var target = this.camera.view.invert().mulMat4(this.camera.projection.invert()).mulVec3([ndcx, ndcy, 1.0]);
       this.camera.target = target;
       this.camera.aspect = 5; //picking width / picking height
       this.camera.update ();
@@ -347,8 +346,8 @@
           width = gl.canvas.width,
           height = gl.canvas.height,
           floor = Math.floor,
-          resWidth = floor(width / pickingRes),
-          resHeight = floor(height / pickingRes),
+          resWidth = 5,
+          resHeight = 1,
           hash = [],
           pixel = new Uint8Array(1 * 1 * 4),
           index = 0, 
