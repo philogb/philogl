@@ -347,59 +347,44 @@ void main(void) {
     }
 
   } else if (group == GROUP_P3) {
-    float cosFactor = cos(PI / 6.);
-    float sinFactor = sin(PI / 6.);
-    float tanFactor = tan(PI / 6.);
-    
-    float cos2Factor = cos(PI / 3.);
-    float sin2Factor = sin(PI / 3.);
-    float tan2Factor = tan(PI / 3.);
-    
-    float cos3Factor = cos(2. * PI / 3.);
-    float sin3Factor = sin(2. * PI / 3.);
-    float tan3Factor = tan(2. * PI / 3.);
-    
-    float cos4Factor = cos(4. * PI / 3.);
-    float sin4Factor = sin(4. * PI / 3.);
-    
-    float widthDim = PATTERN_DIM * cosFactor * 2. / 3.;
-    float offsetDim = (1. - cosFactor * 2. / 3.) / 2.;
-    float from = offsetDim;
-    float to = 1. - offsetDim;
-    float xtmod = mod(xt, widthDim) / widthDim;
+    const float w = 1.154700538379251529; // sqrt(4/3)
+    const float l = 0.3333333333;
+    const float offsetX = 0.21132486540518711774542560; // (1 - sqrt(1/3))/2;
+    const float w_2 = 0.577350269189625764509; // sqrt(1/3)
+
+    float xtmod = mod(xt, w * PATTERN_DIM) / PATTERN_DIM;
     float ytmod = mod(yt, PATTERN_DIM) / PATTERN_DIM;
-
-    float offsetWidth = mod(xt / widthDim, 3.0);
-
-    if (/*offsetWidth < 1.*/ true) {
-      /* if (ytmod < tanFactor * xtmod * widthDim / PATTERN_DIM) {*/
-      if( true) {
-        xt =  cos3Factor * (xtmod + offsetDim) * (to - from) + from - sin3Factor * (ytmod + 1. / 3.);
-        yt =  sin3Factor * (xtmod + offsetDim) * (to - from) + from + cos3Factor * (ytmod + 1. / 3.) - 1. / 3.;
-      } else if (ytmod < tan2Factor * xtmod * widthDim / PATTERN_DIM) {
-        /* xt =  cos4Factor * xtmod * (to - from) + from - sin4Factor * (ytmod + 1. / 3.);*/
-        /* yt =  sin4Factor * xtmod * (to - from) + from + cos4Factor * (ytmod + 1. / 3.);*/
-      }
-    } else if (offsetWidth < 2.) {
-      if (ytmod < (-tanFactor * xtmod) * widthDim / PATTERN_DIM + .3333333) {
-        /* xt =  cos4Factor * (xtmod + offsetDim) * (to - from) + from - sin4Factor * (ytmod - 1. / 3.);*/
-        /* yt =  sin4Factor * (xtmod + offsetDim) * (to - from) + from + cos4Factor * (ytmod - 1. / 3.) + 1. / 3.;*/
-      } else if (xtmod < -sinFactor * ytmod + 1.) {
-        /* xt = xtmod * (to - from) + from;*/
-        /* yt = ytmod;*/
-      } else {
-        /* xt = xtmod *  cos2Factor * (to - from) + from;*/
-        /* yt = ytmod * -sin2Factor;*/
+    if (mod(floor(yt / PATTERN_DIM), 2.0) < l) {
+      xtmod = mod(xtmod + w_2, w);
+    }
+    bool done = false;
+    if (xtmod > w_2) {
+      if (ytmod > l && ytmod < l + l ||
+        ytmod < l && ytmod > (w - xtmod) * w_2 ||
+        ytmod > l + l && ytmod < 1.0 - (xtmod - w_2) * w_2
+        ) {
+        xt = xtmod - w_2 + offsetX;
+        yt = ytmod;
+        done = true;
       }
     } else {
-      if (xt < sin2Factor * yt && xt > sinFactor * yt + .6666666) {
-        /* xt = xtmod * cos2Factor * (to - from) + from;*/
-        /* yt = ytmod * sin2Factor;*/
-      } else if (true) {
-
+      if (ytmod > l && ytmod < l + l ||
+        ytmod < l && ytmod > xtmod * w_2 ||
+        ytmod > l + l && ytmod < 1.0 - (w_2 - xtmod) * w_2
+        ) {
+        xt = - xtmod * 0.5 + ytmod / w + offsetX;
+        yt = 1.0 - ytmod * 0.5 - xtmod / w;
+        done = true;
       }
     }
-    
+    if (!done) {
+      if (ytmod > l) {
+        ytmod -= 1.0;
+        xtmod = mod(xtmod + w_2, w);
+      }
+      xt = offsetX + (w - xtmod) * 0.5 - ytmod / w ;
+      yt = 1.0 - (w - xtmod) / w - ytmod * 0.5;
+    }
   } else {
     
     xt = mod(xt, PATTERN_DIM) / PATTERN_DIM;
