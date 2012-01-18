@@ -8,7 +8,7 @@ var groups = ['p1', 'p2', 'pm', 'pg', 'cm', 'pmm', 'pmg', 'pgg', 'cmm', 'p4', 'p
     PI = Math.PI;
 
 var options = {
-  currentGroupIndex: 13,
+  currentGroupIndex: 12,
   scale: 1,
   rotate: 0,
   radialFactor: 1,
@@ -65,23 +65,6 @@ function load() {
 
       draw();
 
-      //create framebuffer
-      program.setFrameBuffer('oversampling', {
-        width: window.innerWidth * 2,
-        height: window.innerHeight * 2,
-        bindToTexture: {
-          parameters: [{
-            name: 'TEXTURE_MAG_FILTER',
-            value: 'LINEAR'
-          }, {
-            name: 'TEXTURE_MIN_FILTER',
-            value: 'LINEAR_MIPMAP_NEAREST',
-            generateMipmap: false
-          }]
-        },
-        bindToRenderBuffer: true
-      });
-
       function draw() {
         ctx.save();
         makeClipping(ctx, drawCanvas);
@@ -122,6 +105,7 @@ function load() {
           }
         });
         Fx.requestAnimationFrame(draw);
+
       }
     }
   });

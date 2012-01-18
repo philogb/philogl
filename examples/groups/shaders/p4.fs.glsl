@@ -17,10 +17,11 @@ uniform sampler2D sampler1;
 
 float cubic(float x) {
   x = abs(x);
-  if (x < 1.0) {
-    return 1.0 - x * x * (2.0 + x);
+  const float a = -0.5;
+  if (x <= 1.0) {
+    return ((a + 2.0) * x - (a + 3.0)) * x * x + 1.0;
   } else if (x < 2.0) {
-    return 4.0 - x * (8.0 + x * (5.0 - x));
+    return a * (((x - 5.0) * x + 8.0) * x - 4.0);
   } else {
     return 0.0;
   }
@@ -95,19 +96,25 @@ void main(void) {
   float xt =  pos.x * cos(rotation) * scaling.x + pos.y * sin(rotation) * scaling.y;
   float yt = -pos.x * sin(rotation) * scaling.x + pos.y * cos(rotation) * scaling.y;
 
-  vec2 samp00 = resampling(xt - 0.5  / PATTERN_DIM, yt - 0.5 / PATTERN_DIM);
-  vec2 samp10 = resampling(xt + 0.5  / PATTERN_DIM, yt - 0.5 / PATTERN_DIM);
-  vec2 samp01 = resampling(xt - 0.5  / PATTERN_DIM, yt + 0.5 / PATTERN_DIM);
-  vec2 samp11 = resampling(xt + 0.5  / PATTERN_DIM, yt + 0.5 / PATTERN_DIM);
-
-  vec4 color00 = sampLinear(samp00.x, samp00.y);
-  vec4 color10 = sampLinear(samp10.x, samp10.y);
-  vec4 color01 = sampLinear(samp01.x, samp01.y);
-  vec4 color11 = sampLinear(samp11.x, samp11.y);
-
+  vec4 color = vec4(0, 0, 0, 0);
+  const float d = 0.5;
+  for (int i = 0; i < 7; i++) {
+    float dx = -2.0 + d * float(i);
+    float cx = cubic(dx);
+    if (cx != 0.0) {
+      for (int j = 0; j < 7; j++) {
+        float dy = -2.0 + d * float(j);
+        float cy = cubic(dy);
+        if (cy != 0.0) {
+          vec2 samp = resampling(xt + dx, yt + dy);
+          color += sampNearest(samp.x, samp.y) * cx * cy * d * d;
+        }
+      }
+    }
+  }
 
   //add a radial blend
-  vec4 colorFrom = (color00 + color10 + color01 + color11) * 0.25;
+  vec4 colorFrom = color;
   vec4 colorTo = colorFrom * radialFactor;
   vec2 uv = gl_FragCoord.xy / resolution.xy;
   float ratio = resolution.y / resolution.x;
