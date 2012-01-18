@@ -1,6 +1,6 @@
 PhiloGL.unpack();
 
-var groups = ['p1', 'p2', 'pm', 'pg', 'cm', 'pmm', 'pmg', 'pgg', 'cmm', 'p4', 'p4m', 'p4g', 'p3' /*other groups here*/],
+var groups = ['p1', 'p2', 'pm', 'pg', 'cm', 'pmm', 'pmg', 'pgg', 'cmm', 'p4', 'p4m', 'p4g', 'p3', 'p3m1' /*other groups here*/],
     width = 128,
     height = 128,
     cos = Math.cos,
@@ -8,7 +8,7 @@ var groups = ['p1', 'p2', 'pm', 'pg', 'cm', 'pmm', 'pmg', 'pgg', 'cmm', 'p4', 'p
     PI = Math.PI;
 
 var options = {
-  currentGroupIndex: 12,
+  currentGroupIndex: 13,
   scale: 1,
   rotate: 0,
   radialFactor: 1,
@@ -24,14 +24,20 @@ function load() {
 
   initControls(options);
 
-  PhiloGL('surface', {
-    program: [{
-      id: 'surface',
+  var programs = [];
+
+  groups.forEach(function(group) {
+    programs.push({
+      id: group,
       from: 'uris',
-      vs: 'surface.vs.glsl',
-      fs: 'surface.fs.glsl',
+      vs: 'shaders/surface.vs.glsl',
+      fs: 'shaders/' + group + '.fs.glsl',
       noCache: true
-    }],
+    });
+  });
+
+  PhiloGL('surface', {
+    program: programs,
     events: {
       onMouseWheel: function(e) {
         e.stop();
@@ -53,7 +59,28 @@ function load() {
           drawCanvas = $('canvas'),
           ctx = drawCanvas.getContext('2d');
 
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.enable(gl.BLEND);
+      gl.disable(gl.DEPTH_TEST);
+
       draw();
+
+      //create framebuffer
+      program.setFrameBuffer('oversampling', {
+        width: window.innerWidth * 2,
+        height: window.innerHeight * 2,
+        bindToTexture: {
+          parameters: [{
+            name: 'TEXTURE_MAG_FILTER',
+            value: 'LINEAR'
+          }, {
+            name: 'TEXTURE_MIN_FILTER',
+            value: 'LINEAR_MIPMAP_NEAREST',
+            generateMipmap: false
+          }]
+        },
+        bindToRenderBuffer: true
+      });
 
       function draw() {
         ctx.save();
@@ -67,19 +94,26 @@ function load() {
         app.setTexture('pattern', {
           data: {
             value: drawCanvas
-          }
+          },
+          parameters: [{
+            name: gl.TEXTURE_MAG_FILTER,
+            value: gl.NEAREST
+          }, {
+            name: gl.TEXTURE_MIN_FILTER,
+            value: gl.NEAREST,
+            generateMipmap: true
+          }]
         });
-  
+
         // advance
         Media.Image.postProcess({
           width: glCanvas.width,
           height: glCanvas.height,
-          toScreen: true,
           aspectRatio: 1,
-          program: 'surface',
+          program: groups[options.currentGroupIndex],
+          toScreen: true,
           fromTexture: 'pattern',
           uniforms: {
-            group: options.currentGroupIndex,
             offset: options.offset,
             rotation: options.rotate,
             scaling: [options.scale, options.scale],
@@ -87,12 +121,7 @@ function load() {
             radialFactor: options.radialFactor
           }
         });
-
         Fx.requestAnimationFrame(draw);
-        
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        // app.setTexture('pattern', false);
       }
     }
   });
@@ -126,6 +155,7 @@ function renderToCanvas(ctx) {
 
 function makeClipping(ctx, canvas) {
   canvas.width = canvas.width;
+  return;
 
   switch (groups[options.currentGroupIndex]) {
     case 'p1':
