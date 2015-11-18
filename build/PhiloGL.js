@@ -4812,7 +4812,7 @@ $.splat = (function() {
       //restore previous program
       if (program) program.use();
       //restore the viewport size to original size
-      gl.viewport(viewport.x || 0,
+      this.gl.viewport(viewport.x || 0,
     		          viewport.y || 0,
     		          width,
     		          height);
