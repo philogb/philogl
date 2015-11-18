@@ -83,6 +83,20 @@ PhiloGL = null;
         return null;
     }
 
+    //get Camera
+    var canvas = gl.canvas,
+        camera = new PhiloGL.Camera(optCamera.fov,
+                                    optCamera.aspect || (canvas.width / canvas.height),
+                                    optCamera.near,
+                                    optCamera.far, optCamera);
+    camera.update();
+
+    var app = new PhiloGL.WebGL.Application({
+      gl: gl,
+      canvas: canvas,
+      camera: camera
+    });
+
     //get Program
     var popt = {
       'defaults': 'fromDefaultShaders',
@@ -119,6 +133,7 @@ PhiloGL = null;
       for (var p in popt) {
         if (pfrom == p) {
           try {
+            optProgram.app = app
             program = PhiloGL.Program[popt[p]]($.extend(programCallback, optProgram));
           } catch(e) {
             programCallback.onError(e);
@@ -133,25 +148,12 @@ PhiloGL = null;
 
 
     function loadProgramDeps(gl, program, callback) {
-      //get Camera
-      var canvas = gl.canvas,
-          camera = new PhiloGL.Camera(optCamera.fov,
-                                      optCamera.aspect || (canvas.width / canvas.height),
-                                      optCamera.near,
-                                      optCamera.far, optCamera);
-      camera.update();
+      //set program
+      app.program = program;
 
       //get Scene
       var scene = new PhiloGL.Scene(program, camera, optScene);
-
-      //make app instance global to all framework
-      app = new PhiloGL.WebGL.Application({
-        gl: gl,
-        canvas: canvas,
-        program: program,
-        scene: scene,
-        camera: camera
-      });
+      app.scene = scene;
 
       //Use program
       if (program.$$family == 'program') {
@@ -196,7 +198,7 @@ PhiloGL.unpack = function(branch) {
 PhiloGL.version = '1.5.2';
 
 //Holds the 3D context, holds the application
-var gl, app, globalContext = this;
+var globalContext = this;
 
 //Utility functions
 function $(d) {
@@ -284,7 +286,6 @@ $.splat = (function() {
   };
 })();
 
-
 //webgl.js
 //Checks if WebGL is enabled and creates a context for using WebGL.
 
@@ -298,6 +299,7 @@ $.splat = (function() {
       if (!ctx) {
         ctx = canvas.getContext('webgl', opt);
       }
+      var gl;
       //Set as debug handler
       if (ctx && opt && opt.debug) {
         gl = {};
@@ -370,26 +372,26 @@ $.splat = (function() {
         opt = this.bufferMemo[name];
         //reset buffer
         if(opt) {
-          gl.bindBuffer(opt.bufferType, null);
+          this.gl.bindBuffer(opt.bufferType, null);
         }
         //disable vertex attrib array if the buffer maps to an attribute.
         var attributeName = opt && opt.attribute || name,
             loc = program.attributes[attributeName];
         //disable the attribute array
         if (loc !== undefined) {
-          gl.disableVertexAttribArray(loc);
+          this.gl.disableVertexAttribArray(loc);
         }
         return;
       }
 
       //set defaults
       opt = $.extend(this.bufferMemo[name] || {
-        bufferType: gl.ARRAY_BUFFER,
+        bufferType: this.gl.ARRAY_BUFFER,
         size: 1,
-        dataType: gl.FLOAT,
+        dataType: this.gl.FLOAT,
         stride: 0,
         offset: 0,
-        drawType: gl.STATIC_DRAW,
+        drawType: this.gl.STATIC_DRAW,
         instanced: 0
       }, opt || {});
 
@@ -397,7 +399,7 @@ $.splat = (function() {
           bufferType = opt.bufferType,
           instanced = opt.instanced,
           hasBuffer = name in this.buffers,
-          buffer = hasBuffer? this.buffers[name] : gl.createBuffer(),
+          buffer = hasBuffer? this.buffers[name] : this.gl.createBuffer(),
           hasValue = 'value' in opt,
           value = opt.value,
           size = opt.size,
@@ -414,19 +416,19 @@ $.splat = (function() {
       }
 
       if (isAttribute) {
-        gl.enableVertexAttribArray(loc);
+        this.gl.enableVertexAttribArray(loc);
       }
 
-      gl.bindBuffer(bufferType, buffer);
+      this.gl.bindBuffer(bufferType, buffer);
 
       if (hasValue) {
-        gl.bufferData(bufferType, value, drawType);
+        this.gl.bufferData(bufferType, value, drawType);
       }
 
       if (isAttribute) {
-        gl.vertexAttribPointer(loc, size, dataType, false, stride, offset);
+        this.gl.vertexAttribPointer(loc, size, dataType, false, stride, offset);
         if (instanced) {
-          ext = gl.getExtension('ANGLE_instanced_arrays');
+          ext = this.gl.getExtension('ANGLE_instanced_arrays');
           if (!ext) {
             console.warn('ANGLE_instanced_arrays not supported!');
           } else {
@@ -457,7 +459,7 @@ $.splat = (function() {
     setFrameBuffer: function(name, opt) {
       //bind/unbind framebuffer
       if (typeof opt != 'object') {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, opt? this.frameBuffers[name] : null);
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, opt? this.frameBuffers[name] : null);
         return;
       }
       //get options
@@ -467,21 +469,21 @@ $.splat = (function() {
         //All texture params
         bindToTexture: false,
         textureOptions: {
-          attachment: gl.COLOR_ATTACHMENT0
+          attachment: this.gl.COLOR_ATTACHMENT0
         },
         //All render buffer params
         bindToRenderBuffer: false,
         renderBufferOptions: {
-          attachment: gl.DEPTH_ATTACHMENT
+          attachment: this.gl.DEPTH_ATTACHMENT
         }
       }, opt || {});
 
       var bindToTexture = opt.bindToTexture,
           bindToRenderBuffer = opt.bindToRenderBuffer,
           hasBuffer = name in this.frameBuffers,
-          frameBuffer = hasBuffer? this.frameBuffers[name] : gl.createFramebuffer();
+          frameBuffer = hasBuffer? this.frameBuffers[name] : this.gl.createFramebuffer();
 
-      gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, frameBuffer);
 
       if (!hasBuffer) {
         this.frameBuffers[name] = frameBuffer;
@@ -499,7 +501,7 @@ $.splat = (function() {
 
         this.setTexture(texName, texBindOpt);
 
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, texOpt.attachment, this.textureMemo[texName].textureType, this.textures[texName], 0);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, texOpt.attachment, this.textureMemo[texName].textureType, this.textures[texName], 0);
       }
 
       if (bindToRenderBuffer) {
@@ -512,12 +514,12 @@ $.splat = (function() {
 
         this.setRenderBuffer(rbName, rbBindOpt);
 
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, rbOpt.attachment, gl.RENDERBUFFER, this.renderBuffers[rbName]);
+        this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, rbOpt.attachment, this.gl.RENDERBUFFER, this.renderBuffers[rbName]);
       }
 
-      gl.bindTexture(gl.TEXTURE_2D, null);
-      gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+      this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, null);
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 
       this.frameBufferMemo[name] = opt;
 
@@ -533,26 +535,26 @@ $.splat = (function() {
 
     setRenderBuffer: function(name, opt) {
       if (typeof opt != 'object') {
-        gl.bindRenderbuffer(gl.RENDERBUFFER, opt? this.renderBufferMemo[name] : null);
+        this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, opt? this.renderBufferMemo[name] : null);
         return;
       }
 
       opt = $.extend(this.renderBufferMemo[name] || {
-        storageType: gl.DEPTH_COMPONENT16,
+        storageType: this.gl.DEPTH_COMPONENT16,
         width: 0,
         height: 0
       }, opt || {});
 
       var hasBuffer = name in this.renderBuffers,
-          renderBuffer = hasBuffer? this.renderBuffers[name] : gl.createRenderbuffer(gl.RENDERBUFFER);
+          renderBuffer = hasBuffer? this.renderBuffers[name] : this.gl.createRenderbuffer(this.gl.RENDERBUFFER);
 
       if (!hasBuffer) {
         this.renderBuffers[name] = renderBuffer;
       }
 
-      gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
+      this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, renderBuffer);
 
-      gl.renderbufferStorage(gl.RENDERBUFFER, opt.storageType, opt.width, opt.height);
+      this.gl.renderbufferStorage(this.gl.RENDERBUFFER, opt.storageType, opt.width, opt.height);
 
       this.renderBufferMemo[name] = opt;
 
@@ -569,45 +571,45 @@ $.splat = (function() {
     setTexture: function(name, opt) {
       //bind texture
       if (!opt || typeof opt != 'object') {
-        gl.activeTexture(opt || gl.TEXTURE0);
-        gl.bindTexture(this.textureMemo[name].textureType || gl.TEXTURE_2D, this.textures[name]);
+        this.gl.activeTexture(opt || this.gl.TEXTURE0);
+        this.gl.bindTexture(this.textureMemo[name].textureType || this.gl.TEXTURE_2D, this.textures[name]);
         return;
       }
 
-      if (opt.data && opt.data.type === gl.FLOAT) {
+      if (opt.data && opt.data.type === this.gl.FLOAT) {
         // Enable floating-point texture.
-        if (!gl.getExtension('OES_texture_float')) {
+        if (!this.gl.getExtension('OES_texture_float')) {
           throw 'OES_texture_float is not supported';
         }
       }
 
       //get defaults
       opt = $.merge(this.textureMemo[name] || {
-        textureType: gl.TEXTURE_2D,
+        textureType: this.gl.TEXTURE_2D,
         pixelStore: [{
-          name: gl.UNPACK_FLIP_Y_WEBGL,
+          name: this.gl.UNPACK_FLIP_Y_WEBGL,
           value: true
         }, {
-          name: gl.UNPACK_ALIGNMENT,
+          name: this.gl.UNPACK_ALIGNMENT,
           value: 1
         }],
         parameters: [{
-          name: gl.TEXTURE_MAG_FILTER,
-          value: gl.NEAREST
+          name: this.gl.TEXTURE_MAG_FILTER,
+          value: this.gl.NEAREST
         }, {
-          name: gl.TEXTURE_MIN_FILTER,
-          value: gl.NEAREST
+          name: this.gl.TEXTURE_MIN_FILTER,
+          value: this.gl.NEAREST
         }, {
-          name: gl.TEXTURE_WRAP_S,
-          value: gl.CLAMP_TO_EDGE
+          name: this.gl.TEXTURE_WRAP_S,
+          value: this.gl.CLAMP_TO_EDGE
         }, {
-          name: gl.TEXTURE_WRAP_T,
-          value: gl.CLAMP_TO_EDGE
+          name: this.gl.TEXTURE_WRAP_T,
+          value: this.gl.CLAMP_TO_EDGE
         }],
         data: {
-          format: gl.RGBA,
+          format: this.gl.RGBA,
           value: false,
-          type: gl.UNSIGNED_BYTE,
+          type: this.gl.UNSIGNED_BYTE,
 
           width: 0,
           height: 0,
@@ -616,11 +618,11 @@ $.splat = (function() {
 
       }, opt || {});
 
-      var textureType = ('textureType' in opt)? opt.textureType = gl.get(opt.textureType) : gl.TEXTURE_2D,
-          textureTarget = ('textureTarget' in opt)? opt.textureTarget = gl.get(opt.textureTarget) : textureType,
-          isCube = textureType == gl.TEXTURE_CUBE_MAP,
+      var textureType = ('textureType' in opt)? opt.textureType = this.gl.get(opt.textureType) : this.gl.TEXTURE_2D,
+          textureTarget = ('textureTarget' in opt)? opt.textureTarget = this.gl.get(opt.textureTarget) : textureType,
+          isCube = textureType == this.gl.TEXTURE_CUBE_MAP,
           hasTexture = name in this.textures,
-          texture = hasTexture? this.textures[name] : gl.createTexture(),
+          texture = hasTexture? this.textures[name] : this.gl.createTexture(),
           pixelStore = opt.pixelStore,
           parameters = opt.parameters,
           data = opt.data,
@@ -633,12 +635,12 @@ $.splat = (function() {
       if (!hasTexture) {
         this.textures[name] = texture;
       }
-      gl.bindTexture(textureType, texture);
+      this.gl.bindTexture(textureType, texture);
       if (!hasTexture) {
         //set texture properties
         pixelStore.forEach(function(opt) {
-          opt.name = typeof opt.name == 'string'? gl.get(opt.name) : opt.name;
-          gl.pixelStorei(opt.name, opt.value);
+          opt.name = typeof opt.name == 'string'? this.gl.get(opt.name) : opt.name;
+          this.gl.pixelStorei(opt.name, opt.value);
         });
       }
 
@@ -648,32 +650,32 @@ $.splat = (function() {
         if (isCube) {
           for (var i = 0; i < 6; ++i) {
             if ((data.width || data.height) && (!value.width && !value.height)) {
-              gl.texImage2D(textureTarget[i], 0, format, data.width, data.height, data.border, format, type, value[i]);
+              this.gl.texImage2D(textureTarget[i], 0, format, data.width, data.height, data.border, format, type, value[i]);
             } else {
-              gl.texImage2D(textureTarget[i], 0, format, format, type, value[i]);
+              this.gl.texImage2D(textureTarget[i], 0, format, format, type, value[i]);
             }
           }
         } else {
           if ((data.width || data.height) && (!value.width && !value.height)) {
-            gl.texImage2D(textureTarget, 0, format, data.width, data.height, data.border, format, type, value);
+            this.gl.texImage2D(textureTarget, 0, format, data.width, data.height, data.border, format, type, value);
           } else {
-            gl.texImage2D(textureTarget, 0, format, format, type, value);
+            this.gl.texImage2D(textureTarget, 0, format, format, type, value);
           }
         }
 
       //we're setting a texture to a framebuffer
       } else if (data.width || data.height) {
-        gl.texImage2D(textureTarget, 0, format, data.width, data.height, data.border, format, type, null);
+        this.gl.texImage2D(textureTarget, 0, format, data.width, data.height, data.border, format, type, null);
       }
       //set texture parameters
       if (!hasTexture) {
         for (i = 0; i < parameters.length ;i++) {
           var opti = parameters[i];
-          opti.name = gl.get(opti.name);
-          opti.value = gl.get(opti.value);
-          gl.texParameteri(textureType, opti.name, opti.value);
+          opti.name = this.gl.get(opti.name);
+          opti.value = this.gl.get(opti.value);
+          this.gl.texParameteri(textureType, opti.name, opti.value);
           if (opti.generateMipmap) {
-            gl.generateMipmap(textureType);
+            this.gl.generateMipmap(textureType);
           }
         }
       }
@@ -698,7 +700,7 @@ $.splat = (function() {
     },
 
     use: function(program) {
-      gl.useProgram(program.program);
+      this.gl.useProgram(program.program);
       //remember last used program.
       this.usedProgram = program;
       return this;
@@ -2523,8 +2525,9 @@ $.splat = (function() {
   };
 
   //Program Class: Handles loading of programs and mapping of attributes and uniforms
-  var Program = function(vertexShader, fragmentShader) {
-    var program = createProgram(gl, vertexShader, fragmentShader);
+  var Program = function(app, vertexShader, fragmentShader) {
+    this.app = app;
+    var program = createProgram(this.gl, vertexShader, fragmentShader);
     if (!program) return false;
 
     var attributes = {},
@@ -2533,18 +2536,18 @@ $.splat = (function() {
         info, name, index;
 
     //fill attribute locations
-    var len = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    var len = this.gl.getProgramParameter(program, this.gl.ACTIVE_ATTRIBUTES);
     for (var i = 0; i < len; i++) {
-      info = gl.getActiveAttrib(program, i);
+      info = this.gl.getActiveAttrib(program, i);
       name = info.name;
-      index = gl.getAttribLocation(program, info.name);
+      index = this.gl.getAttribLocation(program, info.name);
       attributes[name] = index;
     }
 
     //create uniform setters
-    len = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    len = this.gl.getProgramParameter(program, this.gl.ACTIVE_UNIFORMS);
     for (i = 0; i < len; i++) {
-      info = gl.getActiveUniform(program, i);
+      info = this.gl.getActiveUniform(program, i);
       name = info.name;
       //if array name then clean the array brackets
       name = name[name.length -1] == ']' ? name.substr(0, name.length -3) : name;
@@ -2581,7 +2584,7 @@ $.splat = (function() {
     Program.prototype[name] = function() {
       var args = Array.prototype.slice.call(arguments);
       args.unshift(this);
-      app[name].apply(app, args);
+      this.app[name].apply(this.app, args);
       return this;
     };
   });
@@ -2609,24 +2612,24 @@ $.splat = (function() {
   }
 
   //Create a program from vertex and fragment shader node ids
-  Program.fromShaderIds = function() {
+  Program.fromShaderIds = function(opt) {
     var opt = getOptions(arguments),
       vs = $(opt.vs),
       fs = $(opt.fs);
     return preprocess(opt.path, vs.innerHTML, function(vectexShader) {
       return preprocess(opt.path, fs.innerHTML, function(fragmentShader) {
-        opt.onSuccess(new Program(vectexShader, fragmentShader), opt);
+        opt.onSuccess(new Program(opt.app, vectexShader, fragmentShader), opt);
       });
     });
   };
 
   //Create a program from vs and fs sources
-  Program.fromShaderSources = function() {
+  Program.fromShaderSources = function(opt) {
     var opt = getOptions(arguments, {path: './'});
     return preprocess(opt.path, opt.vs, function(vectexShader) {
       return preprocess(opt.path, opt.fs, function(fragmentShader) {
         try {
-          var program = new Program(vectexShader, fragmentShader);
+          var program = new Program(opt.app, vectexShader, fragmentShader);
           if(opt.onSuccess) {
             opt.onSuccess(program, opt);
           } else {
@@ -2645,6 +2648,7 @@ $.splat = (function() {
 
   //Build program from default shaders (requires Shaders)
   Program.fromDefaultShaders = function(opt) {
+
     opt = opt || {};
     var vs = opt.vs || 'Default',
       fs = opt.fs || 'Default',
@@ -2656,6 +2660,7 @@ $.splat = (function() {
 
   //Implement Program.fromShaderURIs (requires IO)
   Program.fromShaderURIs = function(opt) {
+    this.app = opt.app;
     opt = $.merge({
       path: '',
       vs: '',

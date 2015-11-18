@@ -199,8 +199,9 @@
   };
 
   //Program Class: Handles loading of programs and mapping of attributes and uniforms
-  var Program = function(vertexShader, fragmentShader) {
-    var program = createProgram(gl, vertexShader, fragmentShader);
+  var Program = function(app, vertexShader, fragmentShader) {
+    this.app = app;
+    var program = createProgram(this.gl, vertexShader, fragmentShader);
     if (!program) return false;
 
     var attributes = {},
@@ -209,18 +210,18 @@
         info, name, index;
 
     //fill attribute locations
-    var len = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    var len = this.gl.getProgramParameter(program, this.gl.ACTIVE_ATTRIBUTES);
     for (var i = 0; i < len; i++) {
-      info = gl.getActiveAttrib(program, i);
+      info = this.gl.getActiveAttrib(program, i);
       name = info.name;
-      index = gl.getAttribLocation(program, info.name);
+      index = this.gl.getAttribLocation(program, info.name);
       attributes[name] = index;
     }
 
     //create uniform setters
-    len = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    len = this.gl.getProgramParameter(program, this.gl.ACTIVE_UNIFORMS);
     for (i = 0; i < len; i++) {
-      info = gl.getActiveUniform(program, i);
+      info = this.gl.getActiveUniform(program, i);
       name = info.name;
       //if array name then clean the array brackets
       name = name[name.length -1] == ']' ? name.substr(0, name.length -3) : name;
@@ -257,7 +258,7 @@
     Program.prototype[name] = function() {
       var args = Array.prototype.slice.call(arguments);
       args.unshift(this);
-      app[name].apply(app, args);
+      this.app[name].apply(this.app, args);
       return this;
     };
   });
@@ -285,24 +286,24 @@
   }
 
   //Create a program from vertex and fragment shader node ids
-  Program.fromShaderIds = function() {
+  Program.fromShaderIds = function(opt) {
     var opt = getOptions(arguments),
       vs = $(opt.vs),
       fs = $(opt.fs);
     return preprocess(opt.path, vs.innerHTML, function(vectexShader) {
       return preprocess(opt.path, fs.innerHTML, function(fragmentShader) {
-        opt.onSuccess(new Program(vectexShader, fragmentShader), opt);
+        opt.onSuccess(new Program(opt.app, vectexShader, fragmentShader), opt);
       });
     });
   };
 
   //Create a program from vs and fs sources
-  Program.fromShaderSources = function() {
+  Program.fromShaderSources = function(opt) {
     var opt = getOptions(arguments, {path: './'});
     return preprocess(opt.path, opt.vs, function(vectexShader) {
       return preprocess(opt.path, opt.fs, function(fragmentShader) {
         try {
-          var program = new Program(vectexShader, fragmentShader);
+          var program = new Program(opt.app, vectexShader, fragmentShader);
           if(opt.onSuccess) {
             opt.onSuccess(program, opt);
           } else {
@@ -321,6 +322,7 @@
 
   //Build program from default shaders (requires Shaders)
   Program.fromDefaultShaders = function(opt) {
+
     opt = opt || {};
     var vs = opt.vs || 'Default',
       fs = opt.fs || 'Default',
@@ -332,6 +334,7 @@
 
   //Implement Program.fromShaderURIs (requires IO)
   Program.fromShaderURIs = function(opt) {
+    this.app = opt.app;
     opt = $.merge({
       path: '',
       vs: '',
