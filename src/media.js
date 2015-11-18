@@ -21,6 +21,7 @@
 
     return function(opt) {
       var app = opt.app;
+      var gl = app.gl;
       var scene = new PhiloGL.Scene(app, {}, camera);
       var program = app.program.$$family ? app.program : app.program[opt.program],
           textures = opt.fromTexture ? $.splat(opt.fromTexture) : [],

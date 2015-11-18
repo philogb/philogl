@@ -157,7 +157,7 @@
 
     setIndices: function(program) {
       if (!this.$indices) return;
-
+      var gl = program.app.gl;
       if (this.dynamic) {
         program.setBuffer('indices-' + this.id, {
           bufferType: gl.ELEMENT_ARRAY_BUFFER,
@@ -236,6 +236,7 @@
     },
 
     setTextures: function(program, force) {
+      var gl = program.app.gl;
       this.textures = this.textures? $.splat(this.textures) : [];
       var dist = 5, tex2D = 0, texCube = 0;
       for (var i = 0, texs = this.textures, l = texs.length, mtexs = PhiloGL.Scene.MAX_TEXTURES; i < mtexs; i++) {
@@ -262,6 +263,7 @@
     },
 
     setState: function(program) {
+      program.use();
       this.setUniforms(program);
       this.setAttributes(program);
       this.setVertices(program);
@@ -274,6 +276,7 @@
     },
 
     unsetState: function(program) {
+      var gl = program.app.gl;
       var attributes = program.attributes;
 
       //unbind the array and element buffers

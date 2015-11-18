@@ -76,7 +76,7 @@ PhiloGL = null;
         optScene = opt.scene;
 
     //get Context global to all framework
-    gl = PhiloGL.WebGL.getContext(canvasId, optContext);
+    var gl = PhiloGL.WebGL.getContext(canvasId, optContext);
 
     if (!gl) {
         opt.onError("The WebGL context couldn't been initialized");
@@ -641,7 +641,7 @@ $.splat = (function() {
         pixelStore.forEach(function(opt) {
           opt.name = typeof opt.name == 'string'? this.gl.get(opt.name) : opt.name;
           this.gl.pixelStorei(opt.name, opt.value);
-        });
+        }.bind(this));
       }
 
       //load texture
@@ -2421,7 +2421,7 @@ $.splat = (function() {
   };
 
   //Returns a Magic Uniform Setter
-  var getUniformSetter = function(program, info, isArray) {
+  var getUniformSetter = function(gl, program, info, isArray) {
     var name = info.name,
         loc = gl.getUniformLocation(program, name),
         type = info.type,
@@ -2552,7 +2552,7 @@ $.splat = (function() {
       name = info.name;
       //if array name then clean the array brackets
       name = name[name.length -1] == ']' ? name.substr(0, name.length -3) : name;
-      uniforms[name] = getUniformSetter(program, info, info.name != name);
+      uniforms[name] = getUniformSetter(gl, program, info, info.name != name);
     }
 
     this.program = program;
@@ -3239,7 +3239,7 @@ $.splat = (function() {
 
     setIndices: function(program) {
       if (!this.$indices) return;
-
+      var gl = program.app.gl;
       if (this.dynamic) {
         program.setBuffer('indices-' + this.id, {
           bufferType: gl.ELEMENT_ARRAY_BUFFER,
@@ -3318,6 +3318,7 @@ $.splat = (function() {
     },
 
     setTextures: function(program, force) {
+      var gl = program.app.gl;
       this.textures = this.textures? $.splat(this.textures) : [];
       var dist = 5, tex2D = 0, texCube = 0;
       for (var i = 0, texs = this.textures, l = texs.length, mtexs = PhiloGL.Scene.MAX_TEXTURES; i < mtexs; i++) {
@@ -3344,6 +3345,7 @@ $.splat = (function() {
     },
 
     setState: function(program) {
+      program.use();
       this.setUniforms(program);
       this.setAttributes(program);
       this.setVertices(program);
@@ -3356,6 +3358,7 @@ $.splat = (function() {
     },
 
     unsetState: function(program) {
+      var gl = program.app.gl;
       var attributes = program.attributes;
 
       //unbind the array and element buffers
@@ -4462,6 +4465,7 @@ $.splat = (function() {
     }, opt || {});
 
     this.app = app;
+    this.gl = app.gl;
     this.program = opt.program ? program[opt.program] : program;
     this.camera = camera;
     this.models = [];
@@ -4642,9 +4646,9 @@ $.splat = (function() {
 
       this.render(opt);
 
-      gl.bindTexture(texMemo.textureType, texture);
-      //gl.generateMipmap(texMemo.textureType);
-      //gl.bindTexture(texMemo.textureType, null);
+      this.gl.bindTexture(texMemo.textureType, texture);
+      //this.gl.generateMipmap(texMemo.textureType);
+      //this.gl.bindTexture(texMemo.textureType, null);
     },
 
     renderObject: function(obj, program) {
@@ -4670,12 +4674,12 @@ $.splat = (function() {
       //Draw
       //TODO(nico): move this into O3D, but, somehow, abstract the gl.draw* methods inside that object.
       if (obj.render) {
-        obj.render(gl, program, camera);
+        obj.render(this.gl, program, camera);
       } else {
         if (obj.$indicesLength) {
-          gl.drawElements((obj.drawType !== undefined) ? gl.get(obj.drawType) : gl.TRIANGLES, obj.$indicesLength, gl.UNSIGNED_SHORT, 0);
+          this.gl.drawElements((obj.drawType !== undefined) ? this.gl.get(obj.drawType) : this.gl.TRIANGLES, obj.$indicesLength, this.gl.UNSIGNED_SHORT, 0);
         } else {
-          gl.drawArrays((obj.drawType !== undefined) ? gl.get(obj.drawType) : gl.TRIANGLES, 0, obj.$verticesLength / 3);
+          this.gl.drawArrays((obj.drawType !== undefined) ? this.gl.get(obj.drawType) : this.gl.TRIANGLES, 0, obj.$verticesLength / 3);
         }
       }
 
@@ -4730,7 +4734,7 @@ $.splat = (function() {
           config = this.config,
           memoLightEnable = config.lights.enable,
           memoFog = config.effects.fog,
-          canvas = gl.canvas,
+          canvas = this.gl.canvas,
           viewport = opt.viewport || {},
           pixelRatio = opt.pixelRatio || 1,
           width = (viewport.width || canvas.offsetWidth || canvas.width),
@@ -4760,11 +4764,11 @@ $.splat = (function() {
       pickingProgram.setUniform('enablePicking', true);
 
       //render the scene to a texture
-      gl.disable(gl.BLEND);
-      gl.viewport(0, 0, resWidth, resHeight);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      this.gl.disable(this.gl.BLEND);
+      this.gl.viewport(0, 0, resWidth, resHeight);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
       //read the background color so we don't step on it
-      gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+      this.gl.readPixels(0, 0, 1, 1, this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixel);
       backgroundColor = pixel[0] + pixel[1] * 256 + pixel[2] * 256 * 256;
 
       //render picking scene
@@ -4777,7 +4781,7 @@ $.splat = (function() {
 
       // the target point is in the center of the screen,
       // so it should be the center point.
-      gl.readPixels(2, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+      this.gl.readPixels(2, 0, 1, 1, this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixel);
 
       var stringColor = [pixel[0], pixel[1], pixel[2]].join(),
           elem = o3dHash[stringColor],
@@ -5153,6 +5157,7 @@ $.splat = (function() {
 
     return function(opt) {
       var app = opt.app;
+      var gl = app.gl;
       var scene = new PhiloGL.Scene(app, {}, camera);
       var program = app.program.$$family ? app.program : app.program[opt.program],
           textures = opt.fromTexture ? $.splat(opt.fromTexture) : [],

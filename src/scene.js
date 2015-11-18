@@ -40,6 +40,7 @@
     }, opt || {});
 
     this.app = app;
+    this.gl = app.gl;
     this.program = opt.program ? program[opt.program] : program;
     this.camera = camera;
     this.models = [];
@@ -220,9 +221,9 @@
 
       this.render(opt);
 
-      gl.bindTexture(texMemo.textureType, texture);
-      //gl.generateMipmap(texMemo.textureType);
-      //gl.bindTexture(texMemo.textureType, null);
+      this.gl.bindTexture(texMemo.textureType, texture);
+      //this.gl.generateMipmap(texMemo.textureType);
+      //this.gl.bindTexture(texMemo.textureType, null);
     },
 
     renderObject: function(obj, program) {
@@ -248,12 +249,12 @@
       //Draw
       //TODO(nico): move this into O3D, but, somehow, abstract the gl.draw* methods inside that object.
       if (obj.render) {
-        obj.render(gl, program, camera);
+        obj.render(this.gl, program, camera);
       } else {
         if (obj.$indicesLength) {
-          gl.drawElements((obj.drawType !== undefined) ? gl.get(obj.drawType) : gl.TRIANGLES, obj.$indicesLength, gl.UNSIGNED_SHORT, 0);
+          this.gl.drawElements((obj.drawType !== undefined) ? this.gl.get(obj.drawType) : this.gl.TRIANGLES, obj.$indicesLength, this.gl.UNSIGNED_SHORT, 0);
         } else {
-          gl.drawArrays((obj.drawType !== undefined) ? gl.get(obj.drawType) : gl.TRIANGLES, 0, obj.$verticesLength / 3);
+          this.gl.drawArrays((obj.drawType !== undefined) ? this.gl.get(obj.drawType) : this.gl.TRIANGLES, 0, obj.$verticesLength / 3);
         }
       }
 
@@ -308,7 +309,7 @@
           config = this.config,
           memoLightEnable = config.lights.enable,
           memoFog = config.effects.fog,
-          canvas = gl.canvas,
+          canvas = this.gl.canvas,
           viewport = opt.viewport || {},
           pixelRatio = opt.pixelRatio || 1,
           width = (viewport.width || canvas.offsetWidth || canvas.width),
@@ -338,11 +339,11 @@
       pickingProgram.setUniform('enablePicking', true);
 
       //render the scene to a texture
-      gl.disable(gl.BLEND);
-      gl.viewport(0, 0, resWidth, resHeight);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      this.gl.disable(this.gl.BLEND);
+      this.gl.viewport(0, 0, resWidth, resHeight);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
       //read the background color so we don't step on it
-      gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+      this.gl.readPixels(0, 0, 1, 1, this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixel);
       backgroundColor = pixel[0] + pixel[1] * 256 + pixel[2] * 256 * 256;
 
       //render picking scene
@@ -355,7 +356,7 @@
 
       // the target point is in the center of the screen,
       // so it should be the center point.
-      gl.readPixels(2, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+      this.gl.readPixels(2, 0, 1, 1, this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixel);
 
       var stringColor = [pixel[0], pixel[1], pixel[2]].join(),
           elem = o3dHash[stringColor],

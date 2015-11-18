@@ -53,7 +53,7 @@ PhiloGL = null;
         optScene = opt.scene;
 
     //get Context global to all framework
-    gl = PhiloGL.WebGL.getContext(canvasId, optContext);
+    var gl = PhiloGL.WebGL.getContext(canvasId, optContext);
 
     if (!gl) {
         opt.onError("The WebGL context couldn't been initialized");

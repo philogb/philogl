@@ -95,7 +95,7 @@
   };
 
   //Returns a Magic Uniform Setter
-  var getUniformSetter = function(program, info, isArray) {
+  var getUniformSetter = function(gl, program, info, isArray) {
     var name = info.name,
         loc = gl.getUniformLocation(program, name),
         type = info.type,
@@ -226,7 +226,7 @@
       name = info.name;
       //if array name then clean the array brackets
       name = name[name.length -1] == ']' ? name.substr(0, name.length -3) : name;
-      uniforms[name] = getUniformSetter(program, info, info.name != name);
+      uniforms[name] = getUniformSetter(gl, program, info, info.name != name);
     }
 
     this.program = program;

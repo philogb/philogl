@@ -353,7 +353,7 @@
         pixelStore.forEach(function(opt) {
           opt.name = typeof opt.name == 'string'? this.gl.get(opt.name) : opt.name;
           this.gl.pixelStorei(opt.name, opt.value);
-        });
+        }.bind(this));
       }
 
       //load texture
