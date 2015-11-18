@@ -267,7 +267,7 @@
   ['setFrameBuffer', 'setFrameBuffers', 'setRenderBuffer',
    'setRenderBuffers', 'setTexture', 'setTextures'].forEach(function(name) {
     Program.prototype[name] = function() {
-      app[name].apply(app, arguments);
+      this.app[name].apply(this.app, arguments);
       return this;
     };
   });
@@ -304,6 +304,7 @@
     return preprocess(opt.path, opt.vs, function(vectexShader) {
       return preprocess(opt.path, opt.fs, function(fragmentShader) {
         try {
+          console.log(opt.app);
           var program = new Program(opt.app, vectexShader, fragmentShader);
           if(opt.onSuccess) {
             opt.onSuccess(program, opt);

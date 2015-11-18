@@ -129,7 +129,7 @@ PhiloGL = null;
       app.program = program;
 
       //get Scene
-      var scene = new PhiloGL.Scene(program, camera, optScene);
+      var scene = new PhiloGL.Scene(app, program, camera, optScene);
       app.scene = scene;
 
       //Use program
@@ -146,7 +146,7 @@ PhiloGL = null;
 
       //load Textures
       if (optTextures.src.length) {
-        new PhiloGL.IO.Textures($.extend(optTextures, {
+        new PhiloGL.IO.Textures(app, $.extend(optTextures, {
           onComplete: function() {
             callback(app);
           }
@@ -167,7 +167,7 @@ PhiloGL.unpack = function(branch) {
    'Scene', 'Shaders', 'IO', 'Events', 'WorkerGroup', 'Fx', 'Media'].forEach(function(module) {
       branch[module] = PhiloGL[module];
   });
-  branch.gl = gl;
+  // branch.gl = gl;
   branch.Utils = $;
 };
 

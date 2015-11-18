@@ -152,7 +152,7 @@ PhiloGL = null;
       app.program = program;
 
       //get Scene
-      var scene = new PhiloGL.Scene(program, camera, optScene);
+      var scene = new PhiloGL.Scene(app, program, camera, optScene);
       app.scene = scene;
 
       //Use program
@@ -169,7 +169,7 @@ PhiloGL = null;
 
       //load Textures
       if (optTextures.src.length) {
-        new PhiloGL.IO.Textures($.extend(optTextures, {
+        new PhiloGL.IO.Textures(app, $.extend(optTextures, {
           onComplete: function() {
             callback(app);
           }
@@ -190,7 +190,7 @@ PhiloGL.unpack = function(branch) {
    'Scene', 'Shaders', 'IO', 'Events', 'WorkerGroup', 'Fx', 'Media'].forEach(function(module) {
       branch[module] = PhiloGL[module];
   });
-  branch.gl = gl;
+  // branch.gl = gl;
   branch.Utils = $;
 };
 
@@ -2593,7 +2593,7 @@ $.splat = (function() {
   ['setFrameBuffer', 'setFrameBuffers', 'setRenderBuffer',
    'setRenderBuffers', 'setTexture', 'setTextures'].forEach(function(name) {
     Program.prototype[name] = function() {
-      app[name].apply(app, arguments);
+      this.app[name].apply(this.app, arguments);
       return this;
     };
   });
@@ -2630,6 +2630,7 @@ $.splat = (function() {
     return preprocess(opt.path, opt.vs, function(vectexShader) {
       return preprocess(opt.path, opt.fs, function(fragmentShader) {
         try {
+          console.log(opt.app);
           var program = new Program(opt.app, vectexShader, fragmentShader);
           if(opt.onSuccess) {
             opt.onSuccess(program, opt);
@@ -2749,12 +2750,12 @@ $.splat = (function() {
         }
       });
     },
-    
+
     send: function(body) {
       var req = this.req,
           opt = this.opt,
           async = opt.async;
-      
+
       if (opt.noCache) {
         opt.url += (opt.url.indexOf('?') >= 0? '&' : '?') + $.uid();
       }
@@ -2764,7 +2765,7 @@ $.splat = (function() {
       if (opt.responseType) {
         req.responseType = opt.responseType;
       }
-      
+
       if (async) {
         req.onreadystatechange = function(e) {
           if (req.readyState == XHR.State.COMPLETED) {
@@ -2776,7 +2777,7 @@ $.splat = (function() {
           }
         };
       }
-      
+
       if (opt.sendAsBinary) {
         req.sendAsBinary(body || opt.body || null);
       } else {
@@ -2855,7 +2856,7 @@ $.splat = (function() {
       return function(e) {
         --len;
         opt.onError(e, i);
-        
+
         if (!len) opt.onComplete(ans);
       };
     }
@@ -2889,7 +2890,7 @@ $.splat = (function() {
       onComplete: $.empty,
       callbackKey: 'callback'
     }, opt || {});
-    
+
     var index = JSONP.counter++;
     //create query string
     var data = [];
@@ -2902,7 +2903,7 @@ $.splat = (function() {
       data += (data.indexOf('?') >= 0? '&' : '?') + $.uid();
     }
     //create source url
-    var src = opt.url + 
+    var src = opt.url +
       (opt.url.indexOf('?') > -1 ? '&' : '?') +
       opt.callbackKey + '=PhiloGL.IO.JSONP.requests.request_' + index +
       (data.length > 0 ? '&' + data : '');
@@ -2919,7 +2920,7 @@ $.splat = (function() {
       }
       if(script.clearAttributes) {
         script.clearAttributes();
-      } 
+      }
     };
     //inject script
     document.getElementsByTagName('head')[0].appendChild(script);
@@ -2968,7 +2969,7 @@ $.splat = (function() {
   };
 
   //Load multiple textures from images
-  var Textures = function(opt) {
+  var Textures = function(app, opt) {
     opt = $.merge({
       src: [],
       noCache: false,
@@ -2992,7 +2993,7 @@ $.splat = (function() {
       }
     });
   };
-  
+
   IO.XHR = XHR;
   IO.JSONP = JSONP;
   IO.Images = Images;
@@ -3322,7 +3323,7 @@ $.splat = (function() {
       var dist = 5, tex2D = 0, texCube = 0;
       for (var i = 0, texs = this.textures, l = texs.length, mtexs = PhiloGL.Scene.MAX_TEXTURES; i < mtexs; i++) {
         if (i < l) {
-          var isCube = app.textureMemo[texs[i]].isCube;
+          var isCube = program.app.textureMemo[texs[i]].isCube;
           if (isCube) {
             program.setUniform('hasTextureCube' + (i + 1), true);
             program.setTexture(texs[i], gl['TEXTURE' + i]);
@@ -4429,7 +4430,7 @@ $.splat = (function() {
       Mat4 = PhiloGL.Mat4;
 
   //Scene class
-  var Scene = function(program, camera, opt) {
+  var Scene = function(app, program, camera, opt) {
     opt = $.merge({
       lights: {
         enable: false,
@@ -4461,6 +4462,7 @@ $.splat = (function() {
       }
     }, opt || {});
 
+    this.app = app;
     this.program = opt.program ? program[opt.program] : program;
     this.camera = camera;
     this.models = [];
@@ -4636,8 +4638,8 @@ $.splat = (function() {
 
     renderToTexture: function(name, opt) {
       opt = opt || {};
-      var texture = app.textures[name + '-texture'],
-          texMemo = app.textureMemo[name + '-texture'];
+      var texture = this.app.textures[name + '-texture'],
+          texMemo = this.app.textureMemo[name + '-texture'];
 
       this.render(opt);
 
@@ -4684,10 +4686,10 @@ $.splat = (function() {
     //setup picking framebuffer
     setupPicking: function(opt) {
       //create picking program
-      var program = PhiloGL.Program.fromDefaultShaders(),
+      var program = PhiloGL.Program.fromDefaultShaders({app: this.app}),
           floor = Math.floor;
       //create framebuffer
-      app.setFrameBuffer('$picking', {
+      this.app.setFrameBuffer('$picking', {
         width: 5,
         height: 1,
         bindToTexture: {
@@ -4707,7 +4709,7 @@ $.splat = (function() {
         },
         bindToRenderBuffer: true
       });
-      app.setFrameBuffer('$picking', false);
+      this.app.setFrameBuffer('$picking', false);
       this.pickingProgram = opt.pickingProgram || program;
     },
 
@@ -4721,7 +4723,7 @@ $.splat = (function() {
 
       var o3dHash = {},
           o3dList = [],
-          program = app.usedProgram,
+          program = this.app.usedProgram,
           pickingProgram = this.pickingProgram,
           camera = this.camera,
           oldtarget = camera.target,
@@ -4754,7 +4756,7 @@ $.splat = (function() {
       config.effects.fog = false;
 
       //enable picking and render to texture
-      app.setFrameBuffer('$picking', true);
+      this.app.setFrameBuffer('$picking', true);
       pickingProgram.use();
       pickingProgram.setUniform('enablePicking', true);
 
@@ -4797,8 +4799,8 @@ $.splat = (function() {
       }
 
       //restore all values and unbind buffers
-      app.setFrameBuffer('$picking', false);
-      app.setTexture('$picking-texture', false);
+      this.app.setFrameBuffer('$picking', false);
+      this.app.setTexture('$picking-texture', false);
       pickingProgram.use();
       pickingProgram.setUniform('enablePicking', false);
       config.lights.enable = memoLightEnable;
@@ -5148,9 +5150,11 @@ $.splat = (function() {
       offset: 0
     }), camera = new PhiloGL.Camera(45, 1, 0.1, 500, {
       position: { x: 0, y: 0, z: 0.2 }
-    }), scene = new PhiloGL.Scene({}, camera);
+    });
 
     return function(opt) {
+      var app = opt.app;
+      var scene = new PhiloGL.Scene(app, {}, camera);
       var program = app.program.$$family ? app.program : app.program[opt.program],
           textures = opt.fromTexture ? $.splat(opt.fromTexture) : [],
           framebuffer = opt.toFrameBuffer,

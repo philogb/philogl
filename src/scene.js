@@ -7,7 +7,7 @@
       Mat4 = PhiloGL.Mat4;
 
   //Scene class
-  var Scene = function(program, camera, opt) {
+  var Scene = function(app, program, camera, opt) {
     opt = $.merge({
       lights: {
         enable: false,
@@ -39,6 +39,7 @@
       }
     }, opt || {});
 
+    this.app = app;
     this.program = opt.program ? program[opt.program] : program;
     this.camera = camera;
     this.models = [];
@@ -214,8 +215,8 @@
 
     renderToTexture: function(name, opt) {
       opt = opt || {};
-      var texture = app.textures[name + '-texture'],
-          texMemo = app.textureMemo[name + '-texture'];
+      var texture = this.app.textures[name + '-texture'],
+          texMemo = this.app.textureMemo[name + '-texture'];
 
       this.render(opt);
 
@@ -262,10 +263,10 @@
     //setup picking framebuffer
     setupPicking: function(opt) {
       //create picking program
-      var program = PhiloGL.Program.fromDefaultShaders(),
+      var program = PhiloGL.Program.fromDefaultShaders({app: this.app}),
           floor = Math.floor;
       //create framebuffer
-      app.setFrameBuffer('$picking', {
+      this.app.setFrameBuffer('$picking', {
         width: 5,
         height: 1,
         bindToTexture: {
@@ -285,7 +286,7 @@
         },
         bindToRenderBuffer: true
       });
-      app.setFrameBuffer('$picking', false);
+      this.app.setFrameBuffer('$picking', false);
       this.pickingProgram = opt.pickingProgram || program;
     },
 
@@ -299,7 +300,7 @@
 
       var o3dHash = {},
           o3dList = [],
-          program = app.usedProgram,
+          program = this.app.usedProgram,
           pickingProgram = this.pickingProgram,
           camera = this.camera,
           oldtarget = camera.target,
@@ -332,7 +333,7 @@
       config.effects.fog = false;
 
       //enable picking and render to texture
-      app.setFrameBuffer('$picking', true);
+      this.app.setFrameBuffer('$picking', true);
       pickingProgram.use();
       pickingProgram.setUniform('enablePicking', true);
 
@@ -375,8 +376,8 @@
       }
 
       //restore all values and unbind buffers
-      app.setFrameBuffer('$picking', false);
-      app.setTexture('$picking-texture', false);
+      this.app.setFrameBuffer('$picking', false);
+      this.app.setTexture('$picking-texture', false);
       pickingProgram.use();
       pickingProgram.setUniform('enablePicking', false);
       config.lights.enable = memoLightEnable;
