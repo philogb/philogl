@@ -2630,7 +2630,6 @@ $.splat = (function() {
     return preprocess(opt.path, opt.vs, function(vectexShader) {
       return preprocess(opt.path, opt.fs, function(fragmentShader) {
         try {
-          console.log(opt.app);
           var program = new Program(opt.app, vectexShader, fragmentShader);
           if(opt.onSuccess) {
             opt.onSuccess(program, opt);
