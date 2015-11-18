@@ -2527,7 +2527,8 @@ $.splat = (function() {
   //Program Class: Handles loading of programs and mapping of attributes and uniforms
   var Program = function(app, vertexShader, fragmentShader) {
     this.app = app;
-    var program = createProgram(this.gl, vertexShader, fragmentShader);
+    var gl = app.gl;
+    var program = createProgram(gl, vertexShader, fragmentShader);
     if (!program) return false;
 
     var attributes = {},
@@ -2536,18 +2537,18 @@ $.splat = (function() {
         info, name, index;
 
     //fill attribute locations
-    var len = this.gl.getProgramParameter(program, this.gl.ACTIVE_ATTRIBUTES);
+    var len = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
     for (var i = 0; i < len; i++) {
-      info = this.gl.getActiveAttrib(program, i);
+      info = gl.getActiveAttrib(program, i);
       name = info.name;
-      index = this.gl.getAttribLocation(program, info.name);
+      index = gl.getAttribLocation(program, info.name);
       attributes[name] = index;
     }
 
     //create uniform setters
-    len = this.gl.getProgramParameter(program, this.gl.ACTIVE_UNIFORMS);
+    len = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
     for (i = 0; i < len; i++) {
-      info = this.gl.getActiveUniform(program, i);
+      info = gl.getActiveUniform(program, i);
       name = info.name;
       //if array name then clean the array brackets
       name = name[name.length -1] == ']' ? name.substr(0, name.length -3) : name;
