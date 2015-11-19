@@ -311,6 +311,7 @@
             return program;
           }
         } catch(e) {
+          console.error(e);
           if (opt.onError) {
             opt.onError(e, opt);
           } else {
@@ -365,6 +366,7 @@
             }, opt.onError);
           }, opt.onError);
         } catch (e) {
+          console.error(e);
           opt.onError(e, opt);
         }
       }
