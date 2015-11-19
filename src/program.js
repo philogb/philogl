@@ -323,7 +323,6 @@
 
   //Build program from default shaders (requires Shaders)
   Program.fromDefaultShaders = function(opt) {
-
     opt = opt || {};
     var vs = opt.vs || 'Default',
       fs = opt.fs || 'Default',
