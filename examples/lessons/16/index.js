@@ -144,7 +144,7 @@ function webGLStart() {
               }
             }),
             outerScene = app.scene,
-            innerScene = new Scene(program, innerCamera, {
+            innerScene = new Scene(app, program, innerCamera, {
               lights: {
                 enable: true,
                 points: {
