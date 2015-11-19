@@ -199,6 +199,7 @@
           //app.setFrameBuffer('f2', false);
 
           Media.Image.postProcess({
+            app: app,
             width: size,
             height: size,
             fromTexture: 'f1-texture',
@@ -226,6 +227,7 @@
             //toScreen: true
           })
           .postProcess({
+            app: app,
             width: size,
             height: size,
             fromTexture: 'f2-texture',

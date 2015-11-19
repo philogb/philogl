@@ -265,7 +265,7 @@
   };
 
   //Load multiple textures from images
-  var Textures = function(opt) {
+  var Textures = function(app, opt) {
     opt = $.merge({
       src: [],
       noCache: false,

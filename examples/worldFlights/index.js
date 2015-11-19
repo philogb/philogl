@@ -511,6 +511,7 @@ function createApp() {
         app.setFrameBuffer('world2', false);
 
         Media.Image.postProcess({
+          app: app,
           fromTexture: ['world-texture', 'world2-texture'],
           toScreen: true,
           program: 'glow',
@@ -523,5 +524,3 @@ function createApp() {
     }
   });
 }
-
-

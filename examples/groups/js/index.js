@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     },
     onError: function(e) {
-      console.log(e, e.message);
+      console.error(e, e.message);
     },
     onLoad: function(app) {
       var gl = app.gl,
@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // advance
         Media.Image.postProcess({
+          app: app,
           width: glCanvas.width,
           height: glCanvas.height,
           toScreen: true,

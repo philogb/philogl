@@ -198,7 +198,7 @@ function webGLStart() {
 
 
       // Create framebuffer
-      surfaceBuffer = new SwapTexture({width: RESOLUTIONX, height: RESOLUTIONY}, 2);
+      surfaceBuffer = new SwapTexture(app, {width: RESOLUTIONX, height: RESOLUTIONY}, 2);
 
       // Utility functions
       app.initScene = function() {
@@ -289,10 +289,10 @@ function webGLStart() {
 
         var time = (+new Date() - start) / 1000;
 
-        gl.clearColor(0, 0, 0, 1);
-        gl.clearDepth(1);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.viewport(0, 0, width, height);
+        app.gl.clearColor(0, 0, 0, 1);
+        app.gl.clearDepth(1);
+        app.gl.clear(app.gl.COLOR_BUFFER_BIT | app.gl.DEPTH_BUFFER_BIT);
+        app.gl.viewport(0, 0, width, height);
         waterSurface.textures = [surfaceBuffer.from[0] + '-texture', 'SKY0', 'SKY1', 'SKY2', 'SKY3', 'rocks'];
         this.scene.render();
         if (lastDrop < time - 300) {
@@ -337,8 +337,8 @@ function webGLStart() {
 
       app.initScene();
 
-      gl.enable(gl.DEPTH_TEST);
-      gl.depthFunc(gl.LEQUAL);
+      app.gl.enable(app.gl.DEPTH_TEST);
+      app.gl.depthFunc(app.gl.LEQUAL);
       setTimeout(function() {return app.animate.apply(app, arguments);}, 15);
     }
   });

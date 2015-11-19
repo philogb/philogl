@@ -71,6 +71,7 @@ function load() {
         t = ((Date.now() - time) / 600) % (Math.PI * 2);
         // advance
         Media.Image.postProcess({
+          app: app,
           width: viewX,
           height: viewY,
           toScreen: true,

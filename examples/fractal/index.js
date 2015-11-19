@@ -90,6 +90,7 @@ function load() {
       function draw() {
         var uniform = getUniforms();
         Media.Image.postProcess({
+          app: app,
           width: sizeX,
           height: sizeY,
           fromTexture: 'main-texture',
@@ -97,6 +98,7 @@ function load() {
           program: 'advance',
           uniforms: uniform
         }).postProcess({
+          app: app,
           width: sizeX,
           height: sizeY,
           fromTexture: 'main2-texture',
@@ -104,6 +106,7 @@ function load() {
           program: 'advance',
           uniforms: uniform
         }).postProcess({
+          app: app,
           width: sizeX,
           height: sizeY,
           fromTexture: 'main-texture',
@@ -111,6 +114,7 @@ function load() {
           program: 'advance',
           uniforms: uniform
         }).postProcess({
+          app: app,
           width: sizeX,
           height: sizeY,
           fromTexture: 'main2-texture',
@@ -118,6 +122,7 @@ function load() {
           program: 'advance',
           uniforms: uniform
         }).postProcess({
+          app: app,
           width: viewX,
           height: viewY,
           fromTexture: 'main-texture',
@@ -155,5 +160,3 @@ function load() {
     }
   });
 }
-
-

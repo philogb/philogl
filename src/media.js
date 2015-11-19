@@ -17,9 +17,12 @@
       offset: 0
     }), camera = new PhiloGL.Camera(45, 1, 0.1, 500, {
       position: { x: 0, y: 0, z: 0.2 }
-    }), scene = new PhiloGL.Scene({}, camera);
+    });
 
     return function(opt) {
+      var app = opt.app;
+      var gl = app.gl;
+      var scene = new PhiloGL.Scene(app, {}, camera);
       var program = app.program.$$family ? app.program : app.program[opt.program],
           textures = opt.fromTexture ? $.splat(opt.fromTexture) : [],
           framebuffer = opt.toFrameBuffer,
