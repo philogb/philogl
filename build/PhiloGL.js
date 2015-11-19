@@ -190,14 +190,13 @@ PhiloGL.unpack = function(branch) {
    'Scene', 'Shaders', 'IO', 'Events', 'WorkerGroup', 'Fx', 'Media'].forEach(function(module) {
       branch[module] = PhiloGL[module];
   });
-  // branch.gl = gl;
   branch.Utils = $;
 };
 
 //Version
 PhiloGL.version = '1.5.2';
 
-//Holds the 3D context, holds the application
+//Holds the global context, often Window.
 var globalContext = this;
 
 //Utility functions
