@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     },
     onError: function(e) {
-      console.error(e, e.message);
+      console.log(e, e.message);
     },
     onLoad: function(app) {
       var gl = app.gl,
