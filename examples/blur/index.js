@@ -145,6 +145,7 @@ function load() {
 
 			function advance(source, target) {
 				Media.Image.postProcess({
+					app: app,
 					width : sizeX,
 					height : sizeY,
 					fromTexture : [ source + '-texture', 'blur1-texture',
@@ -158,6 +159,7 @@ function load() {
 
 			function composite(source) {
 				Media.Image.postProcess({
+					app: app,
 					width : viewX,
 					height : viewY,
 					fromTexture : [ source + '-texture', 'blur1-texture',
@@ -180,6 +182,7 @@ function load() {
 
 			function calculateBlurTexture(source, target, helper, scale) {
 				Media.Image.postProcess({
+					app: app,
 					width : sizeX / scale,
 					height : sizeY / scale,
 					fromTexture : source + '-texture',
@@ -187,6 +190,7 @@ function load() {
 					program : 'copy',
 					uniforms : getUniforms(scale)
 				}).postProcess({
+					app: app,
 					width : sizeX / scale,
 					height : sizeY / scale,
 					fromTexture : target + '-texture',
@@ -194,6 +198,7 @@ function load() {
 					program : 'blur-h',
 					uniforms : getUniforms(scale)
 				}).postProcess({
+					app: app,
 					width : sizeX / scale,
 					height : sizeY / scale,
 					fromTexture : helper + '-texture',

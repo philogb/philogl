@@ -48,7 +48,7 @@
 
   // preprocess a source with `#include ""` support
   // `duplist` records all the pending replacements
-  var preprocess = function(base, source, callback, callbackError, duplist) {
+  var preprocess = function(gl, base, source, callback, callbackError, duplist) {
     duplist = duplist || {};
     var match;
     if ((match = source.match(/#include "(.*?)"/))) {
@@ -67,13 +67,13 @@
         },
         onSuccess: function(response) {
           duplist[url] = true;
-          return preprocess(url, response, function(replacement) {
+          return preprocess(gl, url, response, function(replacement) {
             delete duplist[url];
             source = source.replace(/#include ".*?"/, replacement);
             source = source.replace(/\sHAS_EXTENSION\s*\(\s*([A-Za-z_\-0-9]+)\s*\)/g, function (all, ext) {
               return gl.getExtension(ext) ? ' 1 ': ' 0 ';
             });
-            return preprocess(url, source, callback, callbackError, duplist);
+            return preprocess(gl, url, source, callback, callbackError, duplist);
           }, callbackError, duplist);
         }
       }).send();
@@ -291,8 +291,8 @@
     var opt = getOptions(arguments),
       vs = $(opt.vs),
       fs = $(opt.fs);
-    return preprocess(opt.path, vs.innerHTML, function(vectexShader) {
-      return preprocess(opt.path, fs.innerHTML, function(fragmentShader) {
+    return preprocess(opt.app.gl, opt.path, vs.innerHTML, function(vectexShader) {
+      return preprocess(opt.app.gl, opt.path, fs.innerHTML, function(fragmentShader) {
         opt.onSuccess(new Program(opt.app, vectexShader, fragmentShader), opt);
       });
     });
@@ -301,8 +301,8 @@
   //Create a program from vs and fs sources
   Program.fromShaderSources = function(opt) {
     var opt = getOptions(arguments, {path: './'});
-    return preprocess(opt.path, opt.vs, function(vectexShader) {
-      return preprocess(opt.path, opt.fs, function(fragmentShader) {
+    return preprocess(opt.app.gl, opt.path, opt.vs, function(vectexShader) {
+      return preprocess(opt.app.gl, opt.path, opt.fs, function(fragmentShader) {
         try {
           var program = new Program(opt.app, vectexShader, fragmentShader);
           if(opt.onSuccess) {
@@ -311,7 +311,6 @@
             return program;
           }
         } catch(e) {
-          console.error(e);
           if (opt.onError) {
             opt.onError(e, opt);
           } else {
@@ -336,7 +335,6 @@
 
   //Implement Program.fromShaderURIs (requires IO)
   Program.fromShaderURIs = function(opt) {
-    this.app = opt.app;
     opt = $.merge({
       path: '',
       vs: '',
@@ -358,15 +356,14 @@
       },
       onComplete: function(ans) {
         try {
-          return preprocess(vertexShaderURI, ans[0], function(vectexShader) {
-            return preprocess(fragmentShaderURI, ans[1], function(fragmentShader) {
+          return preprocess(opt.app.gl, vertexShaderURI, ans[0], function(vectexShader) {
+            return preprocess(opt.app.gl, fragmentShaderURI, ans[1], function(fragmentShader) {
               opt.vs = vectexShader;
               opt.fs = fragmentShader;
               return Program.fromShaderSources(opt);
             }, opt.onError);
           }, opt.onError);
         } catch (e) {
-          console.error(e);
           opt.onError(e, opt);
         }
       }

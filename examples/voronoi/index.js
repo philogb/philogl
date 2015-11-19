@@ -152,6 +152,7 @@ function webGLStart() {
         gl.viewport(0, 0, width, height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         PhiloGL.Media.Image.postProcess({
+          app: app,
           program: 'voronoi',
           width: width,
           height: height,
