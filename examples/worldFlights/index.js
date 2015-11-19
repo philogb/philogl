@@ -425,7 +425,7 @@ function createApp() {
     },
     onError: function(e) {
       Log.write("There was an error creating the app. ", true);
-      console.error(e);
+      console.log(e);
     },
     onLoad: function(app) {
       Log.write('Done.', true);
