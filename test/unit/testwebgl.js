@@ -1,3 +1,5 @@
+import PhiloGL from '../../src';
+
 assert(typeof PhiloGL.Program === 'function');
 
 assert(typeof PhiloGL.WebGL === 'object');
