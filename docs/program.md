@@ -39,6 +39,7 @@ project organized.
 
 ### Options:
 
+* app - (*object*) An Application instance. This is provided as an argument to the PhiloGL onLoad callback.
 * path - (*string*, optional) A common path used as prefix for the vertex and fragment shaders url path.
 * vs - (*string*) The path to the vertex shader source file.
 * fs - (*string*) The path to the fragment shader source file.

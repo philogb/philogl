@@ -46,12 +46,12 @@
         }
       });
     },
-    
+
     send: function(body) {
       var req = this.req,
           opt = this.opt,
           async = opt.async;
-      
+
       if (opt.noCache) {
         opt.url += (opt.url.indexOf('?') >= 0? '&' : '?') + $.uid();
       }
@@ -61,7 +61,7 @@
       if (opt.responseType) {
         req.responseType = opt.responseType;
       }
-      
+
       if (async) {
         req.onreadystatechange = function(e) {
           if (req.readyState == XHR.State.COMPLETED) {
@@ -73,7 +73,7 @@
           }
         };
       }
-      
+
       if (opt.sendAsBinary) {
         req.sendAsBinary(body || opt.body || null);
       } else {
@@ -152,7 +152,7 @@
       return function(e) {
         --len;
         opt.onError(e, i);
-        
+
         if (!len) opt.onComplete(ans);
       };
     }
@@ -186,7 +186,7 @@
       onComplete: $.empty,
       callbackKey: 'callback'
     }, opt || {});
-    
+
     var index = JSONP.counter++;
     //create query string
     var data = [];
@@ -199,7 +199,7 @@
       data += (data.indexOf('?') >= 0? '&' : '?') + $.uid();
     }
     //create source url
-    var src = opt.url + 
+    var src = opt.url +
       (opt.url.indexOf('?') > -1 ? '&' : '?') +
       opt.callbackKey + '=PhiloGL.IO.JSONP.requests.request_' + index +
       (data.length > 0 ? '&' + data : '');
@@ -216,7 +216,7 @@
       }
       if(script.clearAttributes) {
         script.clearAttributes();
-      } 
+      }
     };
     //inject script
     document.getElementsByTagName('head')[0].appendChild(script);
@@ -265,7 +265,7 @@
   };
 
   //Load multiple textures from images
-  var Textures = function(opt) {
+  var Textures = function(app, opt) {
     opt = $.merge({
       src: [],
       noCache: false,
@@ -289,7 +289,7 @@
       }
     });
   };
-  
+
   IO.XHR = XHR;
   IO.JSONP = JSONP;
   IO.Images = Images;

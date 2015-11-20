@@ -36,13 +36,14 @@ Creates a new [Scene](scene.html) instance.
 
 ### Syntax:
 
-	var scene = new PhiloGL.Scene(program, camera, options);
+	var scene = new PhiloGL.Scene(app, program, camera, options);
 
 ### Arguments:
 
-1. program - (*object*) A Program instance. For more information check the [Program](program.html) class.
-2. camera - (*object*) A Camera instance. For more information check the [Camera](camera.html) class.
-3. options - (*object*) An object with the following properties:
+1. app - (*object*) An Application instance. This is provided as an argument to the PhiloGL onLoad callback.
+2. program - (*object*) A Program instance. For more information check the [Program](program.html) class.
+3. camera - (*object*) A Camera instance. For more information check the [Camera](camera.html) class.
+4. options - (*object*) An object with the following properties:
 
 ### Options:
 

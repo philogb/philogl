@@ -53,12 +53,26 @@ PhiloGL = null;
         optScene = opt.scene;
 
     //get Context global to all framework
-    gl = PhiloGL.WebGL.getContext(canvasId, optContext);
+    var gl = PhiloGL.WebGL.getContext(canvasId, optContext);
 
     if (!gl) {
         opt.onError("The WebGL context couldn't been initialized");
         return null;
     }
+
+    //get Camera
+    var canvas = gl.canvas,
+        camera = new PhiloGL.Camera(optCamera.fov,
+                                    optCamera.aspect || (canvas.width / canvas.height),
+                                    optCamera.near,
+                                    optCamera.far, optCamera);
+    camera.update();
+
+    var app = new PhiloGL.WebGL.Application({
+      gl: gl,
+      canvas: canvas,
+      camera: camera
+    });
 
     //get Program
     var popt = {
@@ -96,6 +110,7 @@ PhiloGL = null;
       for (var p in popt) {
         if (pfrom == p) {
           try {
+            optProgram.app = app
             program = PhiloGL.Program[popt[p]]($.extend(programCallback, optProgram));
           } catch(e) {
             programCallback.onError(e);
@@ -110,25 +125,12 @@ PhiloGL = null;
 
 
     function loadProgramDeps(gl, program, callback) {
-      //get Camera
-      var canvas = gl.canvas,
-          camera = new PhiloGL.Camera(optCamera.fov,
-                                      optCamera.aspect || (canvas.width / canvas.height),
-                                      optCamera.near,
-                                      optCamera.far, optCamera);
-      camera.update();
+      //set program
+      app.program = program;
 
       //get Scene
-      var scene = new PhiloGL.Scene(program, camera, optScene);
-
-      //make app instance global to all framework
-      app = new PhiloGL.WebGL.Application({
-        gl: gl,
-        canvas: canvas,
-        program: program,
-        scene: scene,
-        camera: camera
-      });
+      var scene = new PhiloGL.Scene(app, program, camera, optScene);
+      app.scene = scene;
 
       //Use program
       if (program.$$family == 'program') {
@@ -144,7 +146,7 @@ PhiloGL = null;
 
       //load Textures
       if (optTextures.src.length) {
-        new PhiloGL.IO.Textures($.extend(optTextures, {
+        new PhiloGL.IO.Textures(app, $.extend(optTextures, {
           onComplete: function() {
             callback(app);
           }
@@ -165,15 +167,14 @@ PhiloGL.unpack = function(branch) {
    'Scene', 'Shaders', 'IO', 'Events', 'WorkerGroup', 'Fx', 'Media'].forEach(function(module) {
       branch[module] = PhiloGL[module];
   });
-  branch.gl = gl;
   branch.Utils = $;
 };
 
 //Version
 PhiloGL.version = '1.5.2';
 
-//Holds the 3D context, holds the application
-var gl, app, globalContext = this;
+//Holds the global context, often Window.
+var globalContext = this;
 
 //Utility functions
 function $(d) {
@@ -260,4 +261,3 @@ $.splat = (function() {
     return isArray(a) && a || [a];
   };
 })();
-

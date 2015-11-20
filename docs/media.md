@@ -35,6 +35,7 @@ job to other texture(s) or to the main screen.
 
 ### Options:
 
+* app - (*object*) An Application instance. This is provided as an argument to the PhiloGL onLoad callback.
 * program - (*string*) The program `id` to be used for rendering.
 * fromTexture - (*mixed*) Can be an array of strings or just a string. The texture ids to send to the shaders when rendering.
 * toFrameBuffer - (*string*, optional) The `id` of the framebuffer to render the scene to. The associated texture will have as `id` the framebuffer id plus `-texture` as suffix.

@@ -1,4 +1,5 @@
 function SwapTexture(app, config, count) {
+  this.app = app;
   count = count || 1;
   config = config || {};
   var me = this;
@@ -9,25 +10,25 @@ function SwapTexture(app, config, count) {
       pixelStore: [],
       parameters: [
         {
-          name: gl.TEXTURE_MAG_FILTER,
-          value: gl.NEAREST
+          name: app.gl.TEXTURE_MAG_FILTER,
+          value: app.gl.NEAREST
         },
         {
-          name: gl.TEXTURE_MIN_FILTER,
-          value: gl.NEAREST,
+          name: app.gl.TEXTURE_MIN_FILTER,
+          value: app.gl.NEAREST,
           generateMipmap: false
         },
         {
-          name: gl.TEXTURE_WRAP_S,
-          value: gl.CLAMP_TO_EDGE
+          name: app.gl.TEXTURE_WRAP_S,
+          value: app.gl.CLAMP_TO_EDGE
         },
         {
-          name: gl.TEXTURE_WRAP_T,
-          value: gl.CLAMP_TO_EDGE
+          name: app.gl.TEXTURE_WRAP_T,
+          value: app.gl.CLAMP_TO_EDGE
         }
       ],
       data: {
-        type: gl.FLOAT
+        type: app.gl.FLOAT
       }
     },
     bindToRenderBuffer: false
@@ -59,6 +60,7 @@ SwapTexture.prototype = {
     }
     PhiloGL.Media.Image.postProcess(
         Utils.merge({
+          app: this.app,
           width: me.width,
           height: me.height,
           fromTexture: textures,

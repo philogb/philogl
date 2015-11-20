@@ -288,11 +288,12 @@ Can be called without the `new` keyword.
 
 ### Syntax:
 
-	PhiloGL.IO.Textures(options);
+	PhiloGL.IO.Textures(app, options);
 
 ### Arguments:
 
-1. options - (*object*) An object containing the following options:
+1. app - (*object*) An Application instance. This is provided as an argument to the PhiloGL onLoad callback.
+2. options - (*object*) An object containing the following options:
 
 ### Options:
 

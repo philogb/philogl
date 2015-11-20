@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // advance
         Media.Image.postProcess({
+          app: app,
           width: glCanvas.width,
           height: glCanvas.height,
           toScreen: true,

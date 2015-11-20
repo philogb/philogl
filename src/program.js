@@ -48,7 +48,7 @@
 
   // preprocess a source with `#include ""` support
   // `duplist` records all the pending replacements
-  var preprocess = function(base, source, callback, callbackError, duplist) {
+  var preprocess = function(gl, base, source, callback, callbackError, duplist) {
     duplist = duplist || {};
     var match;
     if ((match = source.match(/#include "(.*?)"/))) {
@@ -67,13 +67,13 @@
         },
         onSuccess: function(response) {
           duplist[url] = true;
-          return preprocess(url, response, function(replacement) {
+          return preprocess(gl, url, response, function(replacement) {
             delete duplist[url];
             source = source.replace(/#include ".*?"/, replacement);
             source = source.replace(/\sHAS_EXTENSION\s*\(\s*([A-Za-z_\-0-9]+)\s*\)/g, function (all, ext) {
               return gl.getExtension(ext) ? ' 1 ': ' 0 ';
             });
-            return preprocess(url, source, callback, callbackError, duplist);
+            return preprocess(gl, url, source, callback, callbackError, duplist);
           }, callbackError, duplist);
         }
       }).send();
@@ -95,7 +95,7 @@
   };
 
   //Returns a Magic Uniform Setter
-  var getUniformSetter = function(program, info, isArray) {
+  var getUniformSetter = function(gl, program, info, isArray) {
     var name = info.name,
         loc = gl.getUniformLocation(program, name),
         type = info.type,
@@ -199,7 +199,9 @@
   };
 
   //Program Class: Handles loading of programs and mapping of attributes and uniforms
-  var Program = function(vertexShader, fragmentShader) {
+  var Program = function(app, vertexShader, fragmentShader) {
+    this.app = app;
+    var gl = app.gl;
     var program = createProgram(gl, vertexShader, fragmentShader);
     if (!program) return false;
 
@@ -224,7 +226,7 @@
       name = info.name;
       //if array name then clean the array brackets
       name = name[name.length -1] == ']' ? name.substr(0, name.length -3) : name;
-      uniforms[name] = getUniformSetter(program, info, info.name != name);
+      uniforms[name] = getUniformSetter(gl, program, info, info.name != name);
     }
 
     this.program = program;
@@ -257,7 +259,7 @@
     Program.prototype[name] = function() {
       var args = Array.prototype.slice.call(arguments);
       args.unshift(this);
-      app[name].apply(app, args);
+      this.app[name].apply(this.app, args);
       return this;
     };
   });
@@ -265,7 +267,7 @@
   ['setFrameBuffer', 'setFrameBuffers', 'setRenderBuffer',
    'setRenderBuffers', 'setTexture', 'setTextures'].forEach(function(name) {
     Program.prototype[name] = function() {
-      app[name].apply(app, arguments);
+      this.app[name].apply(this.app, arguments);
       return this;
     };
   });
@@ -285,24 +287,24 @@
   }
 
   //Create a program from vertex and fragment shader node ids
-  Program.fromShaderIds = function() {
+  Program.fromShaderIds = function(opt) {
     var opt = getOptions(arguments),
       vs = $(opt.vs),
       fs = $(opt.fs);
-    return preprocess(opt.path, vs.innerHTML, function(vectexShader) {
-      return preprocess(opt.path, fs.innerHTML, function(fragmentShader) {
-        opt.onSuccess(new Program(vectexShader, fragmentShader), opt);
+    return preprocess(opt.app.gl, opt.path, vs.innerHTML, function(vectexShader) {
+      return preprocess(opt.app.gl, opt.path, fs.innerHTML, function(fragmentShader) {
+        opt.onSuccess(new Program(opt.app, vectexShader, fragmentShader), opt);
       });
     });
   };
 
   //Create a program from vs and fs sources
-  Program.fromShaderSources = function() {
+  Program.fromShaderSources = function(opt) {
     var opt = getOptions(arguments, {path: './'});
-    return preprocess(opt.path, opt.vs, function(vectexShader) {
-      return preprocess(opt.path, opt.fs, function(fragmentShader) {
+    return preprocess(opt.app.gl, opt.path, opt.vs, function(vectexShader) {
+      return preprocess(opt.app.gl, opt.path, opt.fs, function(fragmentShader) {
         try {
-          var program = new Program(vectexShader, fragmentShader);
+          var program = new Program(opt.app, vectexShader, fragmentShader);
           if(opt.onSuccess) {
             opt.onSuccess(program, opt);
           } else {
@@ -353,8 +355,8 @@
       },
       onComplete: function(ans) {
         try {
-          return preprocess(vertexShaderURI, ans[0], function(vectexShader) {
-            return preprocess(fragmentShaderURI, ans[1], function(fragmentShader) {
+          return preprocess(opt.app.gl, vertexShaderURI, ans[0], function(vectexShader) {
+            return preprocess(opt.app.gl, fragmentShaderURI, ans[1], function(fragmentShader) {
               opt.vs = vectexShader;
               opt.fs = fragmentShader;
               return Program.fromShaderSources(opt);
