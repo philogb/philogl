@@ -42,8 +42,7 @@ function createProgram(gl, vertexShader, fragmentShader) {
 
 // preprocess a source with `#include ""` support
 // `duplist` records all the pending replacements
-function preprocess(base, source, callback, callbackError, duplist) {
-  duplist = duplist || {};
+function preprocess(base, source, callback, callbackError, duplist = {}) {
   var match;
   if ((match = source.match(/#include "(.*?)"/))) {
     const url = getpath(base) + match[1];
@@ -52,31 +51,35 @@ function preprocess(base, source, callback, callbackError, duplist) {
       callbackError('Recursive include');
     }
 
-    new XHR({
-      url: url,
-      noCache: true,
-      onError: function(code) {
-        callbackError('Load included file `' + url + '` failed: Code ' + code);
-      },
-      onSuccess: function(response) {
-        duplist[url] = true;
-        return preprocess(url, response, function(replacement) {
-          delete duplist[url];
-          source = source.replace(/#include ".*?"/, replacement);
-          source = source.replace(
-            /\sHAS_EXTENSION\s*\(\s*([A-Za-z_\-0-9]+)\s*\)/g,
-            function (all, ext) {
-              return gl.getExtension(ext) ? ' 1 ': ' 0 ';
-            }
-          );
-          return preprocess(url, source, callback, callbackError, duplist);
-        }, callbackError, duplist);
-      }
-    }).send();
-    return null;
+    return new XHR({url: url, noCache: true})
+    .sendAsync()
+    .then(response => {
+      duplist[url] = true;
+      return preprocess(url, response, function(replacement) {
+        delete duplist[url];
+        source = source.replace(/#include ".*?"/, replacement);
+        source = source.replace(
+          /\sHAS_EXTENSION\s*\(\s*([A-Za-z_\-0-9]+)\s*\)/g,
+          function (all, ext) {
+            return gl.getExtension(ext) ? ' 1 ': ' 0 ';
+          }
+        );
+        return preprocess(url, source, callback, callbackError, duplist);
+      }, callbackError, duplist);
+    })
+    .catch(code => {
+      callbackError(new Error(
+        'Load included file `' + url + '` failed: Code ' + code));
+    });
   } else {
     return callback(source);
   }
+}
+
+function preprocessAsync(base, source) {
+  return new Promise(
+    (resolve, reject) => preprocess(base, source, resolve, reject)
+  );
 }
 
 // Link a program.
@@ -205,10 +208,12 @@ export default class Program {
       throw new Error('Failed to create program');
     }
 
-    var attributes = {},
-        attributeEnabled = {},
-        uniforms = {},
-        info, name, index;
+    const attributes = {};
+    const attributeEnabled = {};
+    const uniforms = {};
+    let info;
+    let name;
+    let index;
 
     // fill attribute locations
     let len = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
@@ -238,8 +243,8 @@ export default class Program {
   }
 
   // Get options in object or arguments
-  static getOptions(args, base) {
-    var opt;
+  static getOptions(args, base = {}) {
+    let opt;
     if (args.length === 2) {
       opt = {
         vs: args[0],
@@ -248,69 +253,70 @@ export default class Program {
     } else {
       opt = args[0] || {};
     }
-    return $.merge(base || {}, opt);
+    return {
+      ...base,
+      opt
+    };
   }
 
   // Create a program from vertex and fragment shader node ids
-  static fromShaderIds() {
-    var opt = getOptions(arguments),
-      vs = $(opt.vs),
-      fs = $(opt.fs);
-    return preprocess(opt.path, vs.innerHTML, function(vectexShader) {
-      return preprocess(opt.path, fs.innerHTML, function(fragmentShader) {
-        opt.onSuccess(new Program(vectexShader, fragmentShader), opt);
-      });
-    });
+  static async fromShaderIds() {
+    const opt = getOptions(arguments);
+    const vs = $(opt.vs);
+    const fs = $(opt.fs);
+    const vectexShader = await preprocessAsync(opt.path, vs.innerHTML);
+    const fragmentShader = await preprocessAsync(opt.path, fs.innerHTML);
+    const program = new Program(vectexShader, fragmentShader, opt);
+    opt.onSuccess(program);
+    return program;
   }
 
   // Create a program from vs and fs sources
   static fromShaderSources() {
     var opt = getOptions(arguments, {path: './'});
-    return preprocess(opt.path, opt.vs, function(vectexShader) {
-      return preprocess(opt.path, opt.fs, function(fragmentShader) {
-        try {
-          var program = new Program(vectexShader, fragmentShader);
-          if(opt.onSuccess) {
-            opt.onSuccess(program, opt);
-          } else {
-            return program;
-          }
-        } catch(e) {
-          if (opt.onError) {
-            opt.onError(e, opt);
-          } else {
-            throw e;
-          }
-        }
-      });
-    });
+    const vectexShader = await preprocessAsync(opt.path, opt.vs);
+    const fragmentShader = await preprocessAsync(opt.path, opt.fs);
+    try {
+      const program = new Program(vectexShader, fragmentShader);
+      if (opt.onSuccess) {
+        opt.onSuccess(program, opt);
+      }
+      return program;
+    } catch (error) {
+      if (opt.onError) {
+        opt.onError(errpr, opt);
+      } else {
+        throw error;
+      }
+    }
   }
 
   // Build program from default shaders (requires Shaders)
-  static fromDefaultShaders(opt) {
-    opt = opt || {};
-    var vs = opt.vs || 'Default',
-      fs = opt.fs || 'Default',
-      sh = PhiloGL.Shaders;
-    opt.vs = sh.Vertex[vs];
-    opt.fs = sh.Fragment[fs];
-    return PhiloGL.Program.fromShaderSources(opt);
+  static fromDefaultShaders(opt = {}) {
+    const {vs = 'Default', fs = 'Default'} = opt;
+    const sh = PhiloGL.Shaders;
+    opt = {
+      ...opt,
+      vs: sh.Vertex[vs],
+      fs: sh.Fragment[fs]
+    };
+    return fromShaderSources(opt);
   }
 
-  //Implement Program.fromShaderURIs (requires IO)
-  static fromShaderURIs(opt) {
-    opt = $.merge({
+  // Implement Program.fromShaderURIs (requires IO)
+  static fromShaderURIs(opt = {}) {
+    opt = {
       path: '',
       vs: '',
       fs: '',
       noCache: false,
       onSuccess: $.empty,
-      onError: $.empty
-    }, opt || {});
+      onError: $.empty,
+      ...opt
+    };
 
-    var vertexShaderURI = opt.path + opt.vs,
-        fragmentShaderURI = opt.path + opt.fs,
-        XHR = PhiloGL.IO.XHR;
+    const vertexShaderURI = opt.path + opt.vs;
+    const fragmentShaderURI = opt.path + opt.fs;
 
     new XHR.Group({
       urls: [vertexShaderURI, fragmentShaderURI],
@@ -320,13 +326,14 @@ export default class Program {
       },
       onComplete(ans) {
         try {
-          return preprocess(vertexShaderURI, ans[0], function(vectexShader) {
-            return preprocess(fragmentShaderURI, ans[1], function(fragmentShader) {
-              opt.vs = vectexShader;
-              opt.fs = fragmentShader;
-              return Program.fromShaderSources(opt);
-            }, opt.onError);
-          }, opt.onError);
+          const vertexShader = preprocessAsync(vertexShaderURI, ans[0]);
+          const fragmentShader = preprocessAsync(fragmentShaderURI, ans[1]);
+          opt = {
+            ...opt,
+            vs: vectexShader,
+            fs: fragmentShader,
+          };
+          return Program.fromShaderSources(opt);
         } catch (e) {
           opt.onError(e, opt);
         }

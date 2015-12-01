@@ -46,9 +46,51 @@ class XHR {
     });
   }
 
+  sendAsync(body) {
+    return new Promise(resolve, reject) {
+      const {req, opt} = this;
+      const {async} = opt;
+
+      if (opt.noCache) {
+        opt.url += (opt.url.indexOf('?') >= 0 ? '&' : '?') + $.uid();
+      }
+
+      req.open(opt.method, opt.url, async);
+
+      if (opt.responseType) {
+        req.responseType = opt.responseType;
+      }
+
+      if (async) {
+        req.onreadystatechange = e => {
+          if (req.readyState === XHR.State.COMPLETED) {
+            if (req.status === 200) {
+              resolve(req.responseType ? req.response : req.responseText);
+            } else {
+              reject(new Error(req.status));
+            }
+          }
+        };
+      }
+
+      if (opt.sendAsBinary) {
+        req.sendAsBinary(body || opt.body || null);
+      } else {
+        req.send(body || opt.body || null);
+      }
+
+      if (!async) {
+        if (req.status === 200) {
+          resolve(req.responseType ? req.response : req.responseText);
+        } else {
+          reject(new Error(req.status));
+        }
+      }
+    }
+  }
+
   send(body) {
-    const req = this.req;
-    const opt = this.opt;
+    const {req, opt} = this;
     const async = opt.async;
 
     if (opt.noCache) {
@@ -180,6 +222,14 @@ XHR.Group = class {
     for (var i = 0, reqs = this.reqs, l = reqs.length; i < l; ++i) {
       reqs[i].send();
     }
+  }
+
+  sendAsync() {
+    return new Promise((resolve, reject) {
+      opt.onComplete = resolve;
+      opt.onError = reject;
+      this.send();
+    })
   }
 
 };
