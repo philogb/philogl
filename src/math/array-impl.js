@@ -7,24 +7,24 @@ const cos = Math.cos;
 const tan = Math.tan;
 const pi = Math.PI;
 const slice = Array.prototype.slice;
-const TypedArray = Float32Array;
+const typedArray = this.Float32Array;
 
 // As of version 12 Chrome does not support subclassing of typed arrays
-const ArrayImpl = (function() {
-  if (!TypedArray || !TypedArray.call) {
+export const ArrayImpl = (function() {
+  if (!typedArray || !typedArray.call) {
     return Array;
   }
   try {
-    TypedArray.call({}, 10);
+    typedArray.call({}, 10);
   } catch (e) {
     return Array;
   }
-  return TypedArray;
+  return typedArray;
 })(),
 
-typed = ArrayImpl != Array;
+export typed = ArrayImpl != Array;
 
-// create property descriptor
+//create property descriptor
 function descriptor(index) {
   return {
     get() {
@@ -38,11 +38,12 @@ function descriptor(index) {
   };
 }
 
-// Vec3 Class
+//Vec3 Class
 export class Vec3 extends ArrayImpl {
   constructor(x, y, z) {
-    super(3)
     if (typed) {
+      typedArray.call(this, 3);
+
       this[0] = x || 0;
       this[1] = y || 0;
       this[2] = z || 0;
@@ -53,13 +54,17 @@ export class Vec3 extends ArrayImpl {
                 z || 0);
     }
 
-    this.typedContainer = new TypedArray(3);
+    this.typedContainer = new typedArray(3);
   }
 
   // fast Vec3 create.
   static create() {
-    return new TypedArray(3);
+    return new typedArray(3);
   }
+
+  $$family: {
+    value: 'Vec3'
+  },
 
   get x() {
     return this[0];
@@ -251,32 +256,24 @@ var generics = {
     if (dest.$$family) {
       return new Vec3(dest[0], dest[1], dest[2]);
     } else {
-      return Vec3.setVec3(new TypedArray(3), dest);
+      return Vec3.setVec3(new typedArray(3), dest);
     }
   },
 
   toFloat32Array(dest) {
-    var ans = dest.typedContainer;
+        var ans = dest.typedContainer;
 
-    if (!ans) {
-      return dest;
-    }
+        if (!ans) return dest;
 
-    ans[0] = dest[0];
-    ans[1] = dest[1];
-    ans[2] = dest[2];
+        ans[0] = dest[0];
+        ans[1] = dest[1];
+        ans[2] = dest[2];
 
-    return ans;
+        return ans;
   }
 };
 
-Object.assign(Vec3, {
-  $$family: {
-    value: 'Vec3'
-  }
-});
-
-// add generics and instance methods
+//add generics and instance methods
 var proto = Vec3.prototype;
 for (var method in generics) {
   Vec3[method] = generics[method];
@@ -290,7 +287,7 @@ for (var method in generics) {
  })(method);
 }
 
-// Mat4 Class
+//Mat4 Class
 export class Mat4 extends ArrayImpl {
 
   constructor(n11, n12, n13, n14,
@@ -313,16 +310,14 @@ export class Mat4 extends ArrayImpl {
       this.id();
     }
 
-    this.typedContainer = new TypedArray(16);
+    this.typedContainer = new typedArray(16);
   };
 
   static create() {
-    return new TypedArray(16);
+    return new typedArray(16);
   }
 
-}
-
-// create fancy components setters and getters.
+//create fancy components setters and getters.
 Object.assign(Mat4.prototype, {
 
   $$family: {
@@ -382,7 +377,7 @@ generics = {
                       dest[2], dest[6], dest[10], dest[14],
                       dest[3], dest[7], dest[11], dest[15]);
     } else {
-      return new TypedArray(dest);
+      return new typedArray(dest);
     }
   },
 
@@ -669,7 +664,7 @@ generics = {
     return dest;
   },
 
-  // Method based on PreGL https:// github.com/deanm/pregl/ (c) Dean McNamee.
+  //Method based on PreGL https://github.com/deanm/pregl/ (c) Dean McNamee.
   invert(dest) {
     var m = Mat4.clone(dest);
     return  Mat4.$invert(m);
@@ -716,9 +711,9 @@ generics = {
     return dest;
 
   },
-  // TODO(nico) breaking convention here...
-  // because I don't think it's useful to add
-  // two methods for each of these.
+  //TODO(nico) breaking convention here...
+  //because I don't think it's useful to add
+  //two methods for each of these.
   lookAt(dest, eye, center, up) {
     var z = Vec3.sub(eye, center);
     z.$unit();
@@ -766,30 +761,30 @@ generics = {
     return Mat4.frustum(dest, xmin, xmax, ymin, ymax, near, far);
   },
 
-  // ortho(dest, left, right, bottom, top, near, far) {
-    // var rl = right - left,
-        // tb = top - bottom,
-        // fn = far - near;
+  //ortho(dest, left, right, bottom, top, near, far) {
+    //var rl = right - left,
+        //tb = top - bottom,
+        //fn = far - near;
 
-    // dest[0] = 2 / rl;
-    // dest[1] = 0;
-    // dest[2] = 0;
-    // dest[3] = 0;
-    // dest[4] = 0;
-    // dest[5] = 2 / tb;
-    // dest[6] = 0;
-    // dest[7] = 0;
-    // dest[8] = 0;
-    // dest[9] = 0;
-    // dest[10] = -2 / fn;
-    // dest[11] = 0;
-    // dest[12] = -(left + right) / rl;
-    // dest[13] = -(top + bottom) / tb;
-    // dest[14] = -(far + near) / fn;
-    // dest[15] = 1;
+    //dest[0] = 2 / rl;
+    //dest[1] = 0;
+    //dest[2] = 0;
+    //dest[3] = 0;
+    //dest[4] = 0;
+    //dest[5] = 2 / tb;
+    //dest[6] = 0;
+    //dest[7] = 0;
+    //dest[8] = 0;
+    //dest[9] = 0;
+    //dest[10] = -2 / fn;
+    //dest[11] = 0;
+    //dest[12] = -(left + right) / rl;
+    //dest[13] = -(top + bottom) / tb;
+    //dest[14] = -(far + near) / fn;
+    //dest[15] = 1;
 
-    // return dest;
-  // },
+    //return dest;
+  //},
 
   ortho (dest, left, right, top, bottom, near, far) {
     var te = this.elements,
@@ -834,7 +829,7 @@ generics = {
   }
 };
 
-// add generics and instance methods
+//add generics and instance methods
 proto = Mat4.prototype;
 for (method in generics) {
   Mat4[method] = generics[method];
@@ -858,11 +853,11 @@ export class Quat {
     this[2] = z || 0;
     this[3] = w || 0;
 
-    this.typedContainer = new TypedArray(4);
+    this.typedContainer = new typedArray(4);
   }
 
   static create() {
-    return new TypedArray(4);
+    return new typedArray(4);
   }
 
   static fromVec3(v, r) {
@@ -950,7 +945,7 @@ generics = {
     if (dest.$$family) {
       return new Quat(dest[0], dest[1], dest[2], dest[3]);
     } else {
-      return Quat.setQuat(new TypedArray(4), dest);
+      return Quat.setQuat(new typedArray(4), dest);
     }
   },
 
@@ -1168,7 +1163,7 @@ for (method in generics) {
  })(method);
 }
 
-// Add static methods
+//Add static methods
 Vec3.fromQuat = function(q) {
   return new Vec3(q[0], q[1], q[2]);
 };

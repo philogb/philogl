@@ -1,10 +1,10 @@
-//graph.js
-//provide some basic scene graph capabilities
-(function() {
-  function Node(opt) {
-    opt = opt || {};
-    
-    //a model is associated with the node?
+// graph.js
+// provide some basic scene graph capabilities
+
+export default class Node {
+
+  constructor(opt = {}) {
+    // a model is associated with the node?
     if (opt.model) {
       if (model.$$family == 'model') {
         this.model = opt.model;
@@ -12,32 +12,32 @@
         this.model = new PhiloGL.O3D.Model(opt.model);
       }
     }
-    
-    //only a range of components of the model
-    //are related to this node?
-    //range: {from, to}
+
+    // only a range of components of the model
+    // are related to this node?
+    // range: {from, to}
     if (opt.range) {
       this.range = opt.range;
     }
 
-    //only a set of indices from the model are 
-    //related to this node?
+    // only a set of indices from the model are
+    // related to this node?
     if (opt.indices) {
       this.indices = opt.indices;
     }
 
-    //and check for any children
+    // and check for any children
     this.children = [];
     if (opt.children) {
       this.add.apply(this, opt.children);
     }
-    
-    //model position, rotation, scale and all in all matrix
+
+    // model position, rotation, scale and all in all matrix
     this.position = new Vec3();
     this.rotation = new Vec3();
     this.scale = new Vec3(1, 1, 1);
-    
-    //`end` is the absolute position
+
+    // `end` is the absolute position
     this.endPosition = new Vec3();
     this.endRotation = new Vec3();
     this.endScale = new Vec3(1, 1, 1);
@@ -45,91 +45,87 @@
     this.matrix = new Mat4();
   }
 
-  Node.prototype = Object.create(null, {
-    
-    $$family: {
-      value: 'node'
-    },
-    
-    add: {
-      value: function() {
-        var ch = this.children;
-        for (var i = 0, l = arguments.length; i < l; ++i) {
-          var elem = arguments[i];
-          if (elem.$$family == 'node') {
-            elem.parent = this;
-            ch.push(elem);
-          } else {
-            var node = new Node(elem);
-            node.parent = this;
-            ch.push(node);
-          }
-        }
+  add() {
+    var ch = this.children;
+    for (var i = 0, l = arguments.length; i < l; ++i) {
+      var elem = arguments[i];
+      if (elem.$$family == 'node') {
+        elem.parent = this;
+        ch.push(elem);
+      } else {
+        var node = new Node(elem);
+        node.parent = this;
+        ch.push(node);
       }
-    },
-    
-    //will update everything
-    update: {
-      value: function() {
-        var matrix = this.matrix,
-            pos = this.endPosition,
-            rot = this.endRotation,
-            scale = this.endScale;
+    }
+  }
 
-        matrix.id();
-        matrix.$translate(pos.x, pos.y, pos.z);
-        matrix.$rotateXYZ(rot.x, rot.y, rot.z);
-        matrix.$scale(scale.x, scale.y, scale.z);
+  // will update everything
+  update() {
+    value: function() {
+      var matrix = this.matrix,
+          pos = this.endPosition,
+          rot = this.endRotation,
+          scale = this.endScale;
 
-        if (this.model) {
-          var model = this.model,
-              vertices = model.vertices,
-              normals = model.normals;
+      matrix.id();
+      matrix.$translate(pos.x, pos.y, pos.z);
+      matrix.$rotateXYZ(rot.x, rot.y, rot.z);
+      matrix.$scale(scale.x, scale.y, scale.z);
 
-          if (this.range) {
-            var range = this.range,
-                from = range.from,
-                to = range.to,
-                vfrom = from * 3,
-                vto = to * 3,
-                vertices = 
-                v = new Float32Array(3);
+      if (this.model) {
+        var model = this.model,
+            vertices = model.vertices,
+            normals = model.normals;
 
-            for (var i = vfrom; i < vto; i += 3) {
-              v[0] = vertices[i    ];
-              v[1] = vertices[i + 1];
-              v[2] = vertices[i + 2];
-            }
+        if (this.range) {
+          var range = this.range,
+              from = range.from,
+              to = range.to,
+              vfrom = from * 3,
+              vto = to * 3,
+              vertices = 
+              v = new Float32Array(3);
 
-
-          } else if (this.indices) {
-          
-          } else {
-          
+          for (var i = vfrom; i < vto; i += 3) {
+            v[0] = vertices[i    ];
+            v[1] = vertices[i + 1];
+            v[2] = vertices[i + 2];
           }
-        }
-      }
-    },
 
-    transform: {
-      value: function() {
-        
-        if (!this.parent) {
-          this.endPosition.setVec3(this.position);
-          this.endRotation.setVec3(this.rotation);
-          this.endScale.setVec3(this.scale);
+        } else if (this.indices) {
+
         } else {
-          var parent = this.parent;
-          this.endPosition.setVec3(this.position.add(parent.endPosition));
-          this.endRotation.setVec3(this.rotation.add(parent.endRotation));
-          this.endScale.setVec3(this.scale.add(parent.endScale));
-        }
-        
-        for (var i = 0, ch = this.children, l = ch.length; i < l; ++i) {
-          ch[i].transform();
+
         }
       }
     }
-  });
+  }
 
-})();
+  transform() {
+
+    if (!this.parent) {
+      this.endPosition.setVec3(this.position);
+      this.endRotation.setVec3(this.rotation);
+      this.endScale.setVec3(this.scale);
+    } else {
+      var parent = this.parent;
+      this.endPosition.setVec3(this.position.add(parent.endPosition));
+      this.endRotation.setVec3(this.rotation.add(parent.endRotation));
+      this.endScale.setVec3(this.scale.add(parent.endScale));
+    }
+
+    for (var i = 0, ch = this.children, l = ch.length; i < l; ++i) {
+      ch[i].transform();
+    }
+  }
+
+}
+
+Object.assign(Node.prototype, {
+
+  $$family: {
+    value: 'node'
+  }
+
+});

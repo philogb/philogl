@@ -1,86 +1,100 @@
-//event.js
-//Handle keyboard/mouse/touch events in the Canvas
+// event.js
+// Handle keyboard/mouse/touch events in the Canvas
+// TODO - this will not work under node
+/* global window */
+/* global document */
 
-(function() {
+import $ from './jquery-mini';
 
-  //returns an O3D object or false otherwise.
-  function toO3D(n) {
-    return n !== true ? n : false;
+// returns an O3D object or false otherwise.
+function toO3D(n) {
+  return n !== true ? n : false;
+}
+
+// Returns an element position
+function getPos(elem) {
+  const bbox = elem.getBoundingClientRect();
+  return {
+    x: bbox.left,
+    y: bbox.top,
+    bbox: bbox
+  };
+}
+
+// event object wrapper
+export function get(e, win) {
+  win = win || window;
+  return e || win.event;
+}
+
+export function getWheel(e) {
+  return e.wheelDelta ? e.wheelDelta / 120 : -(e.detail || 0) / 3;
+}
+
+export function getKey(e) {
+  const code = e.which || e.keyCode;
+  let key = keyOf(code);
+  // onkeydown
+  var fKey = code - 111;
+  if (fKey > 0 && fKey < 13) {
+    key = 'f' + fKey;
   }
+  key = key || String.fromCharCode(code).toLowerCase();
 
-  //Returns an element position
-  var getPos = function(elem) {
-    var bbox = elem.getBoundingClientRect();
-    return {
-      x: bbox.left,
-      y: bbox.top,
-      bbox: bbox
-    };
+  return {
+    code: code,
+    key: key,
+    shift: e.shiftKey,
+    control: e.ctrlKey,
+    alt: e.altKey,
+    meta: e.metaKey
   };
+}
 
-  //event object wrapper
-  var event = {
-    get: function(e, win) {
-      win = win || window;
-      return e || win.event;
-    },
-    getWheel: function(e) {
-      return e.wheelDelta? e.wheelDelta / 120 : -(e.detail || 0) / 3;
-    },
-    getKey: function(e) {
-      var code = e.which || e.keyCode;
-      var key = keyOf(code);
-      //onkeydown
-      var fKey = code - 111;
-      if (fKey > 0 && fKey < 13) key = 'f' + fKey;
-      key = key || String.fromCharCode(code).toLowerCase();
+export function isRightClick(e) {
+  return e.which === 3 || e.button === 2;
+}
 
-      return {
-        code: code,
-        key: key,
-        shift: e.shiftKey,
-        control: e.ctrlKey,
-        alt: e.altKey,
-        meta: e.metaKey
-      };
-    },
-    isRightClick: function(e) {
-      return (e.which == 3 || e.button == 2);
-    },
-    getPos: function(e, win) {
-      // get mouse position
-      win = win || window;
-      e = e || win.event;
-      var doc = win.document, touchesPos;
-      doc = doc.documentElement || doc.body;
-      //TODO(nico): make touch event handling better
-      if(e.touches && e.touches.length) {
-        touchesPos = [];
-        for (var i = 0, l = e.touches.length, evt; i < l; ++i) {
-            evt = e.touches[i];
-            touchesPos.push({
-              x: evt.pageX || (evt.clientX + doc.scrollLeft),
-              y: evt.pageY || (evt.clientY + doc.scrollTop)
-            });
-        }
-        return touchesPos;
-      }
-      var page = {
-        x: e.pageX || (e.clientX + doc.scrollLeft),
-        y: e.pageY || (e.clientY + doc.scrollTop)
-      };
-      return [ page ];
-    },
-    stop: function(e) {
-      if (e.stopPropagation) e.stopPropagation();
-      e.cancelBubble = true;
-      if (e.preventDefault) e.preventDefault();
-      else e.returnValue = false;
+export function getPos(e, win) {
+  // get mouse position
+  win = win || window;
+  e = e || win.event;
+  let doc = win.document;
+  doc = doc.documentElement || doc.body;
+  // TODO(nico): make touch event handling better
+  if (e.touches && e.touches.length) {
+    const touchesPos = [];
+    for (var i = 0, l = e.touches.length, evt; i < l; ++i) {
+      evt = e.touches[i];
+      touchesPos.push({
+        x: evt.pageX || (evt.clientX + doc.scrollLeft),
+        y: evt.pageY || (evt.clientY + doc.scrollTop)
+      });
     }
+    return touchesPos;
+  }
+  var page = {
+    x: e.pageX || (e.clientX + doc.scrollLeft),
+    y: e.pageY || (e.clientY + doc.scrollTop)
   };
+  return [page];
+}
 
-  var EventsProxy = function(app, opt) {
-    var domElem = app.canvas;
+export function stop(e) {
+  if (e.stopPropagation) {
+    e.stopPropagation();
+  }
+  e.cancelBubble = true;
+  if (e.preventDefault) {
+    e.preventDefault();
+  } else {
+    e.returnValue = false;
+  }
+}
+
+export class EventsProxy {
+  constructor(app, opt) {
+    const domElem = app.canvas;
     this.scene = app.scene;
     this.domElem = domElem;
     this.pos = getPos(domElem);
@@ -92,258 +106,270 @@
     };
 
     this.attachEvents();
-  };
+  }
 
-  EventsProxy.prototype = {
-    hovered: false,
-    pressed: false,
-    touched: false,
-    touchedLastPosition: { x: 0, y: 0 },
-    touchMoved: false,
-    moved: false,
+  attachEvents() {
+    const domElem = this.domElem;
+    const opt = this.opt;
+    const that = this;
 
-    attachEvents: function() {
-      var domElem = this.domElem,
-          opt = this.opt,
-          that = this;
+    if (opt.disableContextMenu) {
+      domElem.oncontextmenu = function() { return false; };
+    }
 
-      if (opt.disableContextMenu) {
-        domElem.oncontextmenu = function() { return false; };
-      }
-
-      if (opt.enableMouse) {
-    	  ['mouseup', 'mousedown', 'mousemove', 'mouseover', 'mouseout'].forEach(function(action) {
-	        domElem.addEventListener(action, function(e, win) {
-	            that[action](that.eventInfo(action, e, win));
-	        }, false);
-	      });
-
-    	  //"well, this is embarrassing..."
-          var type = '';
-          if (!document.getBoxObjectFor && window.mozInnerScreenX == null) {
-            type = 'mousewheel';
-          } else {
-            type = 'DOMMouseScroll';
-          }
-          domElem.addEventListener(type, function(e, win) {
-            that['mousewheel'](that.eventInfo('mousewheel', e, win));
-          }, false);
-      }
-
-      if (opt.enableTouch) {
-          ['touchstart', 'touchmove', 'touchend'].forEach(function(action) {
-            domElem.addEventListener(action, function(e, win) {
-              that[action](that.eventInfo(action, e, win));
-            }, false);
-          });
-      }
-
-      if (opt.enableKeyboard) {
-	      ['keydown', 'keyup'].forEach(function(action) {
-	        document.addEventListener(action, function(e, win) {
-	          that[action](that.eventInfo(action, e, win));
-	        }, false);
-	      });
-      }
-    },
-
-    eventInfo: function(type, e, win) {
-      var domElem = this.domElem,
-          scene = this.scene,
-          opt = this.opt,
-          size = this.getSize(),
-          relative = opt.relative,
-          centerOrigin = opt.centerOrigin,
-          pos = opt.cachePosition && this.pos || getPos(domElem),
-          ge = event.get(e, win),
-          epos = event.getPos(e, win),
-          origPos = { x: epos[0].x, y: epos[0].y },
-          evt = {},
-          x, y;
-
-      //get Position
-	  for (var i = 0, l = epos.length; i < l; ++i) {
-	      x = epos[i].x;
-	      y = epos[i].y;
-	      if (relative) {
-	        x -= pos.x; y-= pos.y;
-	        if (centerOrigin) {
-	          x -= size.width / 2;
-	          y -= size.height / 2;
-	          y *= -1; //y axis now points to the top of the screen
-	        }
-	      }
-	      epos[i].x = x;
-	      epos[i].y = y;
-	  }
-
-      switch (type) {
-        case 'mousewheel':
-          evt.wheel = event.getWheel(ge);
-          break;
-        case 'keydown':
-        case 'keyup':
-          $.extend(evt, event.getKey(ge));
-          break;
-        case 'mouseup':
-          evt.isRightClick = event.isRightClick(ge);
-          break;
-      }
-
-      var cacheTarget;
-
-      $.extend(evt, {
-        x: epos[0].x,
-        y: epos[0].y,
-        posArray: epos,
-
-        cache: false,
-        //stop event propagation
-        stop: function() {
-          event.stop(ge);
-        },
-        //get the target element of the event
-        getTarget: function() {
-          if (cacheTarget) return cacheTarget;
-          return (cacheTarget = opt.picking && scene.pick(origPos.x - pos.x, origPos.y - pos.y) || true);
-        }
+    if (opt.enableMouse) {
+      ['mouseup', 'mousedown', 'mousemove', 'mouseover', 'mouseout']
+      .forEach(action => {
+        domElem.addEventListener(action, (e, win) => {
+          that[action](that.eventInfo(action, e, win));
+        }, false);
       });
-      //wrap native event
-      evt.event = ge;
 
-      return evt;
-    },
-
-    getSize: function() {
-      if (this.cacheSize) {
-        return this.size;
+      // "well, this is embarrassing..."
+      let type = '';
+      if (!document.getBoxObjectFor && window.mozInnerScreenX == null) {
+        type = 'mousewheel';
+      } else {
+        type = 'DOMMouseScroll';
       }
-      var domElem = this.domElem;
-      return {
-        width: domElem.width || domElem.offsetWidth,
-        height: domElem.height || domElem.offsetHeight
-      };
-    },
+      domElem.addEventListener(type, (e, win) => {
+        that['mousewheel'](that.eventInfo('mousewheel', e, win));
+      }, false);
+    }
 
-    mouseup: function(e) {
-      if(!this.moved) {
-        if(e.isRightClick) {
-          this.callbacks.onRightClick(e, this.hovered);
-        } else {
-          this.callbacks.onClick(e, toO3D(this.pressed));
+    if (opt.enableTouch) {
+        ['touchstart', 'touchmove', 'touchend'].forEach(action => {
+          domElem.addEventListener(action, (e, win) => {
+            that[action](that.eventInfo(action, e, win));
+          }, false);
+        });
+    }
+
+    if (opt.enableKeyboard) {
+      ['keydown', 'keyup'].forEach(action => {
+        document.addEventListener(action, (e, win) => {
+          that[action](that.eventInfo(action, e, win));
+        }, false);
+      });
+    }
+  }
+
+  eventInfo(type, e, win) {
+    const domElem = this.domElem;
+    const scene = this.scene;
+    const opt = this.opt;
+    const size = this.getSize();
+    const relative = opt.relative;
+    const centerOrigin = opt.centerOrigin;
+    const pos = opt.cachePosition && this.pos || getPos(domElem);
+    const ge = event.get(e, win);
+    const epos = event.getPos(e, win);
+    const origPos = {x: epos[0].x, y: epos[0].y};
+    const evt = {};
+    let x;
+    let y;
+
+    // get Position
+    for (let i = 0, l = epos.length; i < l; ++i) {
+      x = epos[i].x;
+      y = epos[i].y;
+      if (relative) {
+        x -= pos.x; y -= pos.y;
+        if (centerOrigin) {
+          x -= size.width / 2;
+          y -= size.height / 2;
+          // y axis now points to the top of the screen
+          y *= -1;
         }
       }
-      if(this.pressed) {
-        if(this.moved) {
-          this.callbacks.onDragEnd(e, toO3D(this.pressed));
-        } else {
-          this.callbacks.onDragCancel(e, toO3D(this.pressed));
+      epos[i].x = x;
+      epos[i].y = y;
+    }
+
+    switch (type) {
+    case 'mousewheel':
+      evt.wheel = event.getWheel(ge);
+      break;
+    case 'keydown':
+    case 'keyup':
+      $.extend(evt, event.getKey(ge));
+      break;
+    case 'mouseup':
+      evt.isRightClick = event.isRightClick(ge);
+      break;
+    default:
+      break;
+    }
+
+    var cacheTarget;
+
+    $.extend(evt, {
+      x: epos[0].x,
+      y: epos[0].y,
+      posArray: epos,
+
+      cache: false,
+      // stop event propagation
+      stop() {
+        event.stop(ge);
+      },
+      // get the target element of the event
+      getTarget() {
+        if (cacheTarget) {
+          return cacheTarget;
         }
-        this.pressed = this.moved = false;
+        return (cacheTarget = opt.picking &&
+          scene.pick(origPos.x - pos.x, origPos.y - pos.y) || true);
       }
-    },
+    });
+    // wrap native event
+    evt.event = ge;
 
-    mouseout: function(e) {
-      //mouseout canvas
-      var rt = e.relatedTarget,
-          domElem = this.domElem;
-      while(rt && rt.parentNode) {
-        if(domElem == rt.parentNode) return;
-        rt = rt.parentNode;
-      }
-      if(this.hovered) {
-        this.callbacks.onMouseLeave(e, this.hovered);
-        this.hovered = false;
-      }
-      if (this.pressed && this.moved) {
-        this.callbacks.onDragEnd(e);
-        this.pressed = this.moved = false;
-      }
-    },
+    return evt;
+  }
 
-    mouseover: function(e) {},
+  getSize() {
+    if (this.cacheSize) {
+      return this.size;
+    }
+    var domElem = this.domElem;
+    return {
+      width: domElem.width || domElem.offsetWidth,
+      height: domElem.height || domElem.offsetHeight
+    };
+  }
 
-    mousemove: function(e) {
-      if(this.pressed) {
-        this.moved = true;
-        this.callbacks.onDragMove(e, toO3D(this.pressed));
+  mouseup(e) {
+    if (!this.moved) {
+      if (e.isRightClick) {
+        this.callbacks.onRightClick(e, this.hovered);
+      } else {
+        this.callbacks.onClick(e, toO3D(this.pressed));
+      }
+    }
+    if (this.pressed) {
+      if (this.moved) {
+        this.callbacks.onDragEnd(e, toO3D(this.pressed));
+      } else {
+        this.callbacks.onDragCancel(e, toO3D(this.pressed));
+      }
+      this.pressed = this.moved = false;
+    }
+  }
+
+  mouseout(e) {
+    // mouseout canvas
+    let rt = e.relatedTarget;
+    const domElem = this.domElem;
+    while (rt && rt.parentNode) {
+      if (domElem === rt.parentNode) {
         return;
       }
-      if(this.hovered) {
-        var target = toO3D(e.getTarget());
-        if(!target || target.hash != this.hash) {
-          this.callbacks.onMouseLeave(e, this.hovered);
-          this.hovered = target;
-          this.hash = target;
-          if(target) {
-            this.hash = target.hash;
-            this.callbacks.onMouseEnter(e, this.hovered);
-          }
-        } else {
-          this.callbacks.onMouseMove(e, this.hovered);
-        }
-      } else {
-        this.hovered = toO3D(e.getTarget());
-        this.hash = this.hovered;
-        if(this.hovered) {
-          this.hash = this.hovered.hash;
+      rt = rt.parentNode;
+    }
+    if (this.hovered) {
+      this.callbacks.onMouseLeave(e, this.hovered);
+      this.hovered = false;
+    }
+    if (this.pressed && this.moved) {
+      this.callbacks.onDragEnd(e);
+      this.pressed = this.moved = false;
+    }
+  }
+
+  mouseover(e) {
+  }
+
+  mousemove(e) {
+    if (this.pressed) {
+      this.moved = true;
+      this.callbacks.onDragMove(e, toO3D(this.pressed));
+      return;
+    }
+    if (this.hovered) {
+      var target = toO3D(e.getTarget());
+      if (!target || target.hash !== this.hash) {
+        this.callbacks.onMouseLeave(e, this.hovered);
+        this.hovered = target;
+        this.hash = target;
+        if (target) {
+          this.hash = target.hash;
           this.callbacks.onMouseEnter(e, this.hovered);
         }
+      } else {
+        this.callbacks.onMouseMove(e, this.hovered);
       }
-      if (!this.opt.picking) {
-        this.callbacks.onMouseMove(e);
+    } else {
+      this.hovered = toO3D(e.getTarget());
+      this.hash = this.hovered;
+      if (this.hovered) {
+        this.hash = this.hovered.hash;
+        this.callbacks.onMouseEnter(e, this.hovered);
       }
-    },
-
-    mousewheel: function(e) {
-      this.callbacks.onMouseWheel(e);
-    },
-
-    mousedown: function(e) {
-      this.pressed = e.getTarget();
-      this.callbacks.onDragStart(e, toO3D(this.pressed));
-    },
-
-    touchstart: function(e) {
-      this.touched = e.getTarget();
-      this.touchedLastPosition = { x: e.x, y: e.y };
-      this.callbacks.onTouchStart(e, toO3D(this.touched));
-    },
-
-    touchmove: function(e) {
-      if(this.touched) {
-        this.touchMoved = true;
-        this.callbacks.onTouchMove(e, toO3D(this.touched));
-      }
-    },
-
-    touchend: function(e) {
-      if(this.touched) {
-        if(this.touchMoved) {
-          this.callbacks.onTouchEnd(e, toO3D(this.touched));
-        } else {
-          e.x = isNaN(e.x) ? this.touchedLastPosition.x : e.x;
-          e.y = isNaN(e.y) ? this.touchedLastPosition.y : e.y;
-          this.callbacks.onTap(e, toO3D(this.touched));
-          this.callbacks.onTouchCancel(e, toO3D(this.touched));
-        }
-        this.touched = this.touchMoved = false;
-      }
-    },
-
-    keydown: function(e) {
-      this.callbacks.onKeyDown(e);
-    },
-
-    keyup: function(e) {
-      this.callbacks.onKeyUp(e);
     }
-  };
+    if (!this.opt.picking) {
+      this.callbacks.onMouseMove(e);
+    }
+  }
 
-  var Events = {};
+  mousewheel(e) {
+    this.callbacks.onMouseWheel(e);
+  }
 
-  Events.create = function(app, opt) {
-    opt = $.extend({
+  mousedown(e) {
+    this.pressed = e.getTarget();
+    this.callbacks.onDragStart(e, toO3D(this.pressed));
+  }
+
+  touchstart(e) {
+    this.touched = e.getTarget();
+    this.touchedLastPosition = {x: e.x, y: e.y};
+    this.callbacks.onTouchStart(e, toO3D(this.touched));
+  }
+
+  touchmove(e) {
+    if (this.touched) {
+      this.touchMoved = true;
+      this.callbacks.onTouchMove(e, toO3D(this.touched));
+    }
+  }
+
+  touchend(e) {
+    if (this.touched) {
+      if (this.touchMoved) {
+        this.callbacks.onTouchEnd(e, toO3D(this.touched));
+      } else {
+        e.x = isNaN(e.x) ? this.touchedLastPosition.x : e.x;
+        e.y = isNaN(e.y) ? this.touchedLastPosition.y : e.y;
+        this.callbacks.onTap(e, toO3D(this.touched));
+        this.callbacks.onTouchCancel(e, toO3D(this.touched));
+      }
+      this.touched = this.touchMoved = false;
+    }
+  }
+
+  keydown(e) {
+    this.callbacks.onKeyDown(e);
+  }
+
+  keyup(e) {
+    this.callbacks.onKeyUp(e);
+  }
+}
+
+Object.assign(EventsProxy.prototype, {
+  hovered: false,
+  pressed: false,
+  touched: false,
+  touchedLastPosition: {x: 0, y: 0},
+  touchMoved: false,
+  moved: false
+});
+
+export const Events = {
+
+  create(app, opt = {}) {
+    opt = {
       cachePosition: true,
       cacheSize: true,
       relative: true,
@@ -373,51 +399,48 @@
       onMouseLeave: $.empty,
       onMouseWheel: $.empty,
       onKeyDown: $.empty,
-      onKeyUp: $.empty
-
-    }, opt || {});
+      onKeyUp: $.empty,
+      ...opt
+    };
 
     var bind = opt.bind;
 
     if (bind) {
       for (var name in opt) {
         if (name.match(/^on[a-zA-Z0-9]+$/)) {
-          (function (name, fn) {
-            opt[name] = function() {
-              return fn.apply(bind, Array.prototype.slice.call(arguments));
-            };
+          ((name, fn) => {
+            opt[name] =
+              () => fn.apply(bind, Array.prototype.slice.call(arguments));
           })(name, opt[name]);
         }
       }
     }
 
     new EventsProxy(app, opt);
-    //assign event handler to app.
+    // assign event handler to app.
     app.events = opt;
-  };
-
-  Events.Keys = {
-  	'enter': 13,
-  	'up': 38,
-  	'down': 40,
-  	'left': 37,
-  	'right': 39,
-  	'esc': 27,
-  	'space': 32,
-  	'backspace': 8,
-  	'tab': 9,
-  	'delete': 46
-  };
-
-  function keyOf(code) {
-    var keyMap = Events.Keys;
-    for (var name in keyMap) {
-      if (keyMap[name] == code) {
-        return name;
-      }
-    }
   }
 
-  PhiloGL.Events = Events;
+};
 
-})();
+Events.Keys = {
+  'enter': 13,
+  'up': 38,
+  'down': 40,
+  'left': 37,
+  'right': 39,
+  'esc': 27,
+  'space': 32,
+  'backspace': 8,
+  'tab': 9,
+  'delete': 46
+};
+
+function keyOf(code) {
+  var keyMap = Events.Keys;
+  for (var name in keyMap) {
+    if (keyMap[name] === code) {
+      return name;
+    }
+  }
+}

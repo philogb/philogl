@@ -740,7 +740,7 @@ $.splat = (function() {
       tan = Math.tan,
       pi = Math.PI,
       slice = Array.prototype.slice,
-      typedArray = this.Float32Array,
+      typedArray = Float32Array,
       //As of version 12 Chrome does not support call/apply on typed array constructors.
       ArrayImpl = (function() {
         if (!typedArray || !typedArray.call) {
@@ -4793,7 +4793,6 @@ $.splat = (function() {
       //restore all values and unbind buffers
       app.setFrameBuffer('$picking', false);
       app.setTexture('$picking-texture', false);
-      pickingProgram.use();
       pickingProgram.setUniform('enablePicking', false);
       config.lights.enable = memoLightEnable;
       config.effects.fog = memoFog;
@@ -5065,8 +5064,13 @@ $.splat = (function() {
   })();
 
   //animationTime - function branching
-  var global = self || window,
-      checkFxQueue = function() {
+  var _global;
+  try {
+    _global = window;
+  } catch (error) {
+  }
+
+      var checkFxQueue = function() {
         var oldQueue = Queue;
         Queue = [];
         if (oldQueue.length) {
@@ -5081,13 +5085,13 @@ $.splat = (function() {
         }
       };
 
-  if (global) {
+  if (_global) {
     var found = false;
     ['webkitAnimationTime', 'mozAnimationTime', 'animationTime',
      'webkitAnimationStartTime', 'mozAnimationStartTime', 'animationStartTime'].forEach(function(impl) {
-      if (impl in global) {
+      if (impl in _global) {
         Fx.animationTime = function() {
-          return global[impl];
+          return _global[impl];
         };
         found = true;
       }
@@ -5098,9 +5102,9 @@ $.splat = (function() {
     //requestAnimationFrame - function branching
     found = false;
     ['webkitRequestAnimationFrame', 'mozRequestAnimationFrame', 'requestAnimationFrame'].forEach(function(impl) {
-      if (impl in global) {
+      if (impl in _global) {
         Fx.requestAnimationFrame = function(callback) {
-          global[impl](function() {
+          _global[impl](function() {
             checkFxQueue();
             callback();
           });
@@ -5212,4 +5216,5 @@ $.splat = (function() {
 })();
 
  if (typeof define === "function" && define.amd) define(PhiloGL); else if (typeof module === "object" && module.exports) module.exports = PhiloGL;
- this.PhiloGL = PhiloGL;}();
+ // if (_global) window.PhiloGL = PhiloGL;
+ }();
