@@ -272,7 +272,7 @@ export default class Program {
   }
 
   // Create a program from vs and fs sources
-  static fromShaderSources() {
+  static async fromShaderSources() {
     var opt = getOptions(arguments, {path: './'});
     const vectexShader = await preprocessAsync(opt.path, opt.vs);
     const fragmentShader = await preprocessAsync(opt.path, opt.fs);

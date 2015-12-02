@@ -7,6 +7,7 @@
 /* eslint-disable no-console */
 /* global window */
 /* global console */
+/* global global */
 import $ from './jquery-mini';
 import {getContext} from './webgl';
 import Camera from './camera';
@@ -61,7 +62,7 @@ var popt = {
   'uris': 'fromShaderURIs'
 };
 
-const globalContext = window;
+const globalContext = typeof window !== 'undefined' ? window : global;
 
 // Creates a single application object asynchronously
 // with a gl context, a camera, a program, a scene, and an event system.

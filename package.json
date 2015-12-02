@@ -49,6 +49,6 @@
   },
   "scripts": {
     "start": "watchify --extension=js -o dist/main.js test/index.js src & http-server .",
-    "node-test": "babel-node --ignore='' test/index.js"
+    "test": "babel-node --ignore='' test/index.js"
   }
 }

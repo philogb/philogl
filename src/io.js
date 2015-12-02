@@ -47,7 +47,7 @@ class XHR {
   }
 
   sendAsync(body) {
-    return new Promise(resolve, reject) {
+    return new Promise((resolve, reject) => {
       const {req, opt} = this;
       const {async} = opt;
 
@@ -86,7 +86,7 @@ class XHR {
           reject(new Error(req.status));
         }
       }
-    }
+    });
   }
 
   send(body) {
@@ -225,7 +225,7 @@ XHR.Group = class {
   }
 
   sendAsync() {
-    return new Promise((resolve, reject) {
+    return new Promise((resolve, reject) => {
       opt.onComplete = resolve;
       opt.onError = reject;
       this.send();
