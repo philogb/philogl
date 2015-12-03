@@ -1,4 +1,7 @@
-function webGLStart() {
+/* global window */
+var PhiloGL = require('../../src');
+
+window.webGLStart = function() {
   PhiloGL('lesson01-canvas', {
     program: {
       from: 'ids',
@@ -26,14 +29,14 @@ function webGLStart() {
           value: new Float32Array([0, 1, 0, -1, -1, 0, 1, -1, 0]),
           size: 3
         },
-        
+
         'square': {
           attribute: 'aVertexPosition',
           value: new Float32Array([1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1, 0]),
           size: 3
         }
       });
-      
+
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       camera.view.id();
       //Draw Triangle
@@ -42,7 +45,7 @@ function webGLStart() {
       program.setUniform('uPMatrix', camera.projection);
       program.setBuffer('triangle');
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      
+
       //Draw Square
       camera.view.$translate(3, 0, 0);
       program.setUniform('uMVMatrix', camera.view);
@@ -50,6 +53,6 @@ function webGLStart() {
       program.setBuffer('square');
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
-  });  
+  });
 }
 

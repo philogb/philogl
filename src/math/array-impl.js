@@ -1,5 +1,6 @@
 // math.js
 // Vec3, Mat4 and Quat classes
+/* eslint-disable computed-property-spacing */
 
 const sqrt = Math.sqrt;
 const sin = Math.sin;
@@ -7,24 +8,8 @@ const cos = Math.cos;
 const tan = Math.tan;
 const pi = Math.PI;
 const slice = Array.prototype.slice;
-const typedArray = this.Float32Array;
 
-// As of version 12 Chrome does not support subclassing of typed arrays
-export const ArrayImpl = (function() {
-  if (!typedArray || !typedArray.call) {
-    return Array;
-  }
-  try {
-    typedArray.call({}, 10);
-  } catch (e) {
-    return Array;
-  }
-  return typedArray;
-})(),
-
-export typed = ArrayImpl != Array;
-
-//create property descriptor
+// create property descriptor
 function descriptor(index) {
   return {
     get() {
@@ -38,40 +23,30 @@ function descriptor(index) {
   };
 }
 
-//Vec3 Class
-export class Vec3 extends ArrayImpl {
-  constructor(x, y, z) {
-    if (typed) {
-      typedArray.call(this, 3);
-
-      this[0] = x || 0;
-      this[1] = y || 0;
-      this[2] = z || 0;
-    } else {
-
-      this.push(x || 0,
-                y || 0,
-                z || 0);
-    }
-
-    this.typedContainer = new typedArray(3);
+// Vec3 Class
+export class Vec3 extends Array {
+  constructor(x = 0, y = 0, z = 0) {
+    super(3);
+    this[0] = x;
+    this[1] = y;
+    this[2] = z;
   }
 
   // fast Vec3 create.
   static create() {
-    return new typedArray(3);
+    return new Vec3(3);
   }
 
-  $$family: {
-    value: 'Vec3'
-  },
+  get $$family() {
+    return {value: 'Vec3'};
+  }
 
   get x() {
     return this[0];
   }
 
   set x(value) {
-    return this[0] = value;
+    return (this[0] = value);
   }
 
   get y() {
@@ -79,7 +54,7 @@ export class Vec3 extends ArrayImpl {
   }
 
   set y(value) {
-    return this[1] = value;
+    return (this[1] = value);
   }
 
   get z() {
@@ -87,7 +62,7 @@ export class Vec3 extends ArrayImpl {
   }
 
   set z(value) {
-    return this[3] = value;
+    return (this[3] = value);
   }
 }
 
@@ -273,7 +248,7 @@ var generics = {
   }
 };
 
-//add generics and instance methods
+// add generics and instance methods
 var proto = Vec3.prototype;
 for (var method in generics) {
   Vec3[method] = generics[method];
@@ -287,8 +262,8 @@ for (var method in generics) {
  })(method);
 }
 
-//Mat4 Class
-export class Mat4 extends ArrayImpl {
+// Mat4 Class
+export class Mat4 extends Array {
 
   constructor(n11, n12, n13, n14,
               n21, n22, n23, n24,
@@ -299,7 +274,7 @@ export class Mat4 extends ArrayImpl {
 
     this.length = 16;
 
-    if (typeof n11 == 'number') {
+    if (typeof n11 === 'number') {
 
       this.set(n11, n12, n13, n14,
                n21, n22, n23, n24,
@@ -310,14 +285,15 @@ export class Mat4 extends ArrayImpl {
       this.id();
     }
 
-    this.typedContainer = new typedArray(16);
+    this.typedContainer = new Array(16);
   };
 
   static create() {
-    return new typedArray(16);
+    return new Array(16);
   }
+}
 
-//create fancy components setters and getters.
+// create fancy components setters and getters.
 Object.assign(Mat4.prototype, {
 
   $$family: {
@@ -664,7 +640,7 @@ generics = {
     return dest;
   },
 
-  //Method based on PreGL https://github.com/deanm/pregl/ (c) Dean McNamee.
+  // Method based on PreGL https:// github.com/deanm/pregl/ (c) Dean McNamee.
   invert(dest) {
     var m = Mat4.clone(dest);
     return  Mat4.$invert(m);
@@ -711,9 +687,9 @@ generics = {
     return dest;
 
   },
-  //TODO(nico) breaking convention here...
-  //because I don't think it's useful to add
-  //two methods for each of these.
+  // TODO(nico) breaking convention here...
+  // because I don't think it's useful to add
+  // two methods for each of these.
   lookAt(dest, eye, center, up) {
     var z = Vec3.sub(eye, center);
     z.$unit();
@@ -761,30 +737,30 @@ generics = {
     return Mat4.frustum(dest, xmin, xmax, ymin, ymax, near, far);
   },
 
-  //ortho(dest, left, right, bottom, top, near, far) {
-    //var rl = right - left,
-        //tb = top - bottom,
-        //fn = far - near;
+  // ortho(dest, left, right, bottom, top, near, far) {
+    // var rl = right - left,
+        // tb = top - bottom,
+        // fn = far - near;
 
-    //dest[0] = 2 / rl;
-    //dest[1] = 0;
-    //dest[2] = 0;
-    //dest[3] = 0;
-    //dest[4] = 0;
-    //dest[5] = 2 / tb;
-    //dest[6] = 0;
-    //dest[7] = 0;
-    //dest[8] = 0;
-    //dest[9] = 0;
-    //dest[10] = -2 / fn;
-    //dest[11] = 0;
-    //dest[12] = -(left + right) / rl;
-    //dest[13] = -(top + bottom) / tb;
-    //dest[14] = -(far + near) / fn;
-    //dest[15] = 1;
+    // dest[0] = 2 / rl;
+    // dest[1] = 0;
+    // dest[2] = 0;
+    // dest[3] = 0;
+    // dest[4] = 0;
+    // dest[5] = 2 / tb;
+    // dest[6] = 0;
+    // dest[7] = 0;
+    // dest[8] = 0;
+    // dest[9] = 0;
+    // dest[10] = -2 / fn;
+    // dest[11] = 0;
+    // dest[12] = -(left + right) / rl;
+    // dest[13] = -(top + bottom) / tb;
+    // dest[14] = -(far + near) / fn;
+    // dest[15] = 1;
 
-    //return dest;
-  //},
+    // return dest;
+  // },
 
   ortho (dest, left, right, top, bottom, near, far) {
     var te = this.elements,
@@ -829,7 +805,7 @@ generics = {
   }
 };
 
-//add generics and instance methods
+// add generics and instance methods
 proto = Mat4.prototype;
 for (method in generics) {
   Mat4[method] = generics[method];

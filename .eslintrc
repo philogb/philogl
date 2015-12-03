@@ -1,6 +1,8 @@
 {
   "parser": "babel-eslint",
   "rules": {
+    indent: [2, 2],
+    func-names: 0,
     // These overrides are intended to be removed as we transition syntax
     "react/no-unknown-property": 2,
     "react/no-did-mount-set-state": 1,

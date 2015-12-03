@@ -48,7 +48,11 @@
     "watchify": "^3.6.0"
   },
   "scripts": {
-    "start": "watchify --extension=js -o dist/main.js test/index.js src & http-server .",
+    "build": "browserify --extension=js -o build/PhiloGL.js test/index.js src .",
+    "build-minified": "",
+    "watch": "watchify -o build/PhiloGL.js src/index.js",
+    "server": "http-server . -p 3000",
+    "start": "npm run watch & npm run server",
     "test": "babel-node --ignore='' test/index.js"
   }
 }
