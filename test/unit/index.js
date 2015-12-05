@@ -1,6 +1,4 @@
-// import './stacktrace.js';
-// import './assert.js';
 
-// import './testmath.js';
+import './testmath.js';
 import './testcore.js';
-// import './testwebgl.js';
+import './testwebgl.js';
