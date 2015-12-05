@@ -1,7 +1,9 @@
-import PhiloGL from '../../src';
-import {assert} from 'assert';
+import {PhiloGL} from '../../src/core';
+import test from 'tape';
 
-assert(typeof PhiloGL === 'function');
+test('Core#function', t => {
+    t.ok(typeof PhiloGL === 'function');
+    t.end();
+})
 
-assert(window.hasOwnProperty('PhiloGL'));
-assert(typeof window.PhiloGL === 'function');
+
