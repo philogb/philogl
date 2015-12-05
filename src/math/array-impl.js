@@ -9,20 +9,6 @@ const tan = Math.tan;
 const pi = Math.PI;
 const slice = Array.prototype.slice;
 
-// create property descriptor
-function descriptor(index) {
-  return {
-    get() {
-      return this[index];
-    },
-    set(val) {
-      this[index] = val;
-    },
-    configurable: false,
-    enumerable: false
-  };
-}
-
 // Vec3 Class
 export class Vec3 extends Array {
   constructor(x = 0, y = 0, z = 0) {
@@ -272,7 +258,9 @@ export class Mat4 extends Array {
 
     super(16);
 
+    this.$$family = {value: 'Mat4'};
     this.length = 16;
+
 
     if (typeof n11 === 'number') {
 
@@ -285,42 +273,48 @@ export class Mat4 extends Array {
       this.id();
     }
 
-    this.typedContainer = new Array(16);
+    this.typedContainer = new Float32Array(16);
   };
 
   static create() {
     return new Array(16);
   }
+
+  get n11() {return this[0]}
+  get n12() {return this[4]}
+  get n13() {return this[8]}
+  get n14() {return this[12]}
+  get n21() {return this[1]}
+  get n22() {return this[5]}
+  get n23() {return this[9]}
+  get n24() {return this[13]}
+  get n31() {return this[2]}
+  get n32() {return this[6]}
+  get n33() {return this[10]}
+  get n34() {return this[14]}
+  get n41() {return this[3]}
+  get n42() {return this[7]}
+  get n43() {return this[11]}
+  get n44() {return this[15]}
+
+  set n11(val) {this[0] = val}
+  set n12(val) {this[4] = val}
+  set n13(val) {this[8] = val}
+  set n14(val) {this[12] = val}
+  set n21(val) {this[1] = val}
+  set n22(val) {this[5] = val}
+  set n23(val) {this[9] = val}
+  set n24(val) {this[13] = val}
+  set n31(val) {this[2] = val}
+  set n32(val) {this[6] = val}
+  set n33(val) {this[10] = val}
+  set n34(val) {this[14] = val}
+  set n41(val) {this[3] = val}
+  set n42(val) {this[7] = val}
+  set n43(val) {this[11] = val}
+  set n44(val) {this[15] = val}
+
 }
-
-// create fancy components setters and getters.
-Object.assign(Mat4.prototype, {
-
-  $$family: {
-    value: 'Mat4'
-  },
-
-  n11: descriptor(0),
-  n12: descriptor(4),
-  n13: descriptor(8),
-  n14: descriptor(12),
-
-  n21: descriptor(1),
-  n22: descriptor(5),
-  n23: descriptor(9),
-  n24: descriptor(13),
-
-  n31: descriptor(2),
-  n32: descriptor(6),
-  n33: descriptor(10),
-  n34: descriptor(14),
-
-  n41: descriptor(3),
-  n42: descriptor(7),
-  n43: descriptor(11),
-  n44: descriptor(15)
-
-});
 
 generics = {
 
@@ -358,9 +352,9 @@ generics = {
   },
 
   set(dest, n11, n12, n13, n14,
-                      n21, n22, n23, n24,
-                      n31, n32, n33, n34,
-                      n41, n42, n43, n44) {
+            n21, n22, n23, n24,
+            n31, n32, n33, n34,
+            n41, n42, n43, n44) {
 
     dest[0 ] = n11;
     dest[4 ] = n12;
@@ -737,31 +731,6 @@ generics = {
     return Mat4.frustum(dest, xmin, xmax, ymin, ymax, near, far);
   },
 
-  // ortho(dest, left, right, bottom, top, near, far) {
-    // var rl = right - left,
-        // tb = top - bottom,
-        // fn = far - near;
-
-    // dest[0] = 2 / rl;
-    // dest[1] = 0;
-    // dest[2] = 0;
-    // dest[3] = 0;
-    // dest[4] = 0;
-    // dest[5] = 2 / tb;
-    // dest[6] = 0;
-    // dest[7] = 0;
-    // dest[8] = 0;
-    // dest[9] = 0;
-    // dest[10] = -2 / fn;
-    // dest[11] = 0;
-    // dest[12] = -(left + right) / rl;
-    // dest[13] = -(top + bottom) / tb;
-    // dest[14] = -(far + near) / fn;
-    // dest[15] = 1;
-
-    // return dest;
-  // },
-
   ortho (dest, left, right, top, bottom, near, far) {
     var te = this.elements,
         w = right - left,
@@ -820,20 +789,19 @@ for (method in generics) {
 }
 
 // Quaternion class
-export class Quat {
+export class Quat extends Array {
   constructor(x, y, z, w) {
-    ArrayImpl.call(this, 4);
-
+    super(4);
     this[0] = x || 0;
     this[1] = y || 0;
     this[2] = z || 0;
     this[3] = w || 0;
 
-    this.typedContainer = new typedArray(4);
+    this.typedContainer = new Float32Array(4);
   }
 
   static create() {
-    return new typedArray(4);
+    return new Array(4);
   }
 
   static fromVec3(v, r) {

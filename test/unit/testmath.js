@@ -87,22 +87,21 @@ test('Mat4#set', t => {
         5, 6, 7, 8,
         9, 10, 11, 12,
         13, 14, 15, 16);
-
   t.equals(m[0], 1);
-  t.equals(m[1], 2);
-  t.equals(m[2], 3);
-  t.equals(m[3], 4);
-  t.equals(m[4], 5);
+  t.equals(m[1], 5);
+  t.equals(m[2], 9);
+  t.equals(m[3], 13);
+  t.equals(m[4], 2);
   t.equals(m[5], 6);
-  t.equals(m[6], 7);
-  t.equals(m[7], 8);
-  t.equals(m[8], 9);
-  t.equals(m[9], 10);
+  t.equals(m[6], 10);
+  t.equals(m[7], 14);
+  t.equals(m[8], 3);
+  t.equals(m[9], 7);
   t.equals(m[10], 11);
-  t.equals(m[11], 12);
-  t.equals(m[12], 13);
-  t.equals(m[13], 14);
-  t.equals(m[14], 15);
+  t.equals(m[11], 15);
+  t.equals(m[12], 4);
+  t.equals(m[13], 8);
+  t.equals(m[14], 12);
   t.equals(m[15], 16);
   t.end();
 });
@@ -177,23 +176,22 @@ test('Mat4.mulMat42', t => {
 
   const ans = new Mat4();
   ans.mulMat42(m1, m2);
-
-  t.ok(abs(ans.n11 - 276) < delta);
-  t.ok(abs(ans.n12 - 304) < delta);
-  t.ok(abs(ans.n13 - 332) < delta);
-  t.ok(abs(ans.n14 - 360) < delta);
-  t.ok(abs(ans.n21 - 304) < delta);
-  t.ok(abs(ans.n22 - 336) < delta);
-  t.ok(abs(ans.n23 - 368) < delta);
-  t.ok(abs(ans.n24 - 400) < delta);
-  t.ok(abs(ans.n31 - 332) < delta);
-  t.ok(abs(ans.n32 - 368) < delta);
-  t.ok(abs(ans.n33 - 404) < delta);
-  t.ok(abs(ans.n34 - 440) < delta);
-  t.ok(abs(ans.n41 - 360) < delta);
-  t.ok(abs(ans.n42 - 400) < delta);
-  t.ok(abs(ans.n43 - 440) < delta);
-  t.ok(abs(ans.n44 - 480) < delta);
+  t.ok(abs(ans.n11 - 30) < delta);
+  t.ok(abs(ans.n12 - 70) < delta);
+  t.ok(abs(ans.n13 - 110) < delta);
+  t.ok(abs(ans.n14 - 150) < delta);
+  t.ok(abs(ans.n21 - 70) < delta);
+  t.ok(abs(ans.n22 - 174) < delta);
+  t.ok(abs(ans.n23 - 278) < delta);
+  t.ok(abs(ans.n24 - 382) < delta);
+  t.ok(abs(ans.n31 - 110) < delta);
+  t.ok(abs(ans.n32 - 278) < delta);
+  t.ok(abs(ans.n33 - 446) < delta);
+  t.ok(abs(ans.n34 - 614) < delta);
+  t.ok(abs(ans.n41 - 150) < delta);
+  t.ok(abs(ans.n42 - 382) < delta);
+  t.ok(abs(ans.n43 - 614) < delta);
+  t.ok(abs(ans.n44 - 846) < delta);
   t.end();
 });
 
@@ -209,17 +207,16 @@ test('Mat4.rotateAxis', t => {
   v[2] /= len;
 
   const ans = m.rotateAxis(theta, v);
-
   t.ok(abs(ans.n11 - 0.7280277013778687) < delta);
-  t.ok(abs(ans.n12 - 0.6087886095046997) < delta);
-  t.ok(abs(ans.n13 - -0.31520164012908936) < delta);
+  t.ok(abs(ans.n12 - -0.525104820728302) < delta);
+  t.ok(abs(ans.n13 - 0.4407272934913635) < delta);
   t.ok(abs(ans.n14 - 0) < delta);
-  t.ok(abs(ans.n21 - -0.525104820728302) < delta);
+  t.ok(abs(ans.n21 - 0.6087885979157627) < delta);
   t.ok(abs(ans.n22 - 0.7907905578613281) < delta);
-  t.ok(abs(ans.n23 - 0.3145079016685486) < delta);
+  t.ok(abs(ans.n23 - -0.06345657259225845) < delta);
   t.ok(abs(ans.n24 - 0) < delta);
-  t.ok(abs(ans.n31 - 0.4407272934913635) < delta);
-  t.ok(abs(ans.n32 - -0.06345657259225845) < delta);
+  t.ok(abs(ans.n31 - -0.3152016404063445) < delta);
+  t.ok(abs(ans.n32 - 0.3145079017103789) < delta);
   t.ok(abs(ans.n33 - 0.8953952789306641) < delta);
   t.ok(abs(ans.n34 - 0) < delta);
   t.ok(abs(ans.n41 - 0) < delta);
@@ -286,18 +283,18 @@ test('Mat4.translate', t => {
   t.ok(abs(ans.n11 - 1) < delta);
   t.ok(abs(ans.n12 - 0) < delta);
   t.ok(abs(ans.n13 - 0) < delta);
-  t.ok(abs(ans.n14 - 0) < delta);
+  t.ok(abs(ans.n14 - 1) < delta);
   t.ok(abs(ans.n21 - 0) < delta);
   t.ok(abs(ans.n22 - 1) < delta);
   t.ok(abs(ans.n23 - 0) < delta);
-  t.ok(abs(ans.n24 - 0) < delta);
+  t.ok(abs(ans.n24 - 2) < delta);
   t.ok(abs(ans.n31 - 0) < delta);
   t.ok(abs(ans.n32 - 0) < delta);
   t.ok(abs(ans.n33 - 1) < delta);
-  t.ok(abs(ans.n34 - 0) < delta);
-  t.ok(abs(ans.n41 - 1) < delta);
-  t.ok(abs(ans.n42 - 2) < delta);
-  t.ok(abs(ans.n43 - 3) < delta);
+  t.ok(abs(ans.n34 - 3) < delta);
+  t.ok(abs(ans.n41 - 0) < delta);
+  t.ok(abs(ans.n42 - 0) < delta);
+  t.ok(abs(ans.n43 - 0) < delta);
   t.ok(abs(ans.n44 - 1) < delta);
   t.end();
 });
@@ -342,10 +339,10 @@ test('Mat4.invert', t => {
   t.ok(abs(ans.n31 - 0) < delta);
   t.ok(abs(ans.n32 - 0) < delta);
   t.ok(abs(ans.n33 - 0) < delta);
-  t.ok(abs(ans.n34 - -4.995) < delta);
+  t.ok(abs(ans.n34 - -1) < delta);
   t.ok(abs(ans.n41 - 0) < delta);
   t.ok(abs(ans.n42 - 0) < delta);
-  t.ok(abs(ans.n43 - -1) < delta);
+  t.ok(abs(ans.n43 - -4.995) < delta);
   t.ok(abs(ans.n44 - 5.005) < delta);
   t.end();
 });
