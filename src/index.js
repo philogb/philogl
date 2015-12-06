@@ -1,3 +1,9 @@
+try {
+    require('babel-polyfill');
+} catch (e) {
+    console.warn('Already have an instance of babel-polyfill.');
+}
+
 export * from './webgl';
 export * from './core';
 export * from './math';
@@ -9,6 +15,12 @@ export * from './objects';
 export {default as Shaders} from './shaders';
 export {default as Scene} from './scene';
 export * from './media';
+
+import {PhiloGL} from './core';
+
+if (typeof window !== 'undefined') {
+    window.PhiloGL = PhiloGL;
+}
 
 // PhiloGL 1.X compatibility
 // export O3D from './objects';

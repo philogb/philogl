@@ -1,6 +1,3 @@
-/* global window */
-var PhiloGL = require('../../src');
-
 window.webGLStart = function() {
   PhiloGL('lesson01-canvas', {
     program: {
@@ -8,8 +5,9 @@ window.webGLStart = function() {
       vs: 'shader-vs',
       fs: 'shader-fs'
     },
-    onError: function() {
+    onError: function(e) {
       alert("An error ocurred while loading the application");
+      console.log(e);
     },
     onLoad: function(app) {
       var gl = app.gl,
@@ -39,17 +37,18 @@ window.webGLStart = function() {
 
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       camera.view.id();
+
       //Draw Triangle
       camera.view.$translate(-1.5, 0, -7);
-      program.setUniform('uMVMatrix', camera.view);
-      program.setUniform('uPMatrix', camera.projection);
+      program.uniforms.uMVMatrix(camera.view);
+      program.uniforms.uPMatrix(camera.projection);
       program.setBuffer('triangle');
       gl.drawArrays(gl.TRIANGLES, 0, 3);
 
       //Draw Square
       camera.view.$translate(3, 0, 0);
-      program.setUniform('uMVMatrix', camera.view);
-      program.setUniform('uPMatrix', camera.projection);
+      program.uniforms.uMVMatrix(camera.view);
+      program.uniforms.uPMatrix(camera.projection);
       program.setBuffer('square');
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }

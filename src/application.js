@@ -1,9 +1,10 @@
 /* eslint-disable guard-for-in */
 import $ from './jquery-mini';
 
-class Application {
+export default class Application {
 
   constructor(options) {
+    this.$$family = 'application';
     // copy program, scene, camera, etc.
     for (var prop in options) {
       this[prop] = options[prop];
@@ -387,6 +388,3 @@ class Application {
   }
 }
 
-Object.assign(Application.prototype, {
-  $$family: 'application'
-});

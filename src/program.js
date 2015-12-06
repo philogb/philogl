@@ -2,6 +2,7 @@
 // Creates programs out of shaders and provides convenient methods for loading
 // buffers attributes and uniforms
 
+import $ from './jquery-mini';
 import {XHR} from './io';
 
 function getpath(path) {
@@ -255,25 +256,25 @@ export default class Program {
     }
     return {
       ...base,
-      opt
+      ...opt
     };
   }
 
   // Create a program from vertex and fragment shader node ids
   static async fromShaderIds() {
-    const opt = getOptions(arguments);
+    const opt = Program.getOptions(arguments);
     const vs = $(opt.vs);
     const fs = $(opt.fs);
     const vectexShader = await preprocessAsync(opt.path, vs.innerHTML);
     const fragmentShader = await preprocessAsync(opt.path, fs.innerHTML);
     const program = new Program(vectexShader, fragmentShader, opt);
-    opt.onSuccess(program);
+    opt.onSuccess(program, opt);
     return program;
   }
 
   // Create a program from vs and fs sources
   static async fromShaderSources() {
-    var opt = getOptions(arguments, {path: './'});
+    var opt = Program.getOptions(arguments, {path: './'});
     const vectexShader = await preprocessAsync(opt.path, opt.vs);
     const fragmentShader = await preprocessAsync(opt.path, opt.fs);
     try {

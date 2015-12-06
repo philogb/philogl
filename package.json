@@ -50,7 +50,7 @@
   "scripts": {
     "build": "browserify --extension=js -o build/PhiloGL.js test/index.js src .",
     "build-minified": "",
-    "watch": "watchify -o build/PhiloGL.js src/index.js",
+    "watch": "watchify -o build/PhiloGL.js src/index.js -v",
     "server": "http-server . -p 3000",
     "start": "npm run watch & npm run server",
     "test": "babel-node --ignore='' test/index.js"

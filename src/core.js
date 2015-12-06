@@ -15,7 +15,7 @@ import Scene from './scene';
 import Application from './application';
 import {loadTextures} from './io';
 import Program from './program';
-import Events from './event';
+import {Events} from './event';
 
 const DEFAULT_OPTS = {
   context: {
@@ -66,7 +66,7 @@ const globalContext = typeof window !== 'undefined' ? window : global;
 
 // Creates a single application object asynchronously
 // with a gl context, a camera, a program, a scene, and an event system.
-export function PhiloGL(canvasId, opt = {}) {
+export async function PhiloGL(canvasId, opt = {}) {
   opt = {
     ...DEFAULT_OPTS,
     ...opt
@@ -95,7 +95,7 @@ export function PhiloGL(canvasId, opt = {}) {
       count--;
       if (count === 0 && !error) {
         const program = programLength === 1 ? p : programs;
-        loadProgramDeps(gl, program, (app) => {
+        loadProgramDeps(gl, program, opt, (app) => {
           opt.onLoad(app);
         });
       }
@@ -107,15 +107,15 @@ export function PhiloGL(canvasId, opt = {}) {
     }
   };
 
-  optProgram.forEach((programOpts, i) => {
+  optProgram.forEach(async (programOpts, i) => {
     let pfrom = programOpts.from;
     let program;
     for (const p in popt) {
       if (pfrom === p) {
         try {
-          program = Program[popt[p]]({
+          program = await Program[popt[p]]({
             ...programCallback,
-            programOpts
+            ...programOpts
           });
         } catch (e) {
           programCallback.onError(e);
@@ -124,14 +124,13 @@ export function PhiloGL(canvasId, opt = {}) {
       }
     }
     if (program) {
-      programCallback.onSuccess(program, optProgram);
+      programCallback.onSuccess(program, optProgram); // Should this be programOpts instead of optProgram?
     }
   });
 
-  return app;
 }
 
-async function loadProgramDeps(gl, program, opt) {
+async function loadProgramDeps(gl, program, opt, callback) {
   const optCamera = opt.camera;
   const optEvents = opt.events;
   const optScene = opt.scene;
@@ -159,6 +158,8 @@ async function loadProgramDeps(gl, program, opt) {
     camera: camera
   });
 
+  globalContext.app = app;
+
   // Use program
   if (program.$$family === 'program') {
     program.use();
@@ -178,8 +179,7 @@ async function loadProgramDeps(gl, program, opt) {
     app.setTextures(textureMap);
   }
 
-  globalContext.app = app;
-  return app;
+  callback(app);
 }
 
 // Unpacks the submodules to the global space.

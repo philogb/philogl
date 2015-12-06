@@ -162,8 +162,8 @@ export class EventsProxy {
     const relative = opt.relative;
     const centerOrigin = opt.centerOrigin;
     const pos = opt.cachePosition && this.pos || getPos(domElem);
-    const ge = event.get(e, win);
-    const epos = event.getPos(e, win);
+    const ge = get(e, win);
+    const epos = getPos(e, win);
     const origPos = {x: epos[0].x, y: epos[0].y};
     const evt = {};
     let x;
@@ -188,14 +188,14 @@ export class EventsProxy {
 
     switch (type) {
     case 'mousewheel':
-      evt.wheel = event.getWheel(ge);
+      evt.wheel = getWheel(ge);
       break;
     case 'keydown':
     case 'keyup':
-      $.extend(evt, event.getKey(ge));
+      $.extend(evt, getKey(ge));
       break;
     case 'mouseup':
-      evt.isRightClick = event.isRightClick(ge);
+      evt.isRightClick = isRightClick(ge);
       break;
     default:
       break;
@@ -211,7 +211,7 @@ export class EventsProxy {
       cache: false,
       // stop event propagation
       stop() {
-        event.stop(ge);
+        stop(ge);
       },
       // get the target element of the event
       getTarget() {
