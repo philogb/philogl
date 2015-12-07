@@ -92,7 +92,7 @@ function webGLStart() {
               20, 21, 22, 20, 22, 23]
   });
 
-  PhiloGL('lesson04-canvas', {
+  PhiloGL.PhiloGL('lesson04-canvas', {
     program: {
       from: 'ids',
       vs: 'shader-vs',
@@ -134,8 +134,8 @@ function webGLStart() {
           }
         });
         //set uniforms
-        program.setUniform('uMVMatrix', view);
-        program.setUniform('uPMatrix', camera.projection);
+        program.uniforms.uMVMatrix(view);
+        program.uniforms.uPMatrix(camera.projection);
       }
 
       function animate() {
