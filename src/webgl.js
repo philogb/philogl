@@ -4,6 +4,7 @@
 import $ from './jquery-mini';
 
 export function getContext(canvas, opt) {
+  var gl = null;
   canvas = typeof canvas === 'string' ? $(canvas) : canvas;
   let ctx;
   ctx = canvas.getContext('experimental-webgl', opt);
