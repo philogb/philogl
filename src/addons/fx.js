@@ -1,8 +1,9 @@
 // Timer based animation
+import $ from '../jquery-mini';
 
 var Queue = [];
 
-export class Fx {
+export default class Fx {
   constructor(options = {}) {
     this.opt = $.merge({
       delay: 0,

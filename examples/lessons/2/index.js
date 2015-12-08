@@ -1,5 +1,5 @@
 function webGLStart() {
-  PhiloGL('lesson02-canvas', {
+  PhiloGL.PhiloGL('lesson02-canvas', {
     program: {
       from: 'ids',
       vs: 'shader-vs',
@@ -50,16 +50,16 @@ function webGLStart() {
       camera.view.id();
       //Draw Triangle
       camera.view.$translate(-1.5, 0, -7);
-      program.setUniform('uMVMatrix', camera.view);
-      program.setUniform('uPMatrix', camera.projection);
+      program.uniforms.uMVMatrix(camera.view);
+      program.uniforms.uPMatrix(camera.projection);
       program.setBuffer('triangle');
       program.setBuffer('triangleColors');
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       
       //Draw Square
       camera.view.$translate(3, 0, 0);
-      program.setUniform('uMVMatrix', camera.view);
-      program.setUniform('uPMatrix', camera.projection);
+      program.uniforms.uMVMatrix(camera.view);
+      program.uniforms.uPMatrix(camera.projection);
       program.setBuffer('square');
       program.setBuffer('squareColors');
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

@@ -17,9 +17,17 @@ export {default as Scene} from './scene';
 export * from './media';
 
 import {PhiloGL} from './core';
+import * as O3D from './objects';
+import * as math from './math';
+import Fx from './addons/fx';
 
 if (typeof window !== 'undefined') {
-    window.PhiloGL = PhiloGL;
+    window.PhiloGL = {
+        PhiloGL: PhiloGL,
+        O3D: O3D,
+        Mat4: math.Mat4,
+        Fx: Fx,
+    }
 }
 
 // PhiloGL 1.X compatibility

@@ -4504,6 +4504,223 @@ require('./modules/web.immediate');
 require('./modules/web.dom.iterable');
 module.exports = require('./modules/$.core');
 },{"./modules/$.core":18,"./modules/es5":87,"./modules/es6.array.copy-within":88,"./modules/es6.array.fill":89,"./modules/es6.array.find":91,"./modules/es6.array.find-index":90,"./modules/es6.array.from":92,"./modules/es6.array.iterator":93,"./modules/es6.array.of":94,"./modules/es6.array.species":95,"./modules/es6.function.has-instance":96,"./modules/es6.function.name":97,"./modules/es6.map":98,"./modules/es6.math.acosh":99,"./modules/es6.math.asinh":100,"./modules/es6.math.atanh":101,"./modules/es6.math.cbrt":102,"./modules/es6.math.clz32":103,"./modules/es6.math.cosh":104,"./modules/es6.math.expm1":105,"./modules/es6.math.fround":106,"./modules/es6.math.hypot":107,"./modules/es6.math.imul":108,"./modules/es6.math.log10":109,"./modules/es6.math.log1p":110,"./modules/es6.math.log2":111,"./modules/es6.math.sign":112,"./modules/es6.math.sinh":113,"./modules/es6.math.tanh":114,"./modules/es6.math.trunc":115,"./modules/es6.number.constructor":116,"./modules/es6.number.epsilon":117,"./modules/es6.number.is-finite":118,"./modules/es6.number.is-integer":119,"./modules/es6.number.is-nan":120,"./modules/es6.number.is-safe-integer":121,"./modules/es6.number.max-safe-integer":122,"./modules/es6.number.min-safe-integer":123,"./modules/es6.number.parse-float":124,"./modules/es6.number.parse-int":125,"./modules/es6.object.assign":126,"./modules/es6.object.freeze":127,"./modules/es6.object.get-own-property-descriptor":128,"./modules/es6.object.get-own-property-names":129,"./modules/es6.object.get-prototype-of":130,"./modules/es6.object.is":134,"./modules/es6.object.is-extensible":131,"./modules/es6.object.is-frozen":132,"./modules/es6.object.is-sealed":133,"./modules/es6.object.keys":135,"./modules/es6.object.prevent-extensions":136,"./modules/es6.object.seal":137,"./modules/es6.object.set-prototype-of":138,"./modules/es6.object.to-string":139,"./modules/es6.promise":140,"./modules/es6.reflect.apply":141,"./modules/es6.reflect.construct":142,"./modules/es6.reflect.define-property":143,"./modules/es6.reflect.delete-property":144,"./modules/es6.reflect.enumerate":145,"./modules/es6.reflect.get":148,"./modules/es6.reflect.get-own-property-descriptor":146,"./modules/es6.reflect.get-prototype-of":147,"./modules/es6.reflect.has":149,"./modules/es6.reflect.is-extensible":150,"./modules/es6.reflect.own-keys":151,"./modules/es6.reflect.prevent-extensions":152,"./modules/es6.reflect.set":154,"./modules/es6.reflect.set-prototype-of":153,"./modules/es6.regexp.constructor":155,"./modules/es6.regexp.flags":156,"./modules/es6.regexp.match":157,"./modules/es6.regexp.replace":158,"./modules/es6.regexp.search":159,"./modules/es6.regexp.split":160,"./modules/es6.set":161,"./modules/es6.string.code-point-at":162,"./modules/es6.string.ends-with":163,"./modules/es6.string.from-code-point":164,"./modules/es6.string.includes":165,"./modules/es6.string.iterator":166,"./modules/es6.string.raw":167,"./modules/es6.string.repeat":168,"./modules/es6.string.starts-with":169,"./modules/es6.string.trim":170,"./modules/es6.symbol":171,"./modules/es6.weak-map":172,"./modules/es6.weak-set":173,"./modules/es7.array.includes":174,"./modules/es7.map.to-json":175,"./modules/es7.object.entries":176,"./modules/es7.object.get-own-property-descriptors":177,"./modules/es7.object.values":178,"./modules/es7.regexp.escape":179,"./modules/es7.set.to-json":180,"./modules/es7.string.at":181,"./modules/es7.string.pad-left":182,"./modules/es7.string.pad-right":183,"./modules/es7.string.trim-left":184,"./modules/es7.string.trim-right":185,"./modules/js.array.statics":186,"./modules/web.dom.iterable":187,"./modules/web.immediate":188,"./modules/web.timers":189}],191:[function(require,module,exports){
+// Timer based animation
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _jqueryMini = require('../jquery-mini');
+
+var _jqueryMini2 = _interopRequireDefault(_jqueryMini);
+
+var Queue = [];
+
+var Fx = (function () {
+  function Fx() {
+    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+    _classCallCheck(this, Fx);
+
+    this.opt = _jqueryMini2['default'].merge({
+      delay: 0,
+      duration: 1000,
+      transition: function transition(x) {
+        return x;
+      },
+      onCompute: _jqueryMini2['default'].empty,
+      onComplete: _jqueryMini2['default'].empty
+    }, options);
+  }
+
+  _createClass(Fx, [{
+    key: 'start',
+    value: function start(options) {
+      this.opt = _jqueryMini2['default'].merge(this.opt, options || {});
+      this.time = _jqueryMini2['default'].time();
+      this.animating = true;
+      Queue.push(this);
+    }
+
+    //perform a step in the animation
+  }, {
+    key: 'step',
+    value: function step() {
+      //if not animating, then return
+      if (!this.animating) return;
+      var currentTime = _jqueryMini2['default'].time(),
+          time = this.time,
+          opt = this.opt,
+          delay = opt.delay,
+          duration = opt.duration,
+          delta = 0;
+      //hold animation for the delay
+      if (currentTime < time + delay) {
+        opt.onCompute.call(this, delta);
+        return;
+      }
+      //if in our time window, then execute animation
+      if (currentTime < time + delay + duration) {
+        delta = opt.transition((currentTime - time - delay) / duration);
+        opt.onCompute.call(this, delta);
+      } else {
+        this.animating = false;
+        opt.onCompute.call(this, 1);
+        opt.onComplete.call(this);
+      }
+    }
+  }], [{
+    key: 'compute',
+    value: function compute(from, to, delta) {
+      return from + (to - from) * delta;
+    }
+  }]);
+
+  return Fx;
+})();
+
+exports['default'] = Fx;
+
+Fx.Queue = Queue;
+
+//Easing equations
+Fx.Transition = {
+  linear: function linear(p) {
+    return p;
+  }
+};
+
+var Trans = Fx.Transition;
+
+Fx.prototype.time = null;
+
+function makeTrans(transition, params) {
+  params = _jqueryMini2['default'].splat(params);
+  return _jqueryMini2['default'].extend(transition, {
+    easeIn: function easeIn(pos) {
+      return transition(pos, params);
+    },
+    easeOut: function easeOut(pos) {
+      return 1 - transition(1 - pos, params);
+    },
+    easeInOut: function easeInOut(pos) {
+      return pos <= 0.5 ? transition(2 * pos, params) / 2 : (2 - transition(2 * (1 - pos), params)) / 2;
+    }
+  });
+};
+
+var transitions = {
+
+  Pow: function Pow(p, x) {
+    return Math.pow(p, x[0] || 6);
+  },
+
+  Expo: function Expo(p) {
+    return Math.pow(2, 8 * (p - 1));
+  },
+
+  Circ: function Circ(p) {
+    return 1 - Math.sin(Math.acos(p));
+  },
+
+  Sine: function Sine(p) {
+    return 1 - Math.sin((1 - p) * Math.PI / 2);
+  },
+
+  Back: function Back(p, x) {
+    x = x[0] || 1.618;
+    return Math.pow(p, 2) * ((x + 1) * p - x);
+  },
+
+  Bounce: function Bounce(p) {
+    var value;
+    for (var a = 0, b = 1; 1; a += b, b /= 2) {
+      if (p >= (7 - 4 * a) / 11) {
+        value = b * b - Math.pow((11 - 6 * a - 11 * p) / 4, 2);
+        break;
+      }
+    }
+    return value;
+  },
+
+  Elastic: function Elastic(p, x) {
+    return Math.pow(2, 10 * --p) * Math.cos(20 * p * Math.PI * (x[0] || 1) / 3);
+  }
+
+};
+
+for (var t in transitions) {
+  Trans[t] = makeTrans(transitions[t]);
+}
+
+['Quad', 'Cubic', 'Quart', 'Quint'].forEach(function (elem, i) {
+  Trans[elem] = makeTrans(function (p) {
+    return Math.pow(p, [i + 2]);
+  });
+});
+
+//animationTime - function branching
+var global = self || window,
+    checkFxQueue = function checkFxQueue() {
+  var oldQueue = Queue;
+  Queue = [];
+  if (oldQueue.length) {
+    for (var i = 0, l = oldQueue.length, fx; i < l; i++) {
+      fx = oldQueue[i];
+      fx.step();
+      if (fx.animating) {
+        Queue.push(fx);
+      }
+    }
+    Fx.Queue = Queue;
+  }
+};
+
+if (global) {
+  var found = false;
+  ['webkitAnimationTime', 'mozAnimationTime', 'animationTime', 'webkitAnimationStartTime', 'mozAnimationStartTime', 'animationStartTime'].forEach(function (impl) {
+    if (impl in global) {
+      Fx.animationTime = function () {
+        return global[impl];
+      };
+      found = true;
+    }
+  });
+  if (!found) {
+    Fx.animationTime = _jqueryMini2['default'].time;
+  }
+  //requestAnimationFrame - function branching
+  found = false;
+  ['webkitRequestAnimationFrame', 'mozRequestAnimationFrame', 'requestAnimationFrame'].forEach(function (impl) {
+    if (impl in global) {
+      Fx.requestAnimationFrame = function (callback) {
+        global[impl](function () {
+          checkFxQueue();
+          callback();
+        });
+      };
+      found = true;
+    }
+  });
+  if (!found) {
+    Fx.requestAnimationFrame = function (callback) {
+      setTimeout(function () {
+        checkFxQueue();
+        callback();
+      }, 1000 / 60);
+    };
+  }
+}
+module.exports = exports['default'];
+
+},{"../jquery-mini":198}],192:[function(require,module,exports){
 /* eslint-disable guard-for-in */
 'use strict';
 
@@ -4901,7 +5118,7 @@ var Application = (function () {
 exports['default'] = Application;
 module.exports = exports['default'];
 
-},{"./jquery-mini":197}],192:[function(require,module,exports){
+},{"./jquery-mini":198}],193:[function(require,module,exports){
 // camera.js
 // Provides a Camera with ModelView and Projection matrices
 
@@ -4986,7 +5203,7 @@ var Camera = (function () {
 exports['default'] = Camera;
 module.exports = exports['default'];
 
-},{"./math":199}],193:[function(require,module,exports){
+},{"./math":200}],194:[function(require,module,exports){
 (function (global){
 // core.js
 // Provides general utility methods, module unpacking methods
@@ -5090,113 +5307,102 @@ var globalContext = typeof window !== 'undefined' ? window : global;
 // with a gl context, a camera, a program, a scene, and an event system.
 
 function PhiloGL(canvasId) {
+  var _this = this;
+
   var opt = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-  var optContext, optProgram, gl, programLength, count, programs, error, programCallback;
-  return regeneratorRuntime.async(function PhiloGL$(context$1$0) {
-    var _this = this;
 
-    while (1) switch (context$1$0.prev = context$1$0.next) {
-      case 0:
-        opt = _extends({}, DEFAULT_OPTS, opt);
+  opt = _extends({}, DEFAULT_OPTS, opt);
 
-        optContext = opt.context;
-        optProgram = _jqueryMini2['default'].splat(opt.program);
-        gl = (0, _webgl.getContext)(canvasId, optContext);
+  var optContext = opt.context;
+  var optProgram = _jqueryMini2['default'].splat(opt.program);
 
-        globalContext.gl = gl;
+  // get Context global to all framework
+  var gl = (0, _webgl.getContext)(canvasId, optContext);
+  globalContext.gl = gl;
 
-        if (gl) {
-          context$1$0.next = 8;
-          break;
-        }
+  if (!gl) {
+    opt.onError('The WebGL context couldn\'t be initialized');
+    return null;
+  }
 
-        opt.onError('The WebGL context couldn\'t be initialized');
-        return context$1$0.abrupt('return', null);
+  var programLength = optProgram.length;
 
-      case 8:
-        programLength = optProgram.length;
-        count = programLength;
-        programs = {};
-        error = false;
-        programCallback = {
-          onSuccess: function onSuccess(p, popt) {
-            programs[popt.id || programLength - count] = p;
-            count--;
-            if (count === 0 && !error) {
-              var program = programLength === 1 ? p : programs;
-              loadProgramDeps(gl, program, opt, function (app) {
-                opt.onLoad(app);
-              });
-            }
-          },
-          onError: function onError(p) {
-            count--;
-            opt.onError(p);
-            error = true;
-          }
-        };
-
-        optProgram.forEach(function callee$1$0(programOpts, i) {
-          var pfrom, program, p;
-          return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
-            while (1) switch (context$2$0.prev = context$2$0.next) {
-              case 0:
-                pfrom = programOpts.from;
-                program = undefined;
-                context$2$0.t0 = regeneratorRuntime.keys(popt);
-
-              case 3:
-                if ((context$2$0.t1 = context$2$0.t0()).done) {
-                  context$2$0.next = 18;
-                  break;
-                }
-
-                p = context$2$0.t1.value;
-
-                if (!(pfrom === p)) {
-                  context$2$0.next = 16;
-                  break;
-                }
-
-                context$2$0.prev = 6;
-                context$2$0.next = 9;
-                return regeneratorRuntime.awrap(_program2['default'][popt[p]](_extends({}, programCallback, programOpts)));
-
-              case 9:
-                program = context$2$0.sent;
-                context$2$0.next = 15;
-                break;
-
-              case 12:
-                context$2$0.prev = 12;
-                context$2$0.t2 = context$2$0['catch'](6);
-
-                programCallback.onError(context$2$0.t2);
-
-              case 15:
-                return context$2$0.abrupt('break', 18);
-
-              case 16:
-                context$2$0.next = 3;
-                break;
-
-              case 18:
-                if (program) {
-                  programCallback.onSuccess(program, optProgram); // Should this be programOpts instead of optProgram?
-                }
-
-              case 19:
-              case 'end':
-                return context$2$0.stop();
-            }
-          }, null, _this, [[6, 12]]);
+  var count = programLength;
+  var programs = {};
+  var error = false;
+  var programCallback = {
+    onSuccess: function onSuccess(p, popt) {
+      programs[popt.id || programLength - count] = p;
+      count--;
+      if (count === 0 && !error) {
+        var program = programLength === 1 ? p : programs;
+        loadProgramDeps(gl, program, opt, function (app) {
+          opt.onLoad(app);
         });
-
-      case 14:
-      case 'end':
-        return context$1$0.stop();
+      }
+    },
+    onError: function onError(p) {
+      count--;
+      opt.onError(p);
+      error = true;
     }
-  }, null, this);
+  };
+
+  optProgram.forEach(function callee$1$0(programOpts, i) {
+    var pfrom, program, p;
+    return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
+      while (1) switch (context$2$0.prev = context$2$0.next) {
+        case 0:
+          pfrom = programOpts.from;
+          program = undefined;
+          context$2$0.t0 = regeneratorRuntime.keys(popt);
+
+        case 3:
+          if ((context$2$0.t1 = context$2$0.t0()).done) {
+            context$2$0.next = 18;
+            break;
+          }
+
+          p = context$2$0.t1.value;
+
+          if (!(pfrom === p)) {
+            context$2$0.next = 16;
+            break;
+          }
+
+          context$2$0.prev = 6;
+          context$2$0.next = 9;
+          return regeneratorRuntime.awrap(_program2['default'][popt[p]](_extends({}, programCallback, programOpts)));
+
+        case 9:
+          program = context$2$0.sent;
+          context$2$0.next = 15;
+          break;
+
+        case 12:
+          context$2$0.prev = 12;
+          context$2$0.t2 = context$2$0['catch'](6);
+
+          programCallback.onError(context$2$0.t2);
+
+        case 15:
+          return context$2$0.abrupt('break', 18);
+
+        case 16:
+          context$2$0.next = 3;
+          break;
+
+        case 18:
+          if (program) {
+            programCallback.onSuccess(program, optProgram); // Should this be programOpts instead of optProgram?
+          }
+
+        case 19:
+        case 'end':
+          return context$2$0.stop();
+      }
+    }, null, _this, [[6, 12]]);
+  });
 }
 
 function loadProgramDeps(gl, program, opt, callback) {
@@ -5278,14 +5484,12 @@ function unpack(branch) {
 var version = '1.5.2';
 exports.version = version;
 
-// get Context global to all framework
-
 // get Camera
 
 // make app instance global to all framework
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./application":191,"./camera":192,"./event":194,"./io":196,"./jquery-mini":197,"./program":210,"./scene":211,"./webgl":213}],194:[function(require,module,exports){
+},{"./application":192,"./camera":193,"./event":195,"./io":197,"./jquery-mini":198,"./program":211,"./scene":212,"./webgl":214}],195:[function(require,module,exports){
 // event.js
 // Handle keyboard/mouse/touch events in the Canvas
 // TODO - this will not work under node
@@ -5782,7 +5986,7 @@ function keyOf(code) {
   }
 }
 
-},{"./jquery-mini":197}],195:[function(require,module,exports){
+},{"./jquery-mini":198}],196:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -5795,7 +5999,23 @@ function _interopExportWildcard(obj, defaults) { var newObj = defaults({}, obj);
 
 function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
 var _core = require('./core');
+
+var _objects = require('./objects');
+
+var O3D = _interopRequireWildcard(_objects);
+
+var _math = require('./math');
+
+var math = _interopRequireWildcard(_math);
+
+var _addonsFx = require('./addons/fx');
+
+var _addonsFx2 = _interopRequireDefault(_addonsFx);
 
 try {
     require('babel-polyfill');
@@ -5808,8 +6028,6 @@ var _webgl = require('./webgl');
 _defaults(exports, _interopExportWildcard(_webgl, _defaults));
 
 _defaults(exports, _interopExportWildcard(_core, _defaults));
-
-var _math = require('./math');
 
 _defaults(exports, _interopExportWildcard(_math, _defaults));
 
@@ -5829,8 +6047,6 @@ var _camera = require('./camera');
 
 exports.Camera = _interopRequire(_camera);
 
-var _objects = require('./objects');
-
 _defaults(exports, _interopExportWildcard(_objects, _defaults));
 
 var _shaders = require('./shaders');
@@ -5846,7 +6062,12 @@ var _media = require('./media');
 _defaults(exports, _interopExportWildcard(_media, _defaults));
 
 if (typeof window !== 'undefined') {
-    window.PhiloGL = _core.PhiloGL;
+    window.PhiloGL = {
+        PhiloGL: _core.PhiloGL,
+        O3D: O3D,
+        Mat4: math.Mat4,
+        Fx: _addonsFx2['default']
+    };
 }
 
 // PhiloGL 1.X compatibility
@@ -5854,7 +6075,7 @@ if (typeof window !== 'undefined') {
 // export IO from './io';
 // export Media from './media';
 
-},{"./camera":192,"./core":193,"./event":194,"./io":196,"./math":199,"./media":200,"./objects":205,"./program":210,"./scene":211,"./shaders":212,"./webgl":213,"babel-polyfill":1}],196:[function(require,module,exports){
+},{"./addons/fx":191,"./camera":193,"./core":194,"./event":195,"./io":197,"./math":200,"./media":201,"./objects":206,"./program":211,"./scene":212,"./shaders":213,"./webgl":214,"babel-polyfill":1}],197:[function(require,module,exports){
 // io.js
 // Provides loading of assets with XHR and JSONP methods.
 /* eslint-disable guard-for-in */
@@ -5871,8 +6092,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 exports.JSONP = JSONP;
-exports.Images = Images;
-exports.Textures = Textures;
+exports.loadTextures = loadTextures;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -6191,84 +6411,210 @@ function JSONP(opt) {
 JSONP.counter = 0;
 JSONP.requests = {};
 
-// Load multiple Image assets async
-
-function Images(opt) {
-  opt = _jqueryMini2['default'].merge({
-    src: [],
-    noCache: false,
-    onProgress: _jqueryMini2['default'].empty,
-    onComplete: _jqueryMini2['default'].empty
-  }, opt || {});
-
-  var count = 0;
-  var l = opt.src.length;
-
-  var images = undefined;
-  // Image onload handler
-  var load = function load() {
-    opt.onProgress(Math.round(++count / l * 100));
-    if (count === l) {
-      opt.onComplete(images);
-    }
-  };
-  // Image error handler
-  var error = function error() {
-    if (++count === l) {
-      opt.onComplete(images);
-    }
-  };
-
-  // uid for image sources
-  var noCache = opt.noCache;
-  var uid = _jqueryMini2['default'].uid();
-  function getSuffix(s) {
-    return (s.indexOf('?') >= 0 ? '&' : '?') + uid;
-  }
-
-  // Create image array
-  images = opt.src.map(function (src, i) {
-    var img = new _media2['default']();
-    img.index = i;
-    img.onload = load;
-    img.onerror = error;
-    img.src = src + (noCache ? getSuffix(src) : '');
-    return img;
+// Creates an image-loading promise.
+function loadImage(src) {
+  return new Promise(function (resolve, reject) {
+    var image = new Image();
+    image.onload = function () {
+      resolve(image);
+    };
+    image.onerror = function () {
+      reject(new Error('Could not load image ' + src + '.'));
+    };
+    image.src = src;
   });
-
-  return images;
 }
+
+// Load multiple images async.
+// rye: TODO this needs to implement functionality from the
+//           original Images function.
+function loadImages(srcs) {
+  var images, results, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, image;
+
+  return regeneratorRuntime.async(function loadImages$(context$1$0) {
+    while (1) switch (context$1$0.prev = context$1$0.next) {
+      case 0:
+        images = srcs.map(function (src) {
+          return loadImage(src);
+        });
+        results = [];
+        _iteratorNormalCompletion = true;
+        _didIteratorError = false;
+        _iteratorError = undefined;
+        context$1$0.prev = 5;
+        _iterator = images[Symbol.iterator]();
+
+      case 7:
+        if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+          context$1$0.next = 17;
+          break;
+        }
+
+        image = _step.value;
+        context$1$0.t0 = results;
+        context$1$0.next = 12;
+        return regeneratorRuntime.awrap(image);
+
+      case 12:
+        context$1$0.t1 = context$1$0.sent;
+        context$1$0.t0.push.call(context$1$0.t0, context$1$0.t1);
+
+      case 14:
+        _iteratorNormalCompletion = true;
+        context$1$0.next = 7;
+        break;
+
+      case 17:
+        context$1$0.next = 23;
+        break;
+
+      case 19:
+        context$1$0.prev = 19;
+        context$1$0.t2 = context$1$0['catch'](5);
+        _didIteratorError = true;
+        _iteratorError = context$1$0.t2;
+
+      case 23:
+        context$1$0.prev = 23;
+        context$1$0.prev = 24;
+
+        if (!_iteratorNormalCompletion && _iterator['return']) {
+          _iterator['return']();
+        }
+
+      case 26:
+        context$1$0.prev = 26;
+
+        if (!_didIteratorError) {
+          context$1$0.next = 29;
+          break;
+        }
+
+        throw _iteratorError;
+
+      case 29:
+        return context$1$0.finish(26);
+
+      case 30:
+        return context$1$0.finish(23);
+
+      case 31:
+        return context$1$0.abrupt('return', results);
+
+      case 32:
+      case 'end':
+        return context$1$0.stop();
+    }
+  }, null, this, [[5, 19, 23, 31], [24,, 26, 30]]);
+}
+
+// // Load multiple Image assets async
+// export function Images(opt) {
+//   opt = $.merge({
+//     src: [],
+//     noCache: false,
+//     onProgress: $.empty,
+//     onComplete: $.empty
+//   }, opt || {});
+//
+//   let count = 0;
+//   let l = opt.src.length;
+//
+//   let images;
+//   // Image onload handler
+//   var load = () => {
+//     opt.onProgress(Math.round(++count / l * 100));
+//     if (count === l) {
+//       opt.onComplete(images);
+//     }
+//   };
+//   // Image error handler
+//   var error = () => {
+//     if (++count === l) {
+//       opt.onComplete(images);
+//     }
+//   };
+//
+//   // uid for image sources
+//   const noCache = opt.noCache;
+//   const uid = $.uid();
+//   function getSuffix(s) {
+//     return (s.indexOf('?') >= 0 ? '&' : '?') + uid;
+//   }
+//
+//   // Create image array
+//   images = opt.src.map((src, i) => {
+//     const img = new Image();
+//     img.index = i;
+//     img.onload = load;
+//     img.onerror = error;
+//     img.src = src + (noCache ? getSuffix(src) : '');
+//     return img;
+//   });
+//
+//   return images;
+// }
 
 // Load multiple textures from images
+// rye: TODO this needs to implement functionality from
+//           the original loadTextures function.
 
-function Textures() {
-  var opt = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+function loadTextures(opt) {
+  var images, textures;
+  return regeneratorRuntime.async(function loadTextures$(context$1$0) {
+    while (1) switch (context$1$0.prev = context$1$0.next) {
+      case 0:
+        context$1$0.next = 2;
+        return regeneratorRuntime.awrap(loadImages(opt.src));
 
-  opt = _extends({
-    src: [],
-    noCache: false,
-    onComplete: _jqueryMini2['default'].empty
-  }, opt);
+      case 2:
+        images = context$1$0.sent;
+        textures = {};
 
-  Images({
-    src: opt.src,
-    noCache: opt.noCache,
-    onComplete: function onComplete(images) {
-      var textures = {};
-      images.forEach(function (img, i) {
-        textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = _jqueryMini2['default'].merge({
-          data: {
-            value: img
-          }
-        }, opt);
-      });
-      app.setTextures(textures);
-      opt.onComplete();
+        images.forEach(function (img, i) {
+          textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = _jqueryMini2['default'].merge({
+            data: {
+              value: img
+            }
+          }, opt);
+        });
+        app.setTextures(textures);
+
+      case 6:
+      case 'end':
+        return context$1$0.stop();
     }
-  });
+  }, null, this);
 }
 
-},{"./jquery-mini":197,"./media":200}],197:[function(require,module,exports){
+// // Load multiple textures from images
+// export function loadTextures(opt = {}) {
+//   opt = {
+//     src: [],
+//     noCache: false,
+//     onComplete: $.empty,
+//     ...opt
+//   };
+//
+//   Images({
+//     src: opt.src,
+//     noCache: opt.noCache,
+//     onComplete(images) {
+//       var textures = {};
+//       images.forEach((img, i) => {
+//         textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = $.merge({
+//           data: {
+//             value: img
+//           }
+//         }, opt);
+//       });
+//       app.setTextures(textures);
+//       opt.onComplete();
+//     }
+//   });
+// }
+
+},{"./jquery-mini":198,"./media":201}],198:[function(require,module,exports){
 // Utility functions
 
 'use strict';
@@ -6366,7 +6712,7 @@ $.splat = (function () {
 })();
 module.exports = exports['default'];
 
-},{}],198:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 // math.js
 // Vec3, Mat4 and Quat classes
 /* eslint-disable computed-property-spacing */
@@ -7643,7 +7989,7 @@ Mat4.fromQuat = function (q) {
   return new Mat4(a * a + b * b - c * c - d * d, 2 * b * c - 2 * a * d, 2 * b * d + 2 * a * c, 0, 2 * b * c + 2 * a * d, a * a - b * b + c * c - d * d, 2 * c * d - 2 * a * b, 0, 2 * b * d - 2 * a * c, 2 * c * d + 2 * a * b, a * a - b * b - c * c + d * d, 0, 0, 0, 0, 1);
 };
 
-},{}],199:[function(require,module,exports){
+},{}],200:[function(require,module,exports){
 // export {default as Vec3} from './vec3';
 // export {default as Mat4} from './mat4';
 // export {default as Quat} from './quat';
@@ -7661,7 +8007,7 @@ var _arrayImpl = require('./array-impl');
 
 _defaults(exports, _interopExportWildcard(_arrayImpl, _defaults));
 
-},{"./array-impl":198}],200:[function(require,module,exports){
+},{"./array-impl":199}],201:[function(require,module,exports){
 // media.js
 // media has utility functions for image, video and audio manipulation (and
 // maybe others like device, etc).
@@ -7693,12 +8039,15 @@ var plane = new _objects.Plane({ type: 'x,y', xlen: length, ylen: length, offset
 var camera = new _camera2['default'](45, 1, 0.1, 500, { position: { x: 0, y: 0, z: 0.2 } });
 var scene = new _scene2['default']({}, camera);
 
-var Image = (function () {
-  function Image() {
-    _classCallCheck(this, Image);
+// rye: temporarily renaming this Img until we decide on a name that doesn't shadow
+//      the builtin Image class.
+
+var Img = (function () {
+  function Img() {
+    _classCallCheck(this, Img);
   }
 
-  _createClass(Image, null, [{
+  _createClass(Img, null, [{
     key: 'postProcess',
 
     // post process an image by setting it to a texture with a specified fragment
@@ -7765,13 +8114,13 @@ var Image = (function () {
     }
   }]);
 
-  return Image;
+  return Img;
 })();
 
-exports['default'] = Image;
+exports['default'] = Img;
 module.exports = exports['default'];
 
-},{"./camera":192,"./objects":205,"./scene":211}],201:[function(require,module,exports){
+},{"./camera":193,"./objects":206,"./scene":212}],202:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -7814,7 +8163,7 @@ var Cone = (function (_TruncatedCone) {
 exports['default'] = Cone;
 module.exports = exports['default'];
 
-},{"./truncated-cone":209}],202:[function(require,module,exports){
+},{"./truncated-cone":210}],203:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -7892,7 +8241,7 @@ var Cube = (function (_Model) {
 exports['default'] = Cube;
 module.exports = exports['default'];
 
-},{"./model":206}],203:[function(require,module,exports){
+},{"./model":207}],204:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -7933,7 +8282,7 @@ var Cylinder = (function (_TruncatedCone) {
 exports['default'] = Cylinder;
 module.exports = exports['default'];
 
-},{"./truncated-cone":209}],204:[function(require,module,exports){
+},{"./truncated-cone":210}],205:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -8127,7 +8476,7 @@ var IcoSphere = (function (_Model) {
 exports['default'] = IcoSphere;
 module.exports = exports['default'];
 
-},{"./model":206}],205:[function(require,module,exports){
+},{"./model":207}],206:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -8175,7 +8524,7 @@ exports.TruncatedCone = _interopRequire(_cone);
 var id = _jqueryMini2['default'].time();
 exports.id = id;
 
-},{"../jquery-mini":197,"./cone":201,"./cube":202,"./cylinder":203,"./ico-sphere":204,"./model":206,"./plane":207,"./sphere":208}],206:[function(require,module,exports){
+},{"../jquery-mini":198,"./cone":202,"./cube":203,"./cylinder":204,"./ico-sphere":205,"./model":207,"./plane":208,"./sphere":209}],207:[function(require,module,exports){
 // o3d.js
 // Scene Objects
 /* eslint-disable guard-for-in */
@@ -8743,7 +9092,7 @@ var Model = (function () {
 exports['default'] = Model;
 module.exports = exports['default'];
 
-},{"../jquery-mini":197,"../math":199,"../scene":211}],207:[function(require,module,exports){
+},{"../jquery-mini":198,"../math":200,"../scene":212}],208:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -8911,7 +9260,7 @@ var Plane = (function (_Model) {
 exports['default'] = Plane;
 module.exports = exports['default'];
 
-},{"./model":206}],208:[function(require,module,exports){
+},{"./model":207}],209:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -9028,7 +9377,7 @@ var Sphere = (function (_Model) {
 exports['default'] = Sphere;
 module.exports = exports['default'];
 
-},{"./model":206}],209:[function(require,module,exports){
+},{"./model":207}],210:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -9150,7 +9499,7 @@ var TruncatedCone = (function (_Model) {
 exports['default'] = TruncatedCone;
 module.exports = exports['default'];
 
-},{"./model":206}],210:[function(require,module,exports){
+},{"./model":207}],211:[function(require,module,exports){
 // program.js
 // Creates programs out of shaders and provides convenient methods for loading
 // buffers attributes and uniforms
@@ -9615,7 +9964,7 @@ Object.assign(Program.prototype, {
 });
 module.exports = exports['default'];
 
-},{"./io":196,"./jquery-mini":197}],211:[function(require,module,exports){
+},{"./io":197,"./jquery-mini":198}],212:[function(require,module,exports){
 // scene.js
 // Scene Object management and rendering
 
@@ -10106,7 +10455,7 @@ Scene.MAX_POINT_LIGHTS = 4;
 Scene.PICKING_RES = 4;
 module.exports = exports['default'];
 
-},{"./jquery-mini":197,"./math":199}],212:[function(require,module,exports){
+},{"./jquery-mini":198,"./math":200}],213:[function(require,module,exports){
 // shaders.js
 // Default Shaders
 
@@ -10127,7 +10476,7 @@ Shaders.Fragment.Default = "\n\n#ifdef GL_ES\nprecision highp float;\n#endif\n\n
 exports["default"] = Shaders;
 module.exports = exports["default"];
 
-},{}],213:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 // webgl.js
 // Checks if WebGL is enabled and creates a context for using WebGL.
 /* global window */
@@ -10218,4 +10567,4 @@ function hasExtension(name) {
   return context.getExtension(name);
 }
 
-},{"./jquery-mini":197}]},{},[195]);
+},{"./jquery-mini":198}]},{},[196]);

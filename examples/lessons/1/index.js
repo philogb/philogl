@@ -1,5 +1,5 @@
 window.webGLStart = function() {
-  PhiloGL('lesson01-canvas', {
+  PhiloGL.PhiloGL('lesson01-canvas', {
     program: {
       from: 'ids',
       vs: 'shader-vs',
