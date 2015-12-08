@@ -4,6 +4,7 @@
 
 import $ from './jquery-mini';
 import {XHR} from './io';
+import Shaders from './shaders';
 
 function getpath(path) {
   var last = path.lastIndexOf('/');
@@ -243,6 +244,24 @@ export default class Program {
     this.uniforms = uniforms;
   }
 
+  // rye: TODO- This is a temporary measure to get things working
+  //            until we decide on how to manage uniforms.
+  setUniform(name, value) {
+    if (name in this.uniforms) {
+      this.uniforms[name](value);
+    }
+  }
+
+  // rye: TODO- This is a temporary measure to get things working
+  //            until we decide on how to manage uniforms.
+  setUniforms(forms) {
+    for (let name of Object.keys(forms)) {
+      if (name in this.uniforms) {
+        this.uniforms[name](forms[name]);
+      }
+    }
+  }
+
   // Get options in object or arguments
   static getOptions(args, base = {}) {
     let opt;
@@ -295,13 +314,13 @@ export default class Program {
   // Build program from default shaders (requires Shaders)
   static fromDefaultShaders(opt = {}) {
     const {vs = 'Default', fs = 'Default'} = opt;
-    const sh = PhiloGL.Shaders;
+    const sh = Shaders;
     opt = {
       ...opt,
       vs: sh.Vertex[vs],
       fs: sh.Fragment[fs]
     };
-    return fromShaderSources(opt);
+    return Program.fromShaderSources(opt);
   }
 
   // Implement Program.fromShaderURIs (requires IO)

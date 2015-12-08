@@ -2,8 +2,8 @@
 var $id = function(d) { return document.getElementById(d); };
 
 function webGLStart() {
-  var xRot = 0, xSpeed = 0,
-      yRot = 0, ySpeed = 0,
+  var xRot = 0, xSpeed = 0.01,
+      yRot = 0, ySpeed = 0.013,
       z = -5.0;
 
   //Get lighting form elements
@@ -137,7 +137,7 @@ function webGLStart() {
               20, 21, 22, 20, 22, 23]
   });
 
-  PhiloGL('lesson07-canvas', {
+  PhiloGL.PhiloGL('lesson07-canvas', {
     textures: {
       src: ['crate.gif'],
       parameters: [{
@@ -177,8 +177,9 @@ function webGLStart() {
         }
       }
     },
-    onError: function() {
+    onError: function(e) {
       alert("An error ocurred while loading the application");
+      console.error(e);
     },
     onLoad: function(app) {
       var gl = app.gl,

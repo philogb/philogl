@@ -9524,6 +9524,10 @@ var _jqueryMini2 = _interopRequireDefault(_jqueryMini);
 
 var _io = require('./io');
 
+var _shaders = require('./shaders');
+
+var _shaders2 = _interopRequireDefault(_shaders);
+
 function getpath(path) {
   var last = path.lastIndexOf('/');
   if (last === '/') {
@@ -9764,9 +9768,52 @@ var Program = (function () {
     this.uniforms = uniforms;
   }
 
-  // Get options in object or arguments
+  // rye: TODO- This is a temporary measure to get things working
+  //            until we decide on how to manage uniforms.
 
-  _createClass(Program, null, [{
+  _createClass(Program, [{
+    key: 'setUniform',
+    value: function setUniform(name, value) {
+      if (name in this.uniforms) {
+        this.uniforms[name](value);
+      }
+    }
+
+    // rye: TODO- This is a temporary measure to get things working
+    //            until we decide on how to manage uniforms.
+  }, {
+    key: 'setUniforms',
+    value: function setUniforms(forms) {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(forms)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var _name = _step.value;
+
+          if (_name in this.uniforms) {
+            this.uniforms[_name](forms[_name]);
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+
+    // Get options in object or arguments
+  }], [{
     key: 'getOptions',
     value: function getOptions(args) {
       var base = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -9887,12 +9934,12 @@ var Program = (function () {
       var _opt$fs = _opt.fs;
       var fs = _opt$fs === undefined ? 'Default' : _opt$fs;
 
-      var sh = PhiloGL.Shaders;
+      var sh = _shaders2['default'];
       opt = _extends({}, opt, {
         vs: sh.Vertex[vs],
         fs: sh.Fragment[fs]
       });
-      return fromShaderSources(opt);
+      return Program.fromShaderSources(opt);
     }
 
     // Implement Program.fromShaderURIs (requires IO)
@@ -9964,7 +10011,7 @@ Object.assign(Program.prototype, {
 });
 module.exports = exports['default'];
 
-},{"./io":197,"./jquery-mini":198}],212:[function(require,module,exports){
+},{"./io":197,"./jquery-mini":198,"./shaders":213}],212:[function(require,module,exports){
 // scene.js
 // Scene Object management and rendering
 
