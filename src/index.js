@@ -20,6 +20,7 @@ import {PhiloGL} from './core';
 import * as O3D from './objects';
 import * as math from './math';
 import Fx from './addons/fx';
+import Shaders from './shaders';
 
 if (typeof window !== 'undefined') {
     window.PhiloGL = {
@@ -27,6 +28,7 @@ if (typeof window !== 'undefined') {
         O3D: O3D,
         Mat4: math.Mat4,
         Fx: Fx,
+        Shaders: Shaders,
     }
 }
 

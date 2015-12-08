@@ -6017,6 +6017,10 @@ var _addonsFx = require('./addons/fx');
 
 var _addonsFx2 = _interopRequireDefault(_addonsFx);
 
+var _shaders = require('./shaders');
+
+var _shaders2 = _interopRequireDefault(_shaders);
+
 try {
     require('babel-polyfill');
 } catch (e) {
@@ -6049,8 +6053,6 @@ exports.Camera = _interopRequire(_camera);
 
 _defaults(exports, _interopExportWildcard(_objects, _defaults));
 
-var _shaders = require('./shaders');
-
 exports.Shaders = _interopRequire(_shaders);
 
 var _scene = require('./scene');
@@ -6066,7 +6068,8 @@ if (typeof window !== 'undefined') {
         PhiloGL: _core.PhiloGL,
         O3D: O3D,
         Mat4: math.Mat4,
-        Fx: _addonsFx2['default']
+        Fx: _addonsFx2['default'],
+        Shaders: _shaders2['default']
     };
 }
 
