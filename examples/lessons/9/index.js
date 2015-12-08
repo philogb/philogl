@@ -110,7 +110,7 @@ function webGLStart() {
 
   });
 
-  PhiloGL('lesson09-canvas', {
+  PhiloGL.PhiloGL('lesson09-canvas', {
     program: {
       from: 'defaults',
       fs: 'ColorUniform'
