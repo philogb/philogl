@@ -11,7 +11,9 @@ const plane = new Plane({type: 'x,y', xlen: length, ylen: length, offset: 0});
 const camera = new Camera(45, 1, 0.1, 500, {position: {x: 0, y: 0, z: 0.2}});
 const scene = new Scene({}, camera);
 
-export default class Image {
+// rye: temporarily renaming this Img until we decide on a name that doesn't shadow
+//      the builtin Image class.
+export default class Img {
 
   // post process an image by setting it to a texture with a specified fragment
   // and vertex shader.

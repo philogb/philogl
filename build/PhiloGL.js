@@ -6092,8 +6092,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 exports.JSONP = JSONP;
-exports.Images = Images;
-exports.Textures = Textures;
+exports.loadTextures = loadTextures;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -6412,82 +6411,208 @@ function JSONP(opt) {
 JSONP.counter = 0;
 JSONP.requests = {};
 
-// Load multiple Image assets async
-
-function Images(opt) {
-  opt = _jqueryMini2['default'].merge({
-    src: [],
-    noCache: false,
-    onProgress: _jqueryMini2['default'].empty,
-    onComplete: _jqueryMini2['default'].empty
-  }, opt || {});
-
-  var count = 0;
-  var l = opt.src.length;
-
-  var images = undefined;
-  // Image onload handler
-  var load = function load() {
-    opt.onProgress(Math.round(++count / l * 100));
-    if (count === l) {
-      opt.onComplete(images);
-    }
-  };
-  // Image error handler
-  var error = function error() {
-    if (++count === l) {
-      opt.onComplete(images);
-    }
-  };
-
-  // uid for image sources
-  var noCache = opt.noCache;
-  var uid = _jqueryMini2['default'].uid();
-  function getSuffix(s) {
-    return (s.indexOf('?') >= 0 ? '&' : '?') + uid;
-  }
-
-  // Create image array
-  images = opt.src.map(function (src, i) {
-    var img = new _media2['default']();
-    img.index = i;
-    img.onload = load;
-    img.onerror = error;
-    img.src = src + (noCache ? getSuffix(src) : '');
-    return img;
+// Creates an image-loading promise.
+function loadImage(src) {
+  return new Promise(function (resolve, reject) {
+    var image = new Image();
+    image.onload = function () {
+      resolve(image);
+    };
+    image.onerror = function () {
+      reject(new Error('Could not load image ' + src + '.'));
+    };
+    image.src = src;
   });
-
-  return images;
 }
+
+// Load multiple images async.
+// rye: TODO this needs to implement functionality from the
+//           original Images function.
+function loadImages(srcs) {
+  var images, results, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, image;
+
+  return regeneratorRuntime.async(function loadImages$(context$1$0) {
+    while (1) switch (context$1$0.prev = context$1$0.next) {
+      case 0:
+        images = srcs.map(function (src) {
+          return loadImage(src);
+        });
+        results = [];
+        _iteratorNormalCompletion = true;
+        _didIteratorError = false;
+        _iteratorError = undefined;
+        context$1$0.prev = 5;
+        _iterator = images[Symbol.iterator]();
+
+      case 7:
+        if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+          context$1$0.next = 17;
+          break;
+        }
+
+        image = _step.value;
+        context$1$0.t0 = results;
+        context$1$0.next = 12;
+        return regeneratorRuntime.awrap(image);
+
+      case 12:
+        context$1$0.t1 = context$1$0.sent;
+        context$1$0.t0.push.call(context$1$0.t0, context$1$0.t1);
+
+      case 14:
+        _iteratorNormalCompletion = true;
+        context$1$0.next = 7;
+        break;
+
+      case 17:
+        context$1$0.next = 23;
+        break;
+
+      case 19:
+        context$1$0.prev = 19;
+        context$1$0.t2 = context$1$0['catch'](5);
+        _didIteratorError = true;
+        _iteratorError = context$1$0.t2;
+
+      case 23:
+        context$1$0.prev = 23;
+        context$1$0.prev = 24;
+
+        if (!_iteratorNormalCompletion && _iterator['return']) {
+          _iterator['return']();
+        }
+
+      case 26:
+        context$1$0.prev = 26;
+
+        if (!_didIteratorError) {
+          context$1$0.next = 29;
+          break;
+        }
+
+        throw _iteratorError;
+
+      case 29:
+        return context$1$0.finish(26);
+
+      case 30:
+        return context$1$0.finish(23);
+
+      case 31:
+        return context$1$0.abrupt('return', results);
+
+      case 32:
+      case 'end':
+        return context$1$0.stop();
+    }
+  }, null, this, [[5, 19, 23, 31], [24,, 26, 30]]);
+}
+
+// // Load multiple Image assets async
+// export function Images(opt) {
+//   opt = $.merge({
+//     src: [],
+//     noCache: false,
+//     onProgress: $.empty,
+//     onComplete: $.empty
+//   }, opt || {});
+//
+//   let count = 0;
+//   let l = opt.src.length;
+//
+//   let images;
+//   // Image onload handler
+//   var load = () => {
+//     opt.onProgress(Math.round(++count / l * 100));
+//     if (count === l) {
+//       opt.onComplete(images);
+//     }
+//   };
+//   // Image error handler
+//   var error = () => {
+//     if (++count === l) {
+//       opt.onComplete(images);
+//     }
+//   };
+//
+//   // uid for image sources
+//   const noCache = opt.noCache;
+//   const uid = $.uid();
+//   function getSuffix(s) {
+//     return (s.indexOf('?') >= 0 ? '&' : '?') + uid;
+//   }
+//
+//   // Create image array
+//   images = opt.src.map((src, i) => {
+//     const img = new Image();
+//     img.index = i;
+//     img.onload = load;
+//     img.onerror = error;
+//     img.src = src + (noCache ? getSuffix(src) : '');
+//     return img;
+//   });
+//
+//   return images;
+// }
 
 // Load multiple textures from images
+// rye: TODO this needs to implement functionality from
+//           the original loadTextures function.
 
-function Textures() {
-  var opt = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+function loadTextures(opt) {
+  var images, textures;
+  return regeneratorRuntime.async(function loadTextures$(context$1$0) {
+    while (1) switch (context$1$0.prev = context$1$0.next) {
+      case 0:
+        context$1$0.next = 2;
+        return regeneratorRuntime.awrap(loadImages(opt.src));
 
-  opt = _extends({
-    src: [],
-    noCache: false,
-    onComplete: _jqueryMini2['default'].empty
-  }, opt);
+      case 2:
+        images = context$1$0.sent;
+        textures = {};
 
-  Images({
-    src: opt.src,
-    noCache: opt.noCache,
-    onComplete: function onComplete(images) {
-      var textures = {};
-      images.forEach(function (img, i) {
-        textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = _jqueryMini2['default'].merge({
-          data: {
-            value: img
-          }
-        }, opt);
-      });
-      app.setTextures(textures);
-      opt.onComplete();
+        images.forEach(function (img, i) {
+          textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = _jqueryMini2['default'].merge({
+            data: {
+              value: img
+            }
+          }, opt);
+        });
+        app.setTextures(textures);
+
+      case 6:
+      case 'end':
+        return context$1$0.stop();
     }
-  });
+  }, null, this);
 }
+
+// // Load multiple textures from images
+// export function loadTextures(opt = {}) {
+//   opt = {
+//     src: [],
+//     noCache: false,
+//     onComplete: $.empty,
+//     ...opt
+//   };
+//
+//   Images({
+//     src: opt.src,
+//     noCache: opt.noCache,
+//     onComplete(images) {
+//       var textures = {};
+//       images.forEach((img, i) => {
+//         textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = $.merge({
+//           data: {
+//             value: img
+//           }
+//         }, opt);
+//       });
+//       app.setTextures(textures);
+//       opt.onComplete();
+//     }
+//   });
+// }
 
 },{"./jquery-mini":198,"./media":201}],198:[function(require,module,exports){
 // Utility functions
@@ -7914,12 +8039,15 @@ var plane = new _objects.Plane({ type: 'x,y', xlen: length, ylen: length, offset
 var camera = new _camera2['default'](45, 1, 0.1, 500, { position: { x: 0, y: 0, z: 0.2 } });
 var scene = new _scene2['default']({}, camera);
 
-var Image = (function () {
-  function Image() {
-    _classCallCheck(this, Image);
+// rye: temporarily renaming this Img until we decide on a name that doesn't shadow
+//      the builtin Image class.
+
+var Img = (function () {
+  function Img() {
+    _classCallCheck(this, Img);
   }
 
-  _createClass(Image, null, [{
+  _createClass(Img, null, [{
     key: 'postProcess',
 
     // post process an image by setting it to a texture with a specified fragment
@@ -7986,10 +8114,10 @@ var Image = (function () {
     }
   }]);
 
-  return Image;
+  return Img;
 })();
 
-exports['default'] = Image;
+exports['default'] = Img;
 module.exports = exports['default'];
 
 },{"./camera":193,"./objects":206,"./scene":212}],202:[function(require,module,exports){

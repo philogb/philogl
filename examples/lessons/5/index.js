@@ -79,7 +79,7 @@ function webGLStart() {
               20, 21, 22, 20, 22, 23]
   });
 
-  PhiloGL('lesson05-canvas', {
+  PhiloGL.PhiloGL('lesson05-canvas', {
     program: {
       from: 'ids',
       vs: 'shader-vs',
@@ -140,9 +140,9 @@ function webGLStart() {
                .setBuffer('indices')
                .setTexture('nehe.gif');
         //set uniforms
-        program.setUniform('uMVMatrix', view)
-               .setUniform('uPMatrix', camera.projection)
-               .setUniform('uSampler', 0);
+        program.uniforms.uMVMatrix(view);
+        program.uniforms.uPMatrix(camera.projection);
+        program.uniforms.uSampler(0);
         //draw triangles
         gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
         //request new frame

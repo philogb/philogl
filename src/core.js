@@ -131,6 +131,7 @@ export function PhiloGL(canvasId, opt = {}) {
 }
 
 async function loadProgramDeps(gl, program, opt, callback) {
+
   const optCamera = opt.camera;
   const optEvents = opt.events;
   const optScene = opt.scene;
