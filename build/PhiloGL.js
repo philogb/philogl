@@ -4667,8 +4667,17 @@ for (var t in transitions) {
 });
 
 //animationTime - function branching
-var global = self || window,
-    checkFxQueue = function checkFxQueue() {
+
+// rye: TODO- refactor global definition when we define the two
+//            (browserify/<script>) build paths.
+var global;
+try {
+  global = window;
+} catch (e) {
+  global = null;
+}
+
+var checkFxQueue = function checkFxQueue() {
   var oldQueue = Queue;
   Queue = [];
   if (oldQueue.length) {
@@ -5311,7 +5320,7 @@ function PhiloGL(canvasId) {
 
   var opt = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-  opt = _extends({}, DEFAULT_OPTS, opt);
+  opt = _jqueryMini2['default'].merge(DEFAULT_OPTS, opt);
 
   var optContext = opt.context;
   var optProgram = _jqueryMini2['default'].splat(opt.program);
@@ -5527,7 +5536,7 @@ function toO3D(n) {
 }
 
 // Returns an element position
-function getPos(elem) {
+function _getPos(elem) {
   var bbox = elem.getBoundingClientRect();
   return {
     x: bbox.left,
@@ -5615,7 +5624,7 @@ var EventsProxy = (function () {
     var domElem = app.canvas;
     this.scene = app.scene;
     this.domElem = domElem;
-    this.pos = getPos(domElem);
+    this.pos = _getPos(domElem);
     this.opt = this.callbacks = opt;
 
     this.size = {
@@ -5683,7 +5692,7 @@ var EventsProxy = (function () {
       var size = this.getSize();
       var relative = opt.relative;
       var centerOrigin = opt.centerOrigin;
-      var pos = opt.cachePosition && this.pos || getPos(domElem);
+      var pos = opt.cachePosition && this.pos || _getPos(domElem);
       var ge = get(e, win);
       var epos = getPos(e, win);
       var origPos = { x: epos[0].x, y: epos[0].y };
@@ -6796,7 +6805,7 @@ var Vec3 = (function (_Array) {
       return this[2];
     },
     set: function set(value) {
-      return this[3] = value;
+      return this[2] = value;
     }
   }], [{
     key: 'create',
@@ -9920,7 +9929,7 @@ var Program = (function () {
               break;
             }
 
-            opt.onError(errpr, opt);
+            opt.onError(context$2$0.t0, opt);
             context$2$0.next = 20;
             break;
 

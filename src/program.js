@@ -304,7 +304,7 @@ export default class Program {
       return program;
     } catch (error) {
       if (opt.onError) {
-        opt.onError(errpr, opt);
+        opt.onError(error, opt);
       } else {
         throw error;
       }

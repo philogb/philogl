@@ -12,7 +12,7 @@ function toO3D(n) {
 }
 
 // Returns an element position
-function getPos(elem) {
+function _getPos(elem) {
   const bbox = elem.getBoundingClientRect();
   return {
     x: bbox.left,
@@ -97,7 +97,7 @@ export class EventsProxy {
     const domElem = app.canvas;
     this.scene = app.scene;
     this.domElem = domElem;
-    this.pos = getPos(domElem);
+    this.pos = _getPos(domElem);
     this.opt = this.callbacks = opt;
 
     this.size = {
@@ -161,7 +161,7 @@ export class EventsProxy {
     const size = this.getSize();
     const relative = opt.relative;
     const centerOrigin = opt.centerOrigin;
-    const pos = opt.cachePosition && this.pos || getPos(domElem);
+    const pos = opt.cachePosition && this.pos || _getPos(domElem);
     const ge = get(e, win);
     const epos = getPos(e, win);
     const origPos = {x: epos[0].x, y: epos[0].y};
