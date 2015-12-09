@@ -15,7 +15,7 @@ function webGLStart() {
   box.scale.set(2, 2, 2);
 
   //Create application
-  PhiloGL('lesson12-canvas', {
+  PhiloGL.PhiloGL('lesson12-canvas', {
     camera: {
       position: {
         x: 0, y: 0, z: 30
