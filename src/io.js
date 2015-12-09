@@ -6,7 +6,7 @@
 import $ from './jquery-mini';
 import Img from './media';
 
-class XHR {
+export class XHR {
 
   constructor(opt = {}) {
     opt = {

@@ -5906,7 +5906,6 @@ Object.assign(EventsProxy.prototype, {
 var Events = {
 
   create: function create(app) {
-    var _arguments = arguments;
     var opt = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
     opt = _extends({
@@ -5943,15 +5942,14 @@ var Events = {
     }, opt);
 
     var bind = opt.bind;
-
     if (bind) {
-      for (var name in opt) {
-        if (name.match(/^on[a-zA-Z0-9]+$/)) {
+      for (var _name in opt) {
+        if (_name.match(/^on[a-zA-Z0-9]+$/)) {
           (function (name, fn) {
             opt[name] = function () {
-              return fn.apply(bind, Array.prototype.slice.call(_arguments));
+              fn.apply(bind, Array.prototype.slice.call(arguments));
             };
-          })(name, opt[name]);
+          })(_name, opt[_name]);
         }
       }
     }
@@ -6003,6 +6001,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
+// rye: TODO- Need to clean up the discrepancies between
+//            the browserify imports and the <script> imports.
+//      TODO- Create separate build paths for the
+//            browserify/<script> imports.
+
 var _core = require('./core');
 
 var _objects = require('./objects');
@@ -6020,6 +6023,10 @@ var _addonsFx2 = _interopRequireDefault(_addonsFx);
 var _shaders = require('./shaders');
 
 var _shaders2 = _interopRequireDefault(_shaders);
+
+var _io = require('./io');
+
+var IO = _interopRequireWildcard(_io);
 
 try {
     require('babel-polyfill');
@@ -6042,8 +6049,6 @@ exports.Event = _interopRequire(_event);
 var _program = require('./program');
 
 exports.Program = _interopRequire(_program);
-
-var _io = require('./io');
 
 _defaults(exports, _interopExportWildcard(_io, _defaults));
 
@@ -6069,7 +6074,8 @@ if (typeof window !== 'undefined') {
         O3D: O3D,
         Mat4: math.Mat4,
         Fx: _addonsFx2['default'],
-        Shaders: _shaders2['default']
+        Shaders: _shaders2['default'],
+        IO: IO
     };
 }
 
@@ -6277,6 +6283,8 @@ var XHR = (function () {
 
   return XHR;
 })();
+
+exports.XHR = XHR;
 
 XHR.State = {};
 ['UNINITIALIZED', 'LOADING', 'LOADED', 'INTERACTIVE', 'COMPLETED'].forEach(function (stateName, i) {

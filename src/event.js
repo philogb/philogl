@@ -404,13 +404,13 @@ export const Events = {
     };
 
     var bind = opt.bind;
-
     if (bind) {
-      for (var name in opt) {
+      for (let name in opt) {
         if (name.match(/^on[a-zA-Z0-9]+$/)) {
           ((name, fn) => {
-            opt[name] =
-              () => fn.apply(bind, Array.prototype.slice.call(arguments));
+            opt[name] = function() {
+                fn.apply(bind, Array.prototype.slice.call(arguments));
+            };
           })(name, opt[name]);
         }
       }

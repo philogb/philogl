@@ -1,4 +1,4 @@
-PhiloGL.unpack();
+
 function webGLStart() {
   var pitch = 0,
       pitchRate = 0,
@@ -14,7 +14,7 @@ function webGLStart() {
   var world;
 
   //load world
-  new IO.XHR({
+  new PhiloGL.IO.XHR({
     url: 'world.txt',
     onSuccess: function(data) {      
       var lines = data.split("\n");
@@ -37,7 +37,7 @@ function webGLStart() {
         }
       }
 
-      world = new O3D.Model({
+      world = new PhiloGL.O3D.Model({
         vertices: vertexPositions,
         texCoords: vertexTextureCoords,
         textures: 'mud.gif'
@@ -53,7 +53,7 @@ function webGLStart() {
   function startApp() {
     
     //Create App
-    PhiloGL('lesson10-canvas', {
+    PhiloGL.PhiloGL('lesson10-canvas', {
       textures: {
         src: ['mud.gif'],
         parameters: [{
@@ -113,7 +113,7 @@ function webGLStart() {
         function tick() {
           drawScene();
           animate();
-          Fx.requestAnimationFrame(tick);
+          PhiloGL.Fx.requestAnimationFrame(tick);
         }
         
         var lastTime = 0;
