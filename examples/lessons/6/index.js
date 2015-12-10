@@ -217,9 +217,9 @@ function webGLStart() {
                 .setBuffer('indices')
                 .setTexture(filters[filter]);
           //set uniforms
-          program.uniforms.uMVMatrix(view);
-          program.uniforms.uPMatrix(camera.projection);
-          program.uniforms.uSampler(0);
+          program.setUniform('uMVMatrix', view);
+          program.setUniform('uPMatrix', camera.projection);
+          program.setUniform('uSampler', 0);
           //draw triangles
           gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
         }

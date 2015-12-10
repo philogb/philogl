@@ -134,8 +134,8 @@ function webGLStart() {
           }
         });
         //set uniforms
-        program.uniforms.uMVMatrix(view);
-        program.uniforms.uPMatrix(camera.projection);
+        program.setUniform('uMVMatrix', view);
+        program.setUniform('uPMatrix', camera.projection);
       }
 
       function animate() {
