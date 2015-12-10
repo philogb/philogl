@@ -1,5 +1,3 @@
-PhiloGL.unpack();
-
 var browserSize;
 var halted = false;
 var time;
@@ -89,7 +87,7 @@ function load() {
 
       function draw() {
         var uniform = getUniforms();
-        Media.Image.postProcess({
+        PhiloGL.Media.Image.postProcess({
           width: sizeX,
           height: sizeY,
           fromTexture: 'main-texture',
@@ -140,7 +138,7 @@ function load() {
         }
         switch (animation) {
         case "animate":
-          setTimeout(function() { Fx.requestAnimationFrame(anim); }, 25);
+          setTimeout(function() { PhiloGL.Fx.requestAnimationFrame(anim); }, 25);
           break;
         case "reset":
           load();
