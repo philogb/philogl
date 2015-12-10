@@ -23,8 +23,6 @@ var $ = function(d) { return document.getElementById(d); },
       }
     };
 
-PhiloGL.unpack();
-
 var width = 128,
     height = 128,
     cos = Math.cos,
@@ -112,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // advance
-        Media.Image.postProcess({
+        PhiloGL.Media.Image.postProcess({
           width: glCanvas.width,
           height: glCanvas.height,
           toScreen: true,
@@ -130,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         });
 
-        Fx.requestAnimationFrame(draw);
+        PhiloGL.Fx.requestAnimationFrame(draw);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, null);
