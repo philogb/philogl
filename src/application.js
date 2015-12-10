@@ -260,6 +260,7 @@ export default class Application {
     }
 
     // get defaults
+    // rye: TODO- use lodash.defaultsDeep instead of $merge.
     opt = $.merge(this.textureMemo[name] || {
       textureType: gl.TEXTURE_2D,
       pixelStore: [{

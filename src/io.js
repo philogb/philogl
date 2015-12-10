@@ -235,6 +235,7 @@ XHR.Group = class {
 };
 
 export function JSONP(opt) {
+  // rye: TODO- use lodash.defaultsDeep instead of $merge.
   opt = $.merge({
     url: 'http:// philogljs.org/',
     data: {},
@@ -364,6 +365,7 @@ export async function loadTextures(opt) {
   var images = await loadImages(opt.src);
   var textures = {};
   images.forEach((img, i) => {
+    // rye: TODO- use lodash.defaultsDeep instead of $merge.
     textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = $.merge({
       data: {
         value: img

@@ -67,6 +67,7 @@ const globalContext = typeof window !== 'undefined' ? window : global;
 // Creates a single application object asynchronously
 // with a gl context, a camera, a program, a scene, and an event system.
 export function PhiloGL(canvasId, opt = {}) {
+  // rye: TODO- use lodash.defaultsDeep instead of $merge.
   opt = $.merge(DEFAULT_OPTS, opt);
 
   const optContext = opt.context;

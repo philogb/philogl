@@ -5,6 +5,7 @@ var Queue = [];
 
 export default class Fx {
   constructor(options = {}) {
+    // rye: TODO- use lodash.defaultsDeep instead of $merge.
     this.opt = $.merge({
       delay: 0,
       duration: 1000,
@@ -15,6 +16,7 @@ export default class Fx {
   }
 
   start(options) {
+    // rye: TODO- use lodash.defaultsDeep instead of $merge.
     this.opt = $.merge(this.opt, options || {});
     this.time = $.time();
     this.animating = true;
