@@ -1,6 +1,6 @@
 function webGLStart() {
-  var xRot = 0, xSpeed = 0,
-      yRot = 0, ySpeed = 0,
+  var xRot = 0, xSpeed = 0.01,
+      yRot = 0, ySpeed = 0.013,
       z = -5.0,
       filter = 0,
       filters = ['nearest', 'linear', 'mipmap'];
@@ -217,9 +217,9 @@ function webGLStart() {
                 .setBuffer('indices')
                 .setTexture(filters[filter]);
           //set uniforms
-          program.setUniform('uMVMatrix', view)
-                .setUniform('uPMatrix', camera.projection)
-                .setUniform('uSampler', 0);
+          program.setUniform('uMVMatrix', view);
+          program.setUniform('uPMatrix', camera.projection);
+          program.setUniform('uSampler', 0);
           //draw triangles
           gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
         }

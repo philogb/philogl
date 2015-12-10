@@ -1,5 +1,3 @@
-PhiloGL.unpack();
-
 var modelLeft, modelRight, pos, completed, $ = function(d) { return document.getElementById(d); };
 
 document.onreadystatechange = function() {
@@ -12,7 +10,7 @@ document.onreadystatechange = function() {
 };
 
 //load data
-new IO.XHR({
+new PhiloGL.IO.XHR({
   url: 'surf_reg_model_both_normal.json.bin',
   responseType: 'arraybuffer',
   noCache: true,
@@ -56,7 +54,7 @@ new IO.XHR({
 
     // console.log('n', n, 'vertices', verticesLeft.length, 'indices', indices.length);
 
-    modelLeft = new O3D.Model({
+    modelLeft = new PhiloGL.O3D.Model({
       vertices: unpackedVerticesLeft,
       normals: unpackedNormalsLeft,
       program: 'brain',
@@ -66,7 +64,7 @@ new IO.XHR({
       }
     });
     
-    modelRight = new O3D.Model({
+    modelRight = new PhiloGL.O3D.Model({
       vertices: unpackedVerticesRight,
       normals: unpackedNormalsRight,
       program: 'brain',
@@ -185,7 +183,7 @@ function init() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         //render model
         scene.render();
-        Fx.requestAnimationFrame(draw);
+        PhiloGL.Fx.requestAnimationFrame(draw);
       }
     }
   });

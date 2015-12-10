@@ -37,7 +37,6 @@ function webGLStart() {
       onDragMove: function(e) {
         var z = this.camera.position.z,
             sign = Math.abs(z) / z;
-
         moon.rotation.y += -(pos.x - e.x) / 100;
         moon.rotation.x += sign * (pos.y - e.y) / 100;
         moon.update();
@@ -51,7 +50,8 @@ function webGLStart() {
         camera.update();
       }
     },
-    onError: function() {
+    onError: function(e) {
+      console.error(e);
       alert("There was an error creating the app.");
     },
     onLoad: function(app) {

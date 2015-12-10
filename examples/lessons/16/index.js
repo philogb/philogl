@@ -1,13 +1,10 @@
 function webGLStart() {
   var $id = function(d) { return document.getElementById(d); };
 
-  //unpack modules
-  PhiloGL.unpack();
-
   //create all models
   var models = {};
   //Create moon
-  models.moon = new O3D.Sphere({
+  models.moon = new PhiloGL.O3D.Sphere({
     nlat: 30,
     nlong: 30,
     radius: 2,
@@ -22,7 +19,7 @@ function webGLStart() {
     }
   });
   //Create box
-  models.box = new O3D.Cube({
+  models.box = new PhiloGL.O3D.Cube({
     textures: 'crate.gif',
     uniforms: {
       shininess: 5,
@@ -36,7 +33,7 @@ function webGLStart() {
   models.box.scale.set(2, 2, 2);
 
   //Load macbook
-  models.macbookscreen = new O3D.Model({
+  models.macbookscreen = new PhiloGL.O3D.Model({
     normals: [
       0, -0.965926, 0.258819,
       0, -0.965926, 0.258819,
@@ -67,7 +64,7 @@ function webGLStart() {
     }
   });
 
-  new IO.XHR({
+  new PhiloGL.IO.XHR({
     url: 'macbook.json',
     onError: function() {
       alert('Unable to load macbook model');
@@ -82,7 +79,7 @@ function webGLStart() {
         'materialSpecularColor': [1.5, 1.5, 1.5],
         'materialEmissiveColor': [0, 0, 0]
       };
-      models.macbook = new O3D.Model(json);
+      models.macbook = new PhiloGL.O3D.Model(json);
       createApp(models);
     }
   }).send();
@@ -138,13 +135,13 @@ function webGLStart() {
             gl = app.gl,
             program = app.program,
             outerCamera = app.camera,
-            innerCamera = new Camera(45, screenRatio, 0.1, 100, {
+            innerCamera = new PhiloGL.Camera(45, screenRatio, 0.1, 100, {
               position: {
                 x: 0, y: 0, z: -17
               }
             }),
             outerScene = app.scene,
-            innerScene = new Scene(program, innerCamera, {
+            innerScene = new PhiloGL.Scene(program, innerCamera, {
               lights: {
                 enable: true,
                 points: {

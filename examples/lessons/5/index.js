@@ -140,9 +140,9 @@ function webGLStart() {
                .setBuffer('indices')
                .setTexture('nehe.gif');
         //set uniforms
-        program.setUniform('uMVMatrix', view)
-               .setUniform('uPMatrix', camera.projection)
-               .setUniform('uSampler', 0);
+        program.setUniform('uMVMatrix', view);
+        program.setUniform('uPMatrix', camera.projection);
+        program.setUniform('uSampler', 0);
         //draw triangles
         gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
         //request new frame

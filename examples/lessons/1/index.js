@@ -40,15 +40,15 @@ window.webGLStart = function() {
 
       //Draw Triangle
       camera.view.$translate(-1.5, 0, -7);
-      program.uniforms.uMVMatrix(camera.view);
-      program.uniforms.uPMatrix(camera.projection);
+      program.setUniform('uMVMatrix', camera.view);
+      program.setUniform('uPMatrix', camera.projection);
       program.setBuffer('triangle');
       gl.drawArrays(gl.TRIANGLES, 0, 3);
 
       //Draw Square
       camera.view.$translate(3, 0, 0);
-      program.uniforms.uMVMatrix(camera.view);
-      program.uniforms.uPMatrix(camera.projection);
+      program.setUniform('uMVMatrix', camera.view);
+      program.setUniform('uPMatrix', camera.projection);
       program.setBuffer('square');
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }

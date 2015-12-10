@@ -48,7 +48,7 @@ export class Vec3 extends Array {
   }
 
   set z(value) {
-    return (this[3] = value);
+    return (this[2] = value);
   }
 }
 

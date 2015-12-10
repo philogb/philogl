@@ -4,9 +4,9 @@
 /* global XMLHttpRequest */
 /* global document */
 import $ from './jquery-mini';
-import Image from './media';
+import Img from './media';
 
-class XHR {
+export class XHR {
 
   constructor(opt = {}) {
     opt = {
@@ -235,6 +235,7 @@ XHR.Group = class {
 };
 
 export function JSONP(opt) {
+  // rye: TODO- use lodash.defaultsDeep instead of $merge.
   opt = $.merge({
     url: 'http:// philogljs.org/',
     data: {},
@@ -284,76 +285,119 @@ export function JSONP(opt) {
 JSONP.counter = 0;
 JSONP.requests = {};
 
-// Load multiple Image assets async
-export function Images(opt) {
-  opt = $.merge({
-    src: [],
-    noCache: false,
-    onProgress: $.empty,
-    onComplete: $.empty
-  }, opt || {});
-
-  let count = 0;
-  let l = opt.src.length;
-
-  let images;
-  // Image onload handler
-  var load = () => {
-    opt.onProgress(Math.round(++count / l * 100));
-    if (count === l) {
-      opt.onComplete(images);
-    }
-  };
-  // Image error handler
-  var error = () => {
-    if (++count === l) {
-      opt.onComplete(images);
-    }
-  };
-
-  // uid for image sources
-  const noCache = opt.noCache;
-  const uid = $.uid();
-  function getSuffix(s) {
-    return (s.indexOf('?') >= 0 ? '&' : '?') + uid;
-  }
-
-  // Create image array
-  images = opt.src.map((src, i) => {
-    const img = new Image();
-    img.index = i;
-    img.onload = load;
-    img.onerror = error;
-    img.src = src + (noCache ? getSuffix(src) : '');
-    return img;
+// Creates an image-loading promise.
+function loadImage(src) {
+  return new Promise(function(resolve, reject) {
+    var image = new Image();
+    image.onload = function() {
+      resolve(image);
+    };
+    image.onerror = function() {
+      reject(new Error(`Could not load image ${src}.`));
+    };
+    image.src = src;
   });
-
-  return images;
 }
+
+// Load multiple images async.
+// rye: TODO this needs to implement functionality from the
+//           original Images function.
+async function loadImages(srcs) {
+  let imagePromises = srcs.map((src) => loadImage(src));
+  let results = [];
+  for (const imagePromise of imagePromises) {
+    results.push(await imagePromise);
+  }
+  return results;
+}
+
+// // Load multiple Image assets async
+// export function Images(opt) {
+//   opt = $.merge({
+//     src: [],
+//     noCache: false,
+//     onProgress: $.empty,
+//     onComplete: $.empty
+//   }, opt || {});
+//
+//   let count = 0;
+//   let l = opt.src.length;
+//
+//   let images;
+//   // Image onload handler
+//   var load = () => {
+//     opt.onProgress(Math.round(++count / l * 100));
+//     if (count === l) {
+//       opt.onComplete(images);
+//     }
+//   };
+//   // Image error handler
+//   var error = () => {
+//     if (++count === l) {
+//       opt.onComplete(images);
+//     }
+//   };
+//
+//   // uid for image sources
+//   const noCache = opt.noCache;
+//   const uid = $.uid();
+//   function getSuffix(s) {
+//     return (s.indexOf('?') >= 0 ? '&' : '?') + uid;
+//   }
+//
+//   // Create image array
+//   images = opt.src.map((src, i) => {
+//     const img = new Image();
+//     img.index = i;
+//     img.onload = load;
+//     img.onerror = error;
+//     img.src = src + (noCache ? getSuffix(src) : '');
+//     return img;
+//   });
+//
+//   return images;
+// }
 
 // Load multiple textures from images
-export function Textures(opt = {}) {
-  opt = {
-    src: [],
-    noCache: false,
-    onComplete: $.empty,
-    ...opt
-  };
-
-  Images({
-    src: opt.src,
-    noCache: opt.noCache,
-    onComplete(images) {
-      var textures = {};
-      images.forEach((img, i) => {
-        textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = $.merge({
-          data: {
-            value: img
-          }
-        }, opt);
-      });
-      app.setTextures(textures);
-      opt.onComplete();
-    }
+// rye: TODO this needs to implement functionality from
+//           the original loadTextures function.
+export async function loadTextures(opt) {
+  var images = await loadImages(opt.src);
+  var textures = {};
+  images.forEach((img, i) => {
+    // rye: TODO- use lodash.defaultsDeep instead of $merge.
+    textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = $.merge({
+      data: {
+        value: img
+      }
+    }, opt);
   });
+  app.setTextures(textures);
 }
+
+// // Load multiple textures from images
+// export function loadTextures(opt = {}) {
+//   opt = {
+//     src: [],
+//     noCache: false,
+//     onComplete: $.empty,
+//     ...opt
+//   };
+//
+//   Images({
+//     src: opt.src,
+//     noCache: opt.noCache,
+//     onComplete(images) {
+//       var textures = {};
+//       images.forEach((img, i) => {
+//         textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = $.merge({
+//           data: {
+//             value: img
+//           }
+//         }, opt);
+//       });
+//       app.setTextures(textures);
+//       opt.onComplete();
+//     }
+//   });
+// }

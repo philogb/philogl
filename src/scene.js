@@ -8,7 +8,8 @@ import $ from './jquery-mini';
 export default class Scene {
 
   constructor(program, camera, opt = {}) {
-    opt = {
+    // rye: TODO- use lodash.defaultsDeep instead of $merge.
+    opt = $.merge({
       lights: {
         enable: false,
         // ambient light
@@ -25,8 +26,7 @@ export default class Scene {
         fog: false
         // { near, far, color }
       },
-      ...opt
-    };
+    }, opt);
 
     this.program = opt.program ? program[opt.program] : program;
     this.camera = camera;

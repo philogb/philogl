@@ -1,7 +1,4 @@
 (function() {
-  //Unpack PhiloGL modules
-  PhiloGL.unpack();
-
   //Utility fn to getElementById
   function $(d) {
     return document.getElementById(d);
@@ -42,8 +39,8 @@
 
   //color histogram elements, models
   var dim = 8, histogram, photos, video,
-      worker = new WorkerGroup('histogram-models.js', 1),
-      histogramModel = new O3D.Model({
+      worker = new PhiloGL.WorkerGroup('histogram-models.js', 1),
+      histogramModel = new PhiloGL.O3D.Model({
         uniforms: {
           shininess: 20
         },
@@ -342,8 +339,8 @@
           histogramModel.update();
 
           //Create animation object for transitioning color schemes.
-          var fx = new Fx({
-            transition: Fx.Transition.Quart.easeInOut,
+          var fx = new PhiloGL.Fx({
+            transition: PhiloGL.Fx.Transition.Quart.easeInOut,
             duration: 1500,
             onCompute: function(delta) {
               var from = fx.opt.from,
@@ -365,8 +362,8 @@
             }
           });
 
-          var fxSize = new Fx({
-            transition: Fx.Transition.Quart.easeInOut,
+          var fxSize = new PhiloGL.Fx({
+            transition: PhiloGL.Fx.Transition.Quart.easeInOut,
             duration: 1000,
             onCompute: function(delta) {
               var from = fxSize.opt.from,
@@ -403,7 +400,7 @@
             gl.clearColor(color, color, color, 1);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             scene.render();
-            Fx.requestAnimationFrame(loop);
+            PhiloGL.Fx.requestAnimationFrame(loop);
           }
         }
       });

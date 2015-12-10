@@ -1,9 +1,11 @@
 // Timer based animation
+import $ from '../jquery-mini';
 
 var Queue = [];
 
-export class Fx {
+export default class Fx {
   constructor(options = {}) {
+    // rye: TODO- use lodash.defaultsDeep instead of $merge.
     this.opt = $.merge({
       delay: 0,
       duration: 1000,
@@ -14,6 +16,7 @@ export class Fx {
   }
 
   start(options) {
+    // rye: TODO- use lodash.defaultsDeep instead of $merge.
     this.opt = $.merge(this.opt, options || {});
     this.time = $.time();
     this.animating = true;
@@ -133,8 +136,17 @@ for (var t in transitions) {
 });
 
 //animationTime - function branching
-var global = self || window,
-    checkFxQueue = function() {
+
+// rye: TODO- refactor global definition when we define the two
+//            (browserify/<script>) build paths.
+var global;
+try {
+  global = window;
+} catch (e) {
+  global = null;
+}
+
+var checkFxQueue = function() {
       var oldQueue = Queue;
       Queue = [];
       if (oldQueue.length) {

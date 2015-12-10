@@ -1,5 +1,3 @@
-PhiloGL.unpack();
-
 var halted = false;
 var it = 1;
 var mouseX = 0.5;
@@ -144,7 +142,7 @@ function load() {
 			}
 
 			function advance(source, target) {
-				Media.Image.postProcess({
+				PhiloGL.Media.Image.postProcess({
 					width : sizeX,
 					height : sizeY,
 					fromTexture : [ source + '-texture', 'blur1-texture',
@@ -157,7 +155,7 @@ function load() {
 			}
 
 			function composite(source) {
-				Media.Image.postProcess({
+				PhiloGL.Media.Image.postProcess({
 					width : viewX,
 					height : viewY,
 					fromTexture : [ source + '-texture', 'blur1-texture',
@@ -179,7 +177,7 @@ function load() {
 			}
 
 			function calculateBlurTexture(source, target, helper, scale) {
-				Media.Image.postProcess({
+				PhiloGL.Media.Image.postProcess({
 					width : sizeX / scale,
 					height : sizeY / scale,
 					fromTexture : source + '-texture',
@@ -214,7 +212,7 @@ function load() {
 				if (!halted) {
 					draw();
 				}
-				Fx.requestAnimationFrame(anim);
+				PhiloGL.Fx.requestAnimationFrame(anim);
 			}
 		}
 	});

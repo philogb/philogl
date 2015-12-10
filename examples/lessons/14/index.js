@@ -39,7 +39,8 @@ function webGLStart() {
           generateMipmap: true
         }]
       },
-      onError: function() {
+      onError: function(e) {
+        console.error(e);
         alert("There was an error creating the app.");
       },
       onLoad: function(app) {
