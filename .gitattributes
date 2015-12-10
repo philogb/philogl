@@ -1,4 +1,3 @@
-build/* -diff
 .gitignore export-ignore
 .gitattributes export-ignore
 build/compiler.jar export-ignore
