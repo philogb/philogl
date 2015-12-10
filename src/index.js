@@ -25,6 +25,7 @@ import {hasWebGL} from './webgl';
 import * as O3D from './objects';
 import * as math from './math';
 import Fx from './addons/fx';
+import WorkerGroup from './addons/workers';
 import Shaders from './shaders';
 import * as IO from './io';
 import {default as Camera} from './camera';
@@ -41,6 +42,7 @@ if (typeof window !== 'undefined') {
     PhiloGL.Camera = Camera;
     PhiloGL.Scene = Scene;
     PhiloGL.hasWebGL = hasWebGL;
+    PhiloGL.WorkerGroup = WorkerGroup;
     PhiloGL.Media = {
         Image: Img
     }

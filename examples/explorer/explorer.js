@@ -1,6 +1,4 @@
 (function() {
-  //Unpack PhiloGL modules
-  PhiloGL.unpack();
   
   //Utility fn to getElementById
   function $id(d) {
@@ -57,7 +55,7 @@
   })(Grid);
 
   //Surface Model
-  var surface = new O3D.Model({
+  var surface = new PhiloGL.O3D.Model({
     indices: meshIndices,
     uniforms: {
       shininess: 10,
@@ -179,7 +177,7 @@
             fnUpdated = true,
             currentTime = false,
             currentTimeStep = false,
-            workerGroup = new WorkerGroup('graph-compute.js', 1),
+            workerGroup = new PhiloGL.WorkerGroup('graph-compute.js', 1),
             fps = 70;
 
         //Add event listeners to controls
@@ -272,7 +270,7 @@
           }
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
           scene.render();
-          Fx.requestAnimationFrame(loop); 
+          PhiloGL.Fx.requestAnimationFrame(loop);
         }
         
         //Sample the function
