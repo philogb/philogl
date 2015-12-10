@@ -302,10 +302,10 @@ function loadImage(src) {
 // rye: TODO this needs to implement functionality from the
 //           original Images function.
 async function loadImages(srcs) {
-  let images = srcs.map((src) => loadImage(src));
+  let imagePromises = srcs.map((src) => loadImage(src));
   let results = [];
-  for (let image of images) {
-    results.push(await image);
+  for (const imagePromise of imagePromises) {
+    results.push(await imagePromise);
   }
   return results;
 }
