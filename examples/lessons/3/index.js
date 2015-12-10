@@ -23,7 +23,7 @@ function webGLStart() {
   });
 
   //Create App
-  PhiloGL.PhiloGL('lesson03-canvas', {
+  PhiloGL('lesson03-canvas', {
     program: {
       from: 'ids',
       vs: 'shader-vs',

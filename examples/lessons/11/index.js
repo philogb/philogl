@@ -10,7 +10,7 @@ function webGLStart() {
   });
 
   //Create application
-  PhiloGL.PhiloGL('lesson11-canvas', {
+  PhiloGL('lesson11-canvas', {
     camera: {
       position: {
         x: 0, y: 0, z: -7

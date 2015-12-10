@@ -53,7 +53,7 @@ function webGLStart() {
   function startApp() {
     
     //Create App
-    PhiloGL.PhiloGL('lesson10-canvas', {
+    PhiloGL('lesson10-canvas', {
       textures: {
         src: ['mud.gif'],
         parameters: [{

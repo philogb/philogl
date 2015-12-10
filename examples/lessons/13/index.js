@@ -19,7 +19,7 @@ function webGLStart() {
   box.scale.set(2, 2, 2);
 
   //Create application
-  PhiloGL.PhiloGL('lesson13-canvas', {
+  PhiloGL('lesson13-canvas', {
     program: [{
       id: 'vertex',
       from: 'defaults'

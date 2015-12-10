@@ -167,7 +167,7 @@ function webGLStart() {
               20, 21, 22, 20, 22, 23]
   });
 
-  PhiloGL.PhiloGL('lesson08-canvas', {
+  PhiloGL('lesson08-canvas', {
     program: {
       from: 'defaults',
       fs: 'Blend'

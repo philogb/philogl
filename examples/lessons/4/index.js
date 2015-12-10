@@ -92,7 +92,7 @@ function webGLStart() {
               20, 21, 22, 20, 22, 23]
   });
 
-  PhiloGL.PhiloGL('lesson04-canvas', {
+  PhiloGL('lesson04-canvas', {
     program: {
       from: 'ids',
       vs: 'shader-vs',

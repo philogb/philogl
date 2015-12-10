@@ -28,14 +28,12 @@ import Shaders from './shaders';
 import * as IO from './io';
 
 if (typeof window !== 'undefined') {
-    window.PhiloGL = {
-        PhiloGL: PhiloGL,
-        O3D: O3D,
-        Mat4: math.Mat4,
-        Fx: Fx,
-        Shaders: Shaders,
-        IO: IO,
-    }
+    window.PhiloGL = PhiloGL;
+    PhiloGL.O3D = O3D;
+    PhiloGL.Mat4 = math.Mat4;
+    PhiloGL.Fx = Fx;
+    PhiloGL.Shaders = Shaders;
+    PhiloGL.IO = IO;
 }
 
 // PhiloGL 1.X compatibility

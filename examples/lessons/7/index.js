@@ -137,7 +137,7 @@ function webGLStart() {
               20, 21, 22, 20, 22, 23]
   });
 
-  PhiloGL.PhiloGL('lesson07-canvas', {
+  PhiloGL('lesson07-canvas', {
     textures: {
       src: ['crate.gif'],
       parameters: [{
