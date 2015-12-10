@@ -343,13 +343,13 @@ export default class Program {
       onError(arg) {
         opt.onError(arg);
       },
-      onComplete(ans) {
+      async onComplete(ans) {
         try {
-          const vertexShader = preprocessAsync(vertexShaderURI, ans[0]);
-          const fragmentShader = preprocessAsync(fragmentShaderURI, ans[1]);
+          const vertexShader = await preprocessAsync(vertexShaderURI, ans[0]);
+          const fragmentShader = await preprocessAsync(fragmentShaderURI, ans[1]);
           opt = {
             ...opt,
-            vs: vectexShader,
+            vs: vertexShader,
             fs: fragmentShader,
           };
           return Program.fromShaderSources(opt);
