@@ -4,6 +4,7 @@
 import Camera from './camera';
 import Scene from './scene';
 import {Plane} from './objects';
+import $ from './jquery-mini';
 
 // length given a 45 fov angle, and 0.2 distance to camera
 const length = 0.16568542494923805;

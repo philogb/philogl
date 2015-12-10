@@ -21,6 +21,7 @@ export * from './media';
 //      TODO- Create separate build paths for the 
 //            browserify/<script> imports.
 import {PhiloGL} from './core';
+import {hasWebGL} from './webgl';
 import * as O3D from './objects';
 import * as math from './math';
 import Fx from './addons/fx';
@@ -28,6 +29,7 @@ import Shaders from './shaders';
 import * as IO from './io';
 import {default as Camera} from './camera';
 import {default as Scene} from './scene';
+import Img from './media';
 
 if (typeof window !== 'undefined') {
     window.PhiloGL = PhiloGL;
@@ -38,6 +40,10 @@ if (typeof window !== 'undefined') {
     PhiloGL.IO = IO;
     PhiloGL.Camera = Camera;
     PhiloGL.Scene = Scene;
+    PhiloGL.hasWebGL = hasWebGL;
+    PhiloGL.Media = {
+        Image: Img
+    }
 }
 
 // PhiloGL 1.X compatibility
