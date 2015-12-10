@@ -314,11 +314,10 @@ export default class Program {
   // Build program from default shaders (requires Shaders)
   static fromDefaultShaders(opt = {}) {
     const {vs = 'Default', fs = 'Default'} = opt;
-    const sh = Shaders;
     opt = {
       ...opt,
-      vs: sh.Vertex[vs],
-      fs: sh.Fragment[fs]
+      vs: Shaders.Vertex[vs],
+      fs: Shaders.Fragment[fs]
     };
     return Program.fromShaderSources(opt);
   }
