@@ -405,7 +405,7 @@ export const Events = {
 
     var bind = opt.bind;
     if (bind) {
-      for (let name in opt) {
+      for (const name in opt) {
         if (name.match(/^on[a-zA-Z0-9]+$/)) {
           ((name, fn) => {
             opt[name] = function() {
