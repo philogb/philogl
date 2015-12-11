@@ -372,7 +372,7 @@ export async function loadTextures(opt) {
       }
     }, opt);
   });
-  app.setTextures(textures);
+  opt.app.setTextures(textures);
 }
 
 // // Load multiple textures from images

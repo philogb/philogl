@@ -44,7 +44,8 @@ function createProgram(gl, vertexShader, fragmentShader) {
 
 // preprocess a source with `#include ""` support
 // `duplist` records all the pending replacements
-function preprocess(base, source, callback, callbackError, duplist = {}) {
+function preprocess(gl, base, source, callback, callbackError, duplist = {}) {
+  
   var match;
   if ((match = source.match(/#include "(.*?)"/))) {
     const url = getpath(base) + match[1];
@@ -57,7 +58,7 @@ function preprocess(base, source, callback, callbackError, duplist = {}) {
     .sendAsync()
     .then(response => {
       duplist[url] = true;
-      return preprocess(url, response, function(replacement) {
+      return preprocess(gl, url, response, function(replacement) {
         delete duplist[url];
         source = source.replace(/#include ".*?"/, replacement);
         source = source.replace(
@@ -66,7 +67,7 @@ function preprocess(base, source, callback, callbackError, duplist = {}) {
             return gl.getExtension(ext) ? ' 1 ': ' 0 ';
           }
         );
-        return preprocess(url, source, callback, callbackError, duplist);
+        return preprocess(gl, url, source, callback, callbackError, duplist);
       }, callbackError, duplist);
     })
     .catch(code => {
@@ -78,9 +79,9 @@ function preprocess(base, source, callback, callbackError, duplist = {}) {
   }
 }
 
-function preprocessAsync(base, source) {
+function preprocessAsync(gl, base, source) {
   return new Promise(
-    (resolve, reject) => preprocess(base, source, resolve, reject)
+    (resolve, reject) => preprocess(gl, base, source, resolve, reject)
   );
 }
 
@@ -95,7 +96,7 @@ function linkProgram(gl, program) {
 }
 
 // Returns a Magic Uniform Setter
-function getUniformSetter(program, info, isArray) {
+function getUniformSetter(gl, program, info, isArray) {
   var name = info.name,
       loc = gl.getUniformLocation(program, name),
       type = info.type,
@@ -204,7 +205,9 @@ export default class Program {
   /*
    * @classdesc Handles loading of programs, mapping of attributes and uniforms
    */
-  constructor(vertexShader, fragmentShader) {
+  constructor(app, vertexShader, fragmentShader) {
+    this.app = app;
+    const gl = app.gl;
     const program = createProgram(gl, vertexShader, fragmentShader);
     if (!program) {
       throw new Error('Failed to create program');
@@ -234,7 +237,7 @@ export default class Program {
       // if array name then clean the array brackets
       name = name[name.length -1] === ']' ?
         name.substr(0, name.length -3) : name;
-      uniforms[name] = getUniformSetter(program, info, info.name != name);
+      uniforms[name] = getUniformSetter(app.gl, program, info, info.name != name);
     }
 
     this.program = program;
@@ -284,9 +287,9 @@ export default class Program {
     const opt = Program.getOptions(arguments);
     const vs = $(opt.vs);
     const fs = $(opt.fs);
-    const vectexShader = await preprocessAsync(opt.path, vs.innerHTML);
-    const fragmentShader = await preprocessAsync(opt.path, fs.innerHTML);
-    const program = new Program(vectexShader, fragmentShader, opt);
+    const vectexShader = await preprocessAsync(opt.app.gl, opt.path, vs.innerHTML);
+    const fragmentShader = await preprocessAsync(opt.app.gl, opt.path, fs.innerHTML);
+    const program = new Program(opt.app, vectexShader, fragmentShader, opt);
     opt.onSuccess(program, opt);
     return program;
   }
@@ -294,10 +297,10 @@ export default class Program {
   // Create a program from vs and fs sources
   static async fromShaderSources() {
     var opt = Program.getOptions(arguments, {path: './'});
-    const vectexShader = await preprocessAsync(opt.path, opt.vs);
-    const fragmentShader = await preprocessAsync(opt.path, opt.fs);
+    const vectexShader = await preprocessAsync(opt.app.gl, opt.path, opt.vs);
+    const fragmentShader = await preprocessAsync(opt.app.gl, opt.path, opt.fs);
     try {
-      const program = new Program(vectexShader, fragmentShader);
+      const program = new Program(opt.app, vectexShader, fragmentShader);
       if (opt.onSuccess) {
         opt.onSuccess(program, opt);
       }
@@ -345,8 +348,8 @@ export default class Program {
       },
       async onComplete(ans) {
         try {
-          const vertexShader = await preprocessAsync(vertexShaderURI, ans[0]);
-          const fragmentShader = await preprocessAsync(fragmentShaderURI, ans[1]);
+          const vertexShader = await preprocessAsync(opt.app.gl, vertexShaderURI, ans[0]);
+          const fragmentShader = await preprocessAsync(opt.app.gl, fragmentShaderURI, ans[1]);
           opt = {
             ...opt,
             vs: vertexShader,
@@ -372,7 +375,7 @@ Object.assign(Program.prototype, {
   Program.prototype[name] = function() {
     var args = Array.prototype.slice.call(arguments);
     args.unshift(this);
-    app[name].apply(app, args);
+    this.app[name].apply(this.app, args);
     return this;
   };
 });
@@ -380,7 +383,7 @@ Object.assign(Program.prototype, {
 ['setFrameBuffer', 'setFrameBuffers', 'setRenderBuffer',
  'setRenderBuffers', 'setTexture', 'setTextures'].forEach(function(name) {
   Program.prototype[name] = function() {
-    app[name].apply(app, arguments);
+    this.app[name].apply(this.app, arguments);
     return this;
   };
 });
