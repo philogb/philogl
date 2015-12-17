@@ -468,8 +468,8 @@ export default class Model {
   }
 
   setTextures(program, force) {
+    const gl = program.app.gl;
     const app = program.app;
-    const gl = app.gl;
     this.textures = this.textures ? $.splat(this.textures) : [];
     let tex2D = 0;
     let texCube = 0;

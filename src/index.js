@@ -18,7 +18,7 @@ export * from './media';
 
 // rye: TODO- Need to clean up the discrepancies between
 //            the browserify imports and the <script> imports.
-//      TODO- Create separate build paths for the 
+//      TODO- Create separate build paths for the
 //            browserify/<script> imports.
 import {PhiloGL} from './core';
 import {hasWebGL} from './webgl';

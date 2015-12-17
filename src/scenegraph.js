@@ -1,12 +1,13 @@
 // graph.js
 // provide some basic scene graph capabilities
+import Model from './objects/model';
 
 export default class Node {
 
   constructor(opt = {}) {
     // a model is associated with the node?
     if (opt.model) {
-      if (model.$$family == 'model') {
+      if (model instanceof Model) {
         this.model = opt.model;
       } else {
         this.model = new PhiloGL.O3D.Model(opt.model);
@@ -49,7 +50,7 @@ export default class Node {
     var ch = this.children;
     for (var i = 0, l = arguments.length; i < l; ++i) {
       var elem = arguments[i];
-      if (elem.$$family == 'node') {
+      if (elem instanceof Node) {
         elem.parent = this;
         ch.push(elem);
       } else {
@@ -121,11 +122,3 @@ export default class Node {
   }
 
 }
-
-Object.assign(Node.prototype, {
-
-  $$family: {
-    value: 'node'
-  }
-
-});

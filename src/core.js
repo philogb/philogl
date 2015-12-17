@@ -5,10 +5,7 @@
 /* eslint-disable no-try-catch */
 /* eslint-disable callback-return */
 /* eslint-disable no-console */
-/* global window */
 /* global console */
-/* global global */
-import $ from './jquery-mini';
 import {getContext} from './webgl';
 import Camera from './camera';
 import Scene from './scene';
@@ -17,45 +14,32 @@ import {loadTextures} from './io';
 import Program from './program';
 import {Events} from './event';
 
+import $ from './jquery-mini';
+import assert from 'assert';
+/* global globalContext */
+
+const SUB_MODULES = [
+  'Vec3', 'Mat4', 'Quat', 'Camera', 'Program', 'WebGL', 'O3D',
+  'Scene', 'Shaders', 'IO', 'Events', 'WorkerGroup', 'Fx', 'Media'
+];
+
 const DEFAULT_OPTS = {
-  context: {
-    /*
-     debug: true
-    */
-  },
-  camera: {
-    fov: 45,
-    near: 0.1,
-    far: 500
-  },
-  program: {
-    // (defaults|ids|sources|uris)
-    from: 'defaults',
-    vs: 'Default',
-    fs: 'Default'
-  },
-  scene: {
-    /*
-     All the scene.js options:
-     lights: { ... }
-    */
-  },
-  textures: {
-    src: []
-  },
-  events: {
-    /*
-     All the events.js options:
-     onClick: fn,
-     onTouchStart: fn...
-    */
-  },
+  // debug: true
+  context: {},
+  camera: {fov: 45, near: 0.1, far: 500},
+  // from: (defaults|ids|sources|uris)
+  program: {from: 'defaults', vs: 'Default', fs: 'Default'},
+     // All the scene.js options: lights: { ... }
+  scene: {},
+  textures: {src: []},
+   // All the events.js options: onClick: fn, onTouchStart: fn...
+  events: {},
   onLoad: () => {},
   onError: error => console.error(error)
 };
 
 // get Program
-var popt = {
+var PROGRAM_CONSTRUCTORS = {
   'defaults': 'fromDefaultShaders',
   'ids': 'fromShaderIds',
   'sources': 'fromShaderSources',
@@ -64,109 +48,87 @@ var popt = {
 
 // Creates a single application object asynchronously
 // with a gl context, a camera, a program, a scene, and an event system.
-export function PhiloGL(canvasId, opt = {}) {
+export async function PhiloGL(canvasId, opt = {}) {
   // rye: TODO- use lodash.defaultsDeep instead of $merge.
-  opt = $.merge(DEFAULT_OPTS, opt);
+  opt = {...DEFAULT_OPTS, ...opt};
 
-  const optContext = opt.context;
-  const optProgram = $.splat(opt.program);
+  const {
+    context: contextOpts,
+    scene: sceneOpts,
+    camera: cameraOpts,
+    program = []
+  } = opt;
+  const optProgram = Array.isArray(program) ? program : [program];
 
   // get Context global to all framework
-  const gl = getContext(canvasId, optContext);
+  const gl = getContext(canvasId, contextOpts);
+  if (!gl) {
+    opt.onError('The WebGL context could not be initialized');
+    return null;
+  }
 
   // get Camera
   const canvas = gl.canvas;
+
   const camera = new Camera(
-    opt.camera.fov,
-    opt.camera.aspect || (canvas.width / canvas.height),
-    opt.camera.near,
-    opt.camera.far,
-    opt.camera);
+    cameraOpts.fov,
+    cameraOpts.aspect || (canvas.width / canvas.height),
+    cameraOpts.near,
+    cameraOpts.far,
+    cameraOpts
+  );
   camera.update();
 
+  // Create app
   const app = new Application({
     gl: gl,
     canvas: canvas,
     camera: camera
   });
 
-  if (!gl) {
-    opt.onError('The WebGL context couldn\'t be initialized');
-    return null;
-  }
+  const programs = await loadPrograms(app, programOpts);
+  app.program = await loadProgramDeps(app, programs, opt);
 
-  const programLength = optProgram.length;
+  // Create a default Scene
+  app.scene = new Scene(app, app.program, app.camera, sceneOpts);
 
-  let count = programLength;
-  const programs = {};
-  let error = false;
-  const programCallback = {
-    onSuccess: (p, popt) => {
-      programs[popt.id || (programLength - count)] = p;
-      count--;
-      if (count === 0 && !error) {
-        const program = programLength === 1 ? p : programs;
-        loadProgramDeps(app, program, opt, (app) => {
-          opt.onLoad(app);
-        });
-      }
-    },
-    onError: (p) => {
-      count--;
-      opt.onError(p);
-      error = true;
-    }
-  };
+  // Deprecated, as PhiloGL now returns a promise
+  opt.onLoad(app);
 
-  optProgram.forEach(async (programOpts, i) => {
-    programOpts.app = app;
-    let pfrom = programOpts.from;
-    let program;
-    for (const p in popt) {
-      if (pfrom === p) {
-        try {
-          program = await Program[popt[p]]({
-            ...programCallback,
-            ...programOpts
-          });
-        } catch (e) {
-          programCallback.onError(e);
-        }
-        break;
-      }
-    }
-    if (program) {
-      programCallback.onSuccess(program, optProgram); // Should this be programOpts instead of optProgram?
-    }
-  });
-
+  return app;
 }
 
-async function loadProgramDeps(app, program, opt, callback) {
+async function loadPrograms(app, programDescriptors) {
+  const programPromises = programDescriptors.map(async (programOpts, i) => {
+    const asyncProgramConstructor = programOpts.from;
+    assert(asyncProgramConstructor in PROGRAM_CONSTRUCTORS);
+    const program = await Program[asyncProgramConstructor]({
+      ...programOpts,
+      app: app
+    });
+    programs[programOpts.id];
+    return program;
+  });
+
+  return await Promise.all(programPromises);
+}
+
+async function loadProgramDeps(app, program, opt) {
 
   const optEvents = opt.events;
-  const optScene = opt.scene;
   const optTextures = opt.textures;
   optTextures.app = app;
 
   app.program = program;
 
-  // get Scene
-  var scene = new Scene(app, app.program, app.camera, optScene);
-
-  app.scene = scene;
-
   // Use program
-  if (program.$$family === 'program') {
+  if (program instanceof Program) {
     program.use();
   }
 
   // get Events
   if (optEvents) {
-    Events.create(app, {
-      ...optEvents,
-      bind: app
-    });
+    Events.create(app, {...optEvents, bind: app});
   }
 
   // load Textures
@@ -174,17 +136,13 @@ async function loadProgramDeps(app, program, opt, callback) {
     const textureMap = await loadTextures(optTextures);
     app.setTextures(textureMap);
   }
-
-  callback(app);
 }
 
 // Unpacks the submodules to the global space.
+// @deprecated - mainly for examples
 export function unpack(branch) {
   branch = branch || globalContext;
-  [
-    'Vec3', 'Mat4', 'Quat', 'Camera', 'Program', 'WebGL', 'O3D',
-    'Scene', 'Shaders', 'IO', 'Events', 'WorkerGroup', 'Fx', 'Media'
-  ].forEach(module => {
+  SUB_MODULES.forEach(module => {
     branch[module] = PhiloGL[module];
   });
   branch.gl = globalContext.gl;

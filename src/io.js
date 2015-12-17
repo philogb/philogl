@@ -163,13 +163,12 @@ XHR.State = {};
 });
 
 // Make parallel requests and group the responses.
-XHR.Group = class {
+class XHRGroup {
+
   constructor(opt = {}) {
     opt = {
       urls: [],
-      onError: $.empty,
-      onSuccess: $.empty,
-      onComplete: $.empty,
+      onSuccess: noop,
       method: 'GET',
       async: true,
       noCache: false,
@@ -180,9 +179,7 @@ XHR.Group = class {
     };
 
     var urls = $.splat(opt.urls);
-    let len = urls.length;
-    let ans = new Array(len);
-    const reqs = urls.map((url, i) => new XHR({
+    this.reqs = urls.map((url, i) => new XHR({
       url: url,
       method: opt.method,
       async: opt.async,
@@ -190,46 +187,11 @@ XHR.Group = class {
       sendAsBinary: opt.sendAsBinary,
       responseType: opt.responseType,
       body: opt.body,
-      onError: handleError(i),
-      onSuccess: handleSuccess(i)
     }));
-
-    function handleError(i) {
-      return e => {
-        --len;
-        opt.onError(e, i);
-        if (!len) {
-          opt.onComplete(ans);
-        }
-      };
-    }
-
-    function handleSuccess(i) {
-      return response => {
-        --len;
-        ans[i] = response;
-        opt.onSuccess(response, i);
-        if (!len) {
-          opt.onComplete(ans);
-        }
-      };
-    }
-
-    this.reqs = reqs;
   }
 
-  send() {
-    for (var i = 0, reqs = this.reqs, l = reqs.length; i < l; ++i) {
-      reqs[i].send();
-    }
-  }
-
-  sendAsync() {
-    return new Promise((resolve, reject) => {
-      opt.onComplete = resolve;
-      opt.onError = reject;
-      this.send();
-    })
+  async sendAsync() {
+    return await Promise.all(this.reqs.map(req => req.sendAsync()));
   }
 
 };

@@ -3,6 +3,8 @@
 // maybe others like device, etc).
 import Camera from './camera';
 import Scene from './scene';
+import Program from './program';
+
 import {Plane} from './objects';
 import $ from './jquery-mini';
 
@@ -19,8 +21,10 @@ export default class Img {
   // post process an image by setting it to a texture with a specified fragment
   // and vertex shader.
   static postProcess(opt) {
-    var program = app.program.$$family ? app.program : app.program[opt.program],
-        textures = opt.fromTexture ? $.splat(opt.fromTexture) : [],
+    const program = app.program instanceof Program ?
+      app.program :
+      app.program[opt.program],
+    var textures = opt.fromTexture ? $.splat(opt.fromTexture) : [],
         framebuffer = opt.toFrameBuffer,
         screen = !!opt.toScreen,
         width = opt.width || app.canvas.width,

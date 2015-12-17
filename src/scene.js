@@ -2,32 +2,44 @@
 // Scene Object management and rendering
 
 import {Vec3} from './math';
+import Program from './program';
 import $ from './jquery-mini';
+import assert from 'assert';
+
+function noop() {}
+
+const DEFAULT_SCENE_OPTS = {
+  lights: {
+    enable: false,
+    // ambient light
+    ambient: {r: 0.2, g: 0.2, b: 0.2},
+    // directional light
+    directional: {
+      direction: {x: 1, y: 1, z: 1},
+      color: {r: 0, g: 0, b: 0}
+    }
+    // point light
+    // points: []
+  },
+  effects: {
+    fog: false
+    // { near, far, color }
+  }
+};
 
 // Scene class
 export default class Scene {
 
   constructor(app, program, camera, opt = {}) {
+    assert(app);
+    assert(camera);
+
     this.app = app;
     // rye: TODO- use lodash.defaultsDeep instead of $merge.
-    opt = $.merge({
-      lights: {
-        enable: false,
-        // ambient light
-        ambient: {r: 0.2, g: 0.2, b: 0.2},
-        // directional light
-        directional: {
-          direction: {x: 1, y: 1, z: 1},
-          color: {r: 0, g: 0, b: 0}
-        }
-        // point light
-        // points: []
-      },
-      effects: {
-        fog: false
-        // { near, far, color }
-      },
-    }, opt);
+    opt = {
+      ...DEFAULT_SCENE_OPTS,
+      ...opt
+    };
 
     this.program = opt.program ? program[opt.program] : program;
     this.camera = camera;
@@ -49,15 +61,18 @@ export default class Scene {
   remove(model) {
     const models = this.models;
     const indexOf = models.indexOf(model);
-
     if (indexOf > -1) {
       models.splice(indexOf, 1);
     }
   }
 
+  removeAll() {
+    this.models = [];
+  }
+
   getProgram(obj) {
     let program = this.program;
-    if (program.$$family !== 'program' && obj && obj.program) {
+    if (!(program instanceof Program) && obj && obj.program) {
       program = program[obj.program];
       program.use();
       return program;
@@ -74,8 +89,8 @@ export default class Scene {
     obj.unsetState(program);
   }
 
+  // Setup lighting and scene effects like fog, etc.
   beforeRender(program) {
-    // Setup lighting and scene effects like fog, etc.
     this.setupLighting(program);
     this.setupEffects(program);
     if (this.camera) {
@@ -86,21 +101,9 @@ export default class Scene {
   // Setup the lighting system: ambient, directional, point lights.
   setupLighting(program) {
     // Setup Lighting
-    const light = this.config.lights;
-    const ambient = light.ambient;
-    const directional = light.directional;
-    const dcolor = directional.color;
-    let dir = directional.direction;
-    const enable = light.enable;
-    const points = light.points && $.splat(light.points) || [];
-    const numberPoints = points.length;
-    const pointLocations = [];
-    const pointColors = [];
-    const enableSpecular = [];
-    const pointSpecularColors = [];
-
-    // Normalize lighting direction vector
-    dir = new Vec3(dir.x, dir.y, dir.z).$unit().$scale(-1);
+    const {
+      enable, ambient, directional: {color, direction}, points = []
+    } = this.config.lights;
 
     // Set light uniforms. Ambient and directional lights.
     program.setUniform('enableLights', enable);
@@ -109,25 +112,36 @@ export default class Scene {
       return;
     }
 
-    program.setUniform('ambientColor', [ambient.r, ambient.g, ambient.b]);
-    program.setUniform('directionalColor', [dcolor.r, dcolor.g, dcolor.b]);
-    program.setUniform('lightingDirection', [dir.x, dir.y, dir.z]);
+    // Normalize lighting direction vector
+    const dir = new Vec3(direction.x, direction.y, direction.z)
+      .$unit()
+      .$scale(-1);
+
+    program.setUniforms({
+      'ambientColor': [ambient.r, ambient.g, ambient.b],
+      'directionalColor': [color.r, color.g, color.b],
+      'lightingDirection': [dir.x, dir.y, dir.z]
+    });
 
     // Set point lights
+    const numberPoints = points.length;
     program.setUniform('numberPoints', numberPoints);
-    for (let i = 0, l = numberPoints; i < l; i++) {
-      const point = points[i];
-      const position = point.position;
-      const color = point.color || point.diffuse;
-      const spec = point.specular;
+
+    const pointLocations = [];
+    const pointColors = [];
+    const enableSpecular = [];
+    const pointSpecularColors = [];
+    for (const point of points) {
+      const {position, color, diffuse, specular} = point;
+      const pointColor = color || diffuse;
 
       pointLocations.push(position.x, position.y, position.z);
-      pointColors.push(color.r, color.g, color.b);
+      pointColors.push(pointColor.r, pointColor.g, pointColor.b);
 
       // Add specular color
-      enableSpecular.push(Number(Boolean(spec)));
-      if (spec) {
-        pointSpecularColors.push(spec.r, spec.g, spec.b);
+      enableSpecular.push(Number(Boolean(specular)));
+      if (specular) {
+        pointSpecularColors.push(specular.r, specular.g, specular.b);
       } else {
         pointSpecularColors.push(0, 0, 0);
       }
@@ -148,9 +162,8 @@ export default class Scene {
 
   // Setup effects like fog, etc.
   setupEffects(program) {
-    const config = this.config.effects;
-    const fog = config.fog;
-    const color = fog.color || {r: 0.5, g: 0.5, b: 0.5};
+    const {fog} = this.config.effects;
+    const {color = {r: 0.5, g: 0.5, b: 0.5}} = fog;
 
     if (fog) {
       program.setUniforms({
@@ -167,12 +180,12 @@ export default class Scene {
   // Renders all objects in the scene.
   render(opt = {}) {
     const camera = this.camera;
-    const renderProgram = opt.renderProgram;
+    const {renderProgram} = opt;
     const pType = $.type(this.program);
     const multiplePrograms = !renderProgram && pType === 'object';
     const options = {
-      onBeforeRender: $.empty,
-      onAfterRender: $.empty,
+      onBeforeRender: noop,
+      onAfterRender: noop,
       ...opt
     };
 
@@ -202,29 +215,32 @@ export default class Scene {
   }
 
   renderToTexture(name, opt = {}) {
+    const gl = this.app.gl;
+
     const texture = this.app.textures[name + '-texture'];
     const texMemo = this.app.textureMemo[name + '-texture'];
     this.render(opt);
-    this.app.gl.bindTexture(texMemo.textureType, texture);
-    // this.app.gl.generateMipmap(texMemo.textureType);
-    // this.app.gl.bindTexture(texMemo.textureType, null);
+
+    gl.bindTexture(texMemo.textureType, texture);
+    // gl.generateMipmap(texMemo.textureType);
+    // gl.bindTexture(texMemo.textureType, null);
   }
 
-  renderObject(obj, program) {
-    const camera = this.camera;
-    const view = camera.view;
-    const projection = camera.projection;
-    const object = obj.matrix;
-    const world = view.mulMat4(object);
-    const worldInverse = world.invert();
+  renderObject(object, program) {
+    const gl = this.app.gl;
+
+    const {view} = this.camera;
+    const {matrix} = object;
+    const worldMatrix = view.mulMat4(matrix);
+    const worldInverse = worldMatrix.invert();
     const worldInverseTranspose = worldInverse.transpose();
 
-    obj.setState(program);
+    object.setState(program);
 
     // Now set view and normal matrices
     program.setUniforms({
-      objectMatrix: object,
-      worldMatrix: world,
+      objectMatrix: matrix,
+      worldMatrix: worldMatrix,
       worldInverseMatrix: worldInverse,
       worldInverseTransposeMatrix: worldInverseTranspose
       // worldViewProjection:
@@ -234,26 +250,30 @@ export default class Scene {
     // Draw
     // TODO(nico): move this into O3D, but, somehow,
     // abstract the gl.draw* methods inside that object.
-    if (obj.render) {
-      obj.render(this.app.gl, program, camera);
+    if (object.render) {
+      object.render(gl, program, this.camera);
     } else {
-      const drawType = obj.drawType !== undefined ?
-        this.app.gl.get(obj.drawType) : this.app.gl.TRIANGLES;
-      if (obj.$indicesLength) {
-        this.app.gl.drawElements(drawType, obj.$indicesLength, this.app.gl.UNSIGNED_SHORT, 0);
+      const drawType = object.drawType !== undefined ?
+        gl.get(object.drawType) : gl.TRIANGLES;
+      if (object.$indicesLength) {
+        gl.drawElements(
+          drawType, object.$indicesLength, gl.UNSIGNED_SHORT, 0);
       } else {
-        this.app.gl.drawArrays(drawType, 0, obj.$verticesLength / 3);
+        gl.drawArrays(drawType, 0, object.$verticesLength / 3);
       }
     }
 
-    obj.unsetState(program);
+    object.unsetState(program);
+  }
+
+  unproject(pt, camera) {
+    return camera.view.invert().mulMat4(camera.projection.invert()).mulVec3(pt);
   }
 
   // setup picking framebuffer
   setupPicking(opt) {
     // create picking program
-    const program = PhiloGL.Program.fromDefaultShaders();
-    const floor = Math.floor;
+    const program = Program.fromDefaultShaders();
 
     // create framebuffer
     this.app.setFrameBuffer('$picking', {
@@ -281,8 +301,9 @@ export default class Scene {
     this.pickingProgram = opt.pickingProgram || program;
   }
 
-  pick(x, y, opt) {
-    opt = opt || {};
+  pick(x, y, opt = {}) {
+    const gl = this.app.gl;
+
     // setup the picking program if this is
     // the first time we enter the method.
     if (!this.pickingProgram) {
@@ -299,7 +320,7 @@ export default class Scene {
     const config = this.config;
     const memoLightEnable = config.lights.enable;
     const memoFog = config.effects.fog;
-    const canvas = this.app.gl.canvas;
+    const canvas = gl.canvas;
     const viewport = opt.viewport || {};
     const pixelRatio = opt.pixelRatio || 1;
     const width = (viewport.width || canvas.offsetWidth || canvas.width);
@@ -310,10 +331,11 @@ export default class Scene {
     const yp = (y * pixelRatio - (viewport.y || 0));
     const ndcx = xp * 2 / width - 1;
     const ndcy = 1 - yp * 2 / height;
-    const target = this.unproject([ndcx, ndcy,  1.0], camera);
+    const target = this.unproject([ndcx, ndcy, 1.0], camera);
     const hash = [];
     const pixel = new Uint8Array(1 * 1 * 4);
-    let backgroundColor, capture, pindex;
+    let backgroundColor;
+    let capture;
 
     this.camera.target = target;
     this.camera.update();
@@ -327,11 +349,11 @@ export default class Scene {
     pickingProgram.setUniform('enablePicking', true);
 
     // render the scene to a texture
-    this.app.gl.disable(this.app.gl.BLEND);
-    this.app.gl.viewport(0, 0, resWidth, resHeight);
-    this.app.gl.clear(this.app.gl.COLOR_BUFFER_BIT | this.app.gl.DEPTH_BUFFER_BIT);
+    gl.disable(gl.BLEND);
+    gl.viewport(0, 0, resWidth, resHeight);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // read the background color so we don't step on it
-    this.app.gl.readPixels(0, 0, 1, 1, this.app.gl.RGBA, this.app.gl.UNSIGNED_BYTE, pixel);
+    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
     backgroundColor = pixel[0] + pixel[1] * 256 + pixel[2] * 256 * 256;
 
     // render picking scene
@@ -344,17 +366,16 @@ export default class Scene {
 
     // the target point is in the center of the screen,
     // so it should be the center point.
-    this.app.gl.readPixels(2, 0, 1, 1, this.app.gl.RGBA, this.app.gl.UNSIGNED_BYTE, pixel);
+    gl.readPixels(2, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
 
-    var stringColor = [pixel[0], pixel[1], pixel[2]].join(),
-        elem = o3dHash[stringColor],
-        pick;
+    const stringColor = [pixel[0], pixel[1], pixel[2]].join();
+    let elem = o3dHash[stringColor];
+    let pick;
 
    // console.log('o3dHash', stringColor, x, y, width, height);
 
     if (!elem) {
-      for (var i = 0, l = o3dList.length; i < l; i++) {
-        elem = o3dList[i];
+      for (elem of o3dList) {
         pick = elem.pick(pixel);
         if (pick !== false) {
           elem.$pickingIndex = pick;
@@ -372,12 +393,17 @@ export default class Scene {
     config.effects.fog = memoFog;
 
     // restore previous program
-    if (program) program.use();
+    if (program) {
+      program.use();
+    }
+
     // restore the viewport size to original size
-    this.app.gl.viewport(viewport.x || 0,
-  		          viewport.y || 0,
-  		          width,
-  		          height);
+    gl.viewport(
+      viewport.x || 0,
+      viewport.y || 0,
+      width,
+      height
+    );
     // restore camera properties
     camera.target = oldtarget;
     camera.aspect = oldaspect;
@@ -392,10 +418,6 @@ export default class Scene {
     return elem && elem.pickable && elem;
   }
 
-  unproject(pt, camera) {
-    return camera.view.invert().mulMat4(camera.projection.invert()).mulVec3(pt);
-  }
-
   renderPickingScene(opt) {
     // if set through the config, render a custom scene.
     if (this.config.renderPickingScene) {
@@ -403,22 +425,22 @@ export default class Scene {
       return;
     }
 
-    var pickingProgram = this.pickingProgram,
-        o3dHash = opt.o3dHash,
-        o3dList = opt.o3dList,
-        background = opt.background,
-        hash = opt.hash,
-        index = 0;
+    const pickingProgram = this.pickingProgram;
+    let o3dHash = opt.o3dHash;
+    let o3dList = opt.o3dList;
+    let background = opt.background;
+    let hash = opt.hash;
+    let index = 0;
 
     // render to texture
     this.renderToTexture('$picking', {
       renderProgram: pickingProgram,
       onBeforeRender(elem, i) {
-        if (i == background) {
+        if (i === background) {
           index = 1;
         }
-        var suc = i + index,
-            hasPickingColors = !!elem.pickingColors;
+        const suc = i + index;
+        const hasPickingColors = Boolean(elem.pickingColors);
 
         pickingProgram.setUniform('hasPickingColors', hasPickingColors);
 
@@ -426,7 +448,8 @@ export default class Scene {
           hash[0] = suc % 256;
           hash[1] = ((suc / 256) >> 0) % 256;
           hash[2] = ((suc / (256 * 256)) >> 0) % 256;
-          pickingProgram.setUniform('pickColor', [hash[0] / 255, hash[1] / 255, hash[2] / 255]);
+          pickingProgram.setUniform('pickColor',
+            [hash[0] / 255, hash[1] / 255, hash[2] / 255]);
           o3dHash[hash.join()] = elem;
         } else {
           o3dList.push(elem);
@@ -434,11 +457,11 @@ export default class Scene {
       }
     });
   }
-}
 
-Object.assign(Scene.prototype, {
-  resetPicking: $.empty
-});
+  resetPicking() {
+    // empty
+  }
+}
 
 Scene.MAX_TEXTURES = 10;
 Scene.MAX_POINT_LIGHTS = 4;

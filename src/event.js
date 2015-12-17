@@ -111,7 +111,7 @@ export class EventsProxy {
   attachEvents() {
     const domElem = this.domElem;
     const opt = this.opt;
-    const that = this;
+    const self = this;
 
     if (opt.disableContextMenu) {
       domElem.oncontextmenu = function() { return false; };
@@ -121,7 +121,7 @@ export class EventsProxy {
       ['mouseup', 'mousedown', 'mousemove', 'mouseover', 'mouseout']
       .forEach(action => {
         domElem.addEventListener(action, (e, win) => {
-          that[action](that.eventInfo(action, e, win));
+          self[action](self.eventInfo(action, e, win));
         }, false);
       });
 
@@ -133,14 +133,14 @@ export class EventsProxy {
         type = 'DOMMouseScroll';
       }
       domElem.addEventListener(type, (e, win) => {
-        that['mousewheel'](that.eventInfo('mousewheel', e, win));
+        self['mousewheel'](self.eventInfo('mousewheel', e, win));
       }, false);
     }
 
     if (opt.enableTouch) {
         ['touchstart', 'touchmove', 'touchend'].forEach(action => {
           domElem.addEventListener(action, (e, win) => {
-            that[action](that.eventInfo(action, e, win));
+            self[action](self.eventInfo(action, e, win));
           }, false);
         });
     }
@@ -148,7 +148,7 @@ export class EventsProxy {
     if (opt.enableKeyboard) {
       ['keydown', 'keyup'].forEach(action => {
         document.addEventListener(action, (e, win) => {
-          that[action](that.eventInfo(action, e, win));
+          self[action](self.eventInfo(action, e, win));
         }, false);
       });
     }

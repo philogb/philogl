@@ -2,17 +2,9 @@
 // Creates programs out of shaders and provides convenient methods for loading
 // buffers attributes and uniforms
 
-import $ from './jquery-mini';
-import {XHR} from './io';
 import Shaders from './shaders';
-
-function getpath(path) {
-  var last = path.lastIndexOf('/');
-  if (last === '/') {
-    return './';
-  }
-  return path.substr(0, last + 1);
-}
+import {XHR} from './io';
+import $ from './jquery-mini';
 
 // Creates a shader from a string source.
 function createShader(gl, shaderSource, shaderType) {
@@ -33,138 +25,143 @@ function createShader(gl, shaderSource, shaderType) {
 
 // Creates a program from vertex and fragment shader sources.
 function createProgram(gl, vertexShader, fragmentShader) {
-  var program = gl.createProgram();
-  gl.attachShader(program,
-    createShader(gl, vertexShader, gl.VERTEX_SHADER));
-  gl.attachShader(program,
-    createShader(gl, fragmentShader, gl.FRAGMENT_SHADER));
-  linkProgram(gl, program);
-  return program;
+  const vs = createShader(gl, vertexShader, gl.VERTEX_SHADER));
+  const fs = createShader(gl, fragmentShader, gl.FRAGMENT_SHADER));
+
+  const glProgram = gl.createProgram();
+  gl.attachShader(glProgram, vs);
+  gl.attachShader(glProgram, fs);
+
+  gl.linkProgram(glProgram);
+  const linked = gl.getProgramParameter(glProgram, gl.LINK_STATUS);
+  if (!linked) {
+    throw new Error(`Error linking shader ${gl.getProgramInfoLog(glProgram)}`);
+  }
+
+  return glProgram;
 }
 
-// preprocess a source with `#include ""` support
+// recursiveLoad a source with `#include ""` support
 // `duplist` records all the pending replacements
-function preprocess(gl, base, source, callback, callbackError, duplist = {}) {
-  
+async function recursiveLoad(gl, base, source, duplist = {}) {
+
+  function getpath(path) {
+    var last = path.lastIndexOf('/');
+    if (last === '/') {
+      return './';
+    }
+    return path.substr(0, last + 1);
+  }
+
   var match;
   if ((match = source.match(/#include "(.*?)"/))) {
     const url = getpath(base) + match[1];
 
-    if (duplist[url]) {
-      callbackError('Recursive include');
+    try {
+
+      if (duplist[url]) {
+        callbackError('Recursive include');
+      }
+
+      const response = new XHR({url: url, noCache: true}).sendAsync();
+      duplist[url] = true;
+      const replacement = await recursiveLoad(gl, url, response);
+      delete duplist[url];
+      source = source.replace(/#include ".*?"/, replacement);
+      source = source.replace(
+        /\sHAS_EXTENSION\s*\(\s*([A-Za-z_\-0-9]+)\s*\)/g,
+        (all, ext) => gl.getExtension(ext) ? ' 1 ': ' 0 '
+      );
+      return recursiveLoad(gl, url, source, duplist);
+
+    } catch (error) {
+      throw (new Error(`Load including file ${url} failed`));
     }
 
-    return new XHR({url: url, noCache: true})
-    .sendAsync()
-    .then(response => {
-      duplist[url] = true;
-      return preprocess(gl, url, response, function(replacement) {
-        delete duplist[url];
-        source = source.replace(/#include ".*?"/, replacement);
-        source = source.replace(
-          /\sHAS_EXTENSION\s*\(\s*([A-Za-z_\-0-9]+)\s*\)/g,
-          function (all, ext) {
-            return gl.getExtension(ext) ? ' 1 ': ' 0 ';
-          }
-        );
-        return preprocess(gl, url, source, callback, callbackError, duplist);
-      }, callbackError, duplist);
-    })
-    .catch(code => {
-      callbackError(new Error(
-        'Load included file `' + url + '` failed: Code ' + code));
-    });
-  } else {
-    return callback(source);
   }
-}
-
-function preprocessAsync(gl, base, source) {
-  return new Promise(
-    (resolve, reject) => preprocess(gl, base, source, resolve, reject)
-  );
-}
-
-// Link a program.
-function linkProgram(gl, program) {
-  gl.linkProgram(program);
-  var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
-  if (!linked) {
-    throw new Error(`Error linking shader ${gl.getProgramInfoLog(program)}`);
-  }
-  return true;
 }
 
 // Returns a Magic Uniform Setter
-function getUniformSetter(gl, program, info, isArray) {
-  var name = info.name,
-      loc = gl.getUniformLocation(program, name),
-      type = info.type,
-      matrix = false,
-      vector = true,
-      glFunction, typedArray;
+function getUniformSetter(gl, glProgram, info, isArray) {
+
+  const {name, type} = info;
+  const loc = gl.getUniformLocation(glProgram, name);
+
+  let matrix = false;
+  let vector = true;
+  let glFunction;
+  let typedArray;
 
   if (info.size > 1 && isArray) {
     switch (type) {
-      case gl.FLOAT:
-        glFunction = gl.uniform1fv;
-        typedArray = Float32Array;
-        vector = false;
-        break;
-      case gl.INT: case gl.BOOL: case gl.SAMPLER_2D: case gl.SAMPLER_CUBE:
-        glFunction = gl.uniform1iv;
-        typedArray = Uint16Array;
-        vector = false;
-        break;
+
+    case gl.FLOAT:
+      glFunction = gl.uniform1fv;
+      typedArray = Float32Array;
+      vector = false;
+      break;
+
+    case gl.INT:
+    case gl.BOOL:
+    case gl.SAMPLER_2D:
+    case gl.SAMPLER_CUBE:
+      glFunction = gl.uniform1iv;
+      typedArray = Uint16Array;
+      vector = false;
+      break;
+
+    default:
+      throw new Error('Uniform: Unknown GLSL type');
+
     }
   }
 
   if (vector) {
     switch (type) {
-      case gl.FLOAT:
-        glFunction = gl.uniform1f;
-        break;
-      case gl.FLOAT_VEC2:
-        glFunction = gl.uniform2fv;
-        typedArray = isArray ? Float32Array : new Float32Array(2);
-        break;
-      case gl.FLOAT_VEC3:
-        glFunction = gl.uniform3fv;
-        typedArray = isArray ? Float32Array : new Float32Array(3);
-        break;
-      case gl.FLOAT_VEC4:
-        glFunction = gl.uniform4fv;
-        typedArray = isArray ? Float32Array : new Float32Array(4);
-        break;
-      case gl.INT: case gl.BOOL: case gl.SAMPLER_2D: case gl.SAMPLER_CUBE:
-        glFunction = gl.uniform1i;
-        break;
-      case gl.INT_VEC2: case gl.BOOL_VEC2:
-        glFunction = gl.uniform2iv;
-        typedArray = isArray ? Uint16Array : new Uint16Array(2);
-        break;
-      case gl.INT_VEC3: case gl.BOOL_VEC3:
-        glFunction = gl.uniform3iv;
-        typedArray = isArray ? Uint16Array : new Uint16Array(3);
-        break;
-      case gl.INT_VEC4: case gl.BOOL_VEC4:
-        glFunction = gl.uniform4iv;
-        typedArray = isArray ? Uint16Array : new Uint16Array(4);
-        break;
-      case gl.FLOAT_MAT2:
-        matrix = true;
-        glFunction = gl.uniformMatrix2fv;
-        break;
-      case gl.FLOAT_MAT3:
-        matrix = true;
-        glFunction = gl.uniformMatrix3fv;
-        break;
-      case gl.FLOAT_MAT4:
-        matrix = true;
-        glFunction = gl.uniformMatrix4fv;
-        break;
-      default:
-        break;
+    case gl.FLOAT:
+      glFunction = gl.uniform1f;
+      break;
+    case gl.FLOAT_VEC2:
+      glFunction = gl.uniform2fv;
+      typedArray = isArray ? Float32Array : new Float32Array(2);
+      break;
+    case gl.FLOAT_VEC3:
+      glFunction = gl.uniform3fv;
+      typedArray = isArray ? Float32Array : new Float32Array(3);
+      break;
+    case gl.FLOAT_VEC4:
+      glFunction = gl.uniform4fv;
+      typedArray = isArray ? Float32Array : new Float32Array(4);
+      break;
+    case gl.INT: case gl.BOOL: case gl.SAMPLER_2D: case gl.SAMPLER_CUBE:
+      glFunction = gl.uniform1i;
+      break;
+    case gl.INT_VEC2: case gl.BOOL_VEC2:
+      glFunction = gl.uniform2iv;
+      typedArray = isArray ? Uint16Array : new Uint16Array(2);
+      break;
+    case gl.INT_VEC3: case gl.BOOL_VEC3:
+      glFunction = gl.uniform3iv;
+      typedArray = isArray ? Uint16Array : new Uint16Array(3);
+      break;
+    case gl.INT_VEC4: case gl.BOOL_VEC4:
+      glFunction = gl.uniform4iv;
+      typedArray = isArray ? Uint16Array : new Uint16Array(4);
+      break;
+    case gl.FLOAT_MAT2:
+      matrix = true;
+      glFunction = gl.uniformMatrix2fv;
+      break;
+    case gl.FLOAT_MAT3:
+      matrix = true;
+      glFunction = gl.uniformMatrix3fv;
+      break;
+    case gl.FLOAT_MAT4:
+      matrix = true;
+      glFunction = gl.uniformMatrix4fv;
+      break;
+    default:
+      break;
     }
   }
 
@@ -172,28 +169,26 @@ function getUniformSetter(gl, program, info, isArray) {
 
   // Set a uniform array
   if (isArray && typedArray) {
-    return function(val) {
-      glFunction(loc, new typedArray(val));
-    };
 
-  // Set a matrix uniform
+    return val => glFunction(loc, new typedArray(val);
+
   } else if (matrix) {
-    return function(val) {
-      glFunction(loc, false, val.toFloat32Array());
-    };
+    // Set a matrix uniform
+    return val => glFunction(loc, false, val.toFloat32Array();
 
-  // Set a vector/typed array uniform
   } else if (typedArray) {
-    return function(val) {
+
+    // Set a vector/typed array uniform
+    return val => {
       typedArray.set(val.toFloat32Array ? val.toFloat32Array() : val);
       glFunction(loc, typedArray);
     };
 
-  // Set a primitive-valued uniform
   } else {
-    return function(val) {
-      glFunction(loc, val);
-    };
+
+    // Set a primitive-valued uniform
+    return val => glFunction(loc, val);
+
   }
 
   // FIXME: Unreachable code
@@ -202,14 +197,15 @@ function getUniformSetter(gl, program, info, isArray) {
 
 export default class Program {
 
-  /*
+  /**
    * @classdesc Handles loading of programs, mapping of attributes and uniforms
    */
   constructor(app, vertexShader, fragmentShader) {
-    this.app = app;
     const gl = app.gl;
-    const program = createProgram(gl, vertexShader, fragmentShader);
-    if (!program) {
+
+    this.app = app;
+    const glProgram = createProgram(gl, vertexShader, fragmentShader);
+    if (!glProgram) {
       throw new Error('Failed to create program');
     }
 
@@ -221,30 +217,97 @@ export default class Program {
     let index;
 
     // fill attribute locations
-    let len = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    let len = gl.getProgramParameter(glProgram, gl.ACTIVE_ATTRIBUTES);
     for (let i = 0; i < len; i++) {
-      info = gl.getActiveAttrib(program, i);
+      info = gl.getActiveAttrib(glProgram, i);
       name = info.name;
-      index = gl.getAttribLocation(program, info.name);
+      index = gl.getAttribLocation(glProgram, info.name);
       attributes[name] = index;
     }
 
     // create uniform setters
-    len = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    len = gl.getProgramParameter(glProgram, gl.ACTIVE_UNIFORMS);
     for (let i = 0; i < len; i++) {
-      info = gl.getActiveUniform(program, i);
+      info = gl.getActiveUniform(glProgram, i);
       name = info.name;
       // if array name then clean the array brackets
-      name = name[name.length -1] === ']' ?
-        name.substr(0, name.length -3) : name;
-      uniforms[name] = getUniformSetter(app.gl, program, info, info.name != name);
+      name = name[name.length - 1] === ']' ?
+        name.substr(0, name.length - 3) : name;
+      uniforms[name] =
+        getUniformSetter(gl, glProgram, info, info.name !== name);
     }
 
-    this.program = program;
+    this.program = glProgram;
+
     // handle attributes and uniforms
     this.attributes = attributes;
     this.attributeEnabled = attributeEnabled;
     this.uniforms = uniforms;
+  }
+
+  // Alternate constructor
+  // Create a program from vertex and fragment shader node ids
+  static async fromShaderIds(...args) {
+    const opt = Program._getOptions({}, ...args);
+    const gl = opt.app.gl;
+
+    const {vs, fs, path} = opt;
+    const [vertexShader, fragmentShader] = await Promise.all(
+      recursiveLoad(gl, path, vs.innerHTML),
+      recursiveLoad(gl, path, fs.innerHTML)
+    );
+
+    return new Program(opt.app, vertexShader, fragmentShader);
+  }
+
+  // Alternate constructor
+  // Create a program from vs and fs sources
+  static async fromShaderSources(...args) {
+    var opt = Program._getOptions({path: './', ...args});
+    const gl = opt.app.gl;
+    const [vertexShader, fragmentShader] = await Promise.all(
+      recursiveLoad(gl, opt.path, opt.vs),
+      recursiveLoad(gl, opt.path, opt.fs)
+    );
+    return new Program(opt.app, vertexShader, fragmentShader);
+  }
+
+  // Alternate constructor
+  // Build program from default shaders (requires Shaders)
+  static async fromDefaultShaders(opt = {}) {
+    const {vs = 'Default', fs = 'Default'} = opt;
+    return Program.fromShaderSources({
+      ...opt,
+      vs: Shaders.Vertex[vs],
+      fs: Shaders.Fragment[fs]
+    });
+  }
+
+  // Alternate constructor
+  // Implement Program.fromShaderURIs (requires IO)
+  static async fromShaderURIs(opt = {}) {
+    const gl = opt.app.gl;
+    const {path = '', vs = '', fs = '', noCache = false} = opt;
+
+    const vertexShaderURI = path + vs;
+    const fragmentShaderURI = path + fs;
+
+    const responses = await new XHRGroup({
+      urls: [vertexShaderURI, fragmentShaderURI],
+      noCache: noCache,
+    }).sendAsync();
+
+    const [vertexShader, fragmentShader] = await Promise.all([
+      recursiveLoad(gl, vertexShaderURI, responses[0]),
+      recursiveLoad(gl, fragmentShaderURI, responses[1])
+    ]);
+
+    return Program.fromShaderSources({
+      ...opt,
+      vs: vertexShader,
+      fs: fragmentShader
+    });
+
   }
 
   // rye: TODO- This is a temporary measure to get things working
@@ -253,137 +316,80 @@ export default class Program {
     if (name in this.uniforms) {
       this.uniforms[name](value);
     }
+    return this;
   }
 
   // rye: TODO- This is a temporary measure to get things working
   //            until we decide on how to manage uniforms.
   setUniforms(forms) {
-    for (let name of Object.keys(forms)) {
+    for (const name of Object.keys(forms)) {
       if (name in this.uniforms) {
         this.uniforms[name](forms[name]);
       }
     }
+    return this;
   }
 
-  // Get options in object or arguments
-  static getOptions(args, base = {}) {
+  setBuffer(...args) {
+    this.app.setBuffer(this, ...args);
+    return this;
+  }
+
+  setBuffers(...args) {
+    this.app.setBuffers(this, ...args);
+    return this;
+  }
+
+  use(...args) {
+    this.app.use(this, ...args);
+    return this;
+  }
+
+  setFrameBuffer(...args) {
+    this.app.setFrameBuffer(this.app, ...args);
+    return this;
+  }
+
+  setFrameBuffers(...args) {
+    this.app.setFrameBuffers(this.app, ...args);
+    return this;
+  }
+
+  setRenderBuffer(...args) {
+    this.app.setRenderBuffer(this.app, ...args);
+    return this;
+  }
+
+  setRenderBuffers(...args) {
+    this.app.setRenderBuffers(this.app, ...args);
+    return this;
+  }
+
+  setTexture(...args) {
+    this.app.setTexture(this.app, ...args);
+    return this;
+  }
+
+  setTextures(...args) {
+    this.app.setTextures(this.app, ...args);
+    return this;
+  }
+
+  // Get options object or make options object from 2 arguments
+  static _getOptions(base = {}, ...args) {
     let opt;
     if (args.length === 2) {
-      opt = {
+      return {
+        ...base,
         vs: args[0],
         fs: args[1]
       };
     } else {
-      opt = args[0] || {};
+      return {
+        ...base,
+        ...(args[0] || {})
+      };
     }
-    return {
-      ...base,
-      ...opt
-    };
-  }
-
-  // Create a program from vertex and fragment shader node ids
-  static async fromShaderIds() {
-    const opt = Program.getOptions(arguments);
-    const vs = $(opt.vs);
-    const fs = $(opt.fs);
-    const vectexShader = await preprocessAsync(opt.app.gl, opt.path, vs.innerHTML);
-    const fragmentShader = await preprocessAsync(opt.app.gl, opt.path, fs.innerHTML);
-    const program = new Program(opt.app, vectexShader, fragmentShader, opt);
-    opt.onSuccess(program, opt);
-    return program;
-  }
-
-  // Create a program from vs and fs sources
-  static async fromShaderSources() {
-    var opt = Program.getOptions(arguments, {path: './'});
-    const vectexShader = await preprocessAsync(opt.app.gl, opt.path, opt.vs);
-    const fragmentShader = await preprocessAsync(opt.app.gl, opt.path, opt.fs);
-    try {
-      const program = new Program(opt.app, vectexShader, fragmentShader);
-      if (opt.onSuccess) {
-        opt.onSuccess(program, opt);
-      }
-      return program;
-    } catch (error) {
-      if (opt.onError) {
-        opt.onError(error, opt);
-      } else {
-        throw error;
-      }
-    }
-  }
-
-  // Build program from default shaders (requires Shaders)
-  static fromDefaultShaders(opt = {}) {
-    const {vs = 'Default', fs = 'Default'} = opt;
-    opt = {
-      ...opt,
-      vs: Shaders.Vertex[vs],
-      fs: Shaders.Fragment[fs]
-    };
-    return Program.fromShaderSources(opt);
-  }
-
-  // Implement Program.fromShaderURIs (requires IO)
-  static fromShaderURIs(opt = {}) {
-    opt = {
-      path: '',
-      vs: '',
-      fs: '',
-      noCache: false,
-      onSuccess: $.empty,
-      onError: $.empty,
-      ...opt
-    };
-
-    const vertexShaderURI = opt.path + opt.vs;
-    const fragmentShaderURI = opt.path + opt.fs;
-
-    new XHR.Group({
-      urls: [vertexShaderURI, fragmentShaderURI],
-      noCache: opt.noCache,
-      onError(arg) {
-        opt.onError(arg);
-      },
-      async onComplete(ans) {
-        try {
-          const vertexShader = await preprocessAsync(opt.app.gl, vertexShaderURI, ans[0]);
-          const fragmentShader = await preprocessAsync(opt.app.gl, fragmentShaderURI, ans[1]);
-          opt = {
-            ...opt,
-            vs: vertexShader,
-            fs: fragmentShader,
-          };
-          return Program.fromShaderSources(opt);
-        } catch (e) {
-          opt.onError(e, opt);
-        }
-      }
-    }).send();
   }
 
 }
-
-Object.assign(Program.prototype, {
-
-  $$family: 'program'
-
-});
-
-['setBuffer', 'setBuffers', 'use'].forEach(function(name) {
-  Program.prototype[name] = function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift(this);
-    this.app[name].apply(this.app, args);
-    return this;
-  };
-});
-
-['setFrameBuffer', 'setFrameBuffers', 'setRenderBuffer',
- 'setRenderBuffers', 'setTexture', 'setTextures'].forEach(function(name) {
-  Program.prototype[name] = function() {
-    this.app[name].apply(this.app, arguments);
-    return this;
-  };
-});

@@ -80,11 +80,11 @@ new PhiloGL.IO.XHR({
     }
   },
 
-  onError: function(e) {
-    console.log('error', e, arguments);
+  onError: function(e, ...args) {
+    console.log('error', e, ...args);
   }
 }).send();
-  
+
 
 function init() {
   //Create application
