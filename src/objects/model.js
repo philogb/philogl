@@ -378,6 +378,7 @@ export default class Model {
   }
 
   setIndices(program) {
+    const gl = program.app.gl;
     if (!this.$indices) {
       return;
     }
@@ -467,6 +468,8 @@ export default class Model {
   }
 
   setTextures(program, force) {
+    const app = program.app;
+    const gl = app.gl;
     this.textures = this.textures ? $.splat(this.textures) : [];
     let tex2D = 0;
     let texCube = 0;
@@ -507,6 +510,7 @@ export default class Model {
   }
 
   unsetState(program) {
+    const gl = program.app.gl;
     var attributes = program.attributes;
 
     // unbind the array and element buffers

@@ -29,26 +29,26 @@ export default class Application {
       opt = this.bufferMemo[name];
       // reset buffer
       if (opt) {
-        gl.bindBuffer(opt.bufferType, null);
+        this.gl.bindBuffer(opt.bufferType, null);
       }
       // disable vertex attrib array if the buffer maps to an attribute.
       const attributeName = opt && opt.attribute || name;
       const loc = program.attributes[attributeName];
       // disable the attribute array
       if (loc !== undefined) {
-        gl.disableVertexAttribArray(loc);
+        this.gl.disableVertexAttribArray(loc);
       }
       return this;
     }
 
     // set defaults
     opt = $.extend(this.bufferMemo[name] || {
-      bufferType: gl.ARRAY_BUFFER,
+      bufferType: this.gl.ARRAY_BUFFER,
       size: 1,
-      dataType: gl.FLOAT,
+      dataType: this.gl.FLOAT,
       stride: 0,
       offset: 0,
-      drawType: gl.STATIC_DRAW,
+      drawType: this.gl.STATIC_DRAW,
       instanced: 0
     }, opt || {});
 
@@ -56,7 +56,7 @@ export default class Application {
     const bufferType = opt.bufferType;
     const instanced = opt.instanced;
     const hasBuffer = name in this.buffers;
-    const buffer = hasBuffer? this.buffers[name] : gl.createBuffer();
+    const buffer = hasBuffer? this.buffers[name] : this.gl.createBuffer();
     const hasValue = 'value' in opt;
     const value = opt.value;
     const size = opt.size;
@@ -73,19 +73,19 @@ export default class Application {
     }
 
     if (isAttribute) {
-      gl.enableVertexAttribArray(loc);
+      this.gl.enableVertexAttribArray(loc);
     }
 
-    gl.bindBuffer(bufferType, buffer);
+    this.gl.bindBuffer(bufferType, buffer);
 
     if (hasValue) {
-      gl.bufferData(bufferType, value, drawType);
+      this.gl.bufferData(bufferType, value, drawType);
     }
 
     if (isAttribute) {
-      gl.vertexAttribPointer(loc, size, dataType, false, stride, offset);
+      this.gl.vertexAttribPointer(loc, size, dataType, false, stride, offset);
       if (instanced) {
-        ext = gl.getExtension('ANGLE_instanced_arrays');
+        ext = this.gl.getExtension('ANGLE_instanced_arrays');
         if (!ext) {
           console.warn('ANGLE_instanced_arrays not supported!');
         } else {
@@ -116,7 +116,7 @@ export default class Application {
   setFrameBuffer(name, opt = {}) {
     // bind/unbind framebuffer
     if (typeof opt !== 'object') {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, opt ? this.frameBuffers[name] : null);
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, opt ? this.frameBuffers[name] : null);
       return this;
     }
     // get options
@@ -126,10 +126,10 @@ export default class Application {
       height: 0,
       //  All texture params
       bindToTexture: false,
-      textureOptions: {attachment: gl.COLOR_ATTACHMENT0},
+      textureOptions: {attachment: this.gl.COLOR_ATTACHMENT0},
       //  All render buffer params
       bindToRenderBuffer: false,
-      renderBufferOptions: {attachment: gl.DEPTH_ATTACHMENT},
+      renderBufferOptions: {attachment: this.gl.DEPTH_ATTACHMENT},
       ...opt
     };
 
@@ -137,9 +137,9 @@ export default class Application {
     const bindToRenderBuffer = opt.bindToRenderBuffer;
     const hasBuffer = name in this.frameBuffers;
     const frameBuffer = hasBuffer ?
-      this.frameBuffers[name] : gl.createFramebuffer();
+      this.frameBuffers[name] : this.gl.createFramebuffer();
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, frameBuffer);
 
     if (!hasBuffer) {
       this.frameBuffers[name] = frameBuffer;
@@ -158,8 +158,8 @@ export default class Application {
 
       this.setTexture(texName, texBindOpt);
 
-      gl.framebufferTexture2D(
-        gl.FRAMEBUFFER,
+      this.gl.framebufferTexture2D(
+        this.gl.FRAMEBUFFER,
         texOpt.attachment,
         this.textureMemo[texName].textureType,
         this.textures[texName],
@@ -177,17 +177,17 @@ export default class Application {
 
       this.setRenderBuffer(rbName, rbBindOpt);
 
-      gl.framebufferRenderbuffer(
-        gl.FRAMEBUFFER,
+      this.gl.framebufferRenderbuffer(
+        this.gl.FRAMEBUFFER,
         rbOpt.attachment,
-        gl.RENDERBUFFER,
+        this.gl.RENDERBUFFER,
         this.renderBuffers[rbName]
       );
     }
 
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+    this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, null);
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 
     this.frameBufferMemo[name] = opt;
 
@@ -203,31 +203,31 @@ export default class Application {
 
   setRenderBuffer(name, opt) {
     if (typeof opt !== 'object') {
-      gl.bindRenderbuffer(
-        gl.RENDERBUFFER,
+      this.gl.bindRenderbuffer(
+        this.gl.RENDERBUFFER,
         opt ? this.renderBufferMemo[name] : null
       );
       return this;
     }
 
     opt = $.extend(this.renderBufferMemo[name] || {
-      storageType: gl.DEPTH_COMPONENT16,
+      storageType: this.gl.DEPTH_COMPONENT16,
       width: 0,
       height: 0
     }, opt || {});
 
     const hasBuffer = name in this.renderBuffers;
     const renderBuffer = hasBuffer ?
-      this.renderBuffers[name] : gl.createRenderbuffer(gl.RENDERBUFFER);
+      this.renderBuffers[name] : this.gl.createRenderbuffer(this.gl.RENDERBUFFER);
 
     if (!hasBuffer) {
       this.renderBuffers[name] = renderBuffer;
     }
 
-    gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
+    this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, renderBuffer);
 
-    gl.renderbufferStorage(
-      gl.RENDERBUFFER, opt.storageType, opt.width, opt.height);
+    this.gl.renderbufferStorage(
+      this.gl.RENDERBUFFER, opt.storageType, opt.width, opt.height);
 
     this.renderBufferMemo[name] = opt;
 
@@ -244,17 +244,17 @@ export default class Application {
   setTexture(name, opt) {
     // bind texture
     if (!opt || typeof opt !== 'object') {
-      gl.activeTexture(opt || gl.TEXTURE0);
-      gl.bindTexture(
-        this.textureMemo[name].textureType || gl.TEXTURE_2D,
+      this.gl.activeTexture(opt || this.gl.TEXTURE0);
+      this.gl.bindTexture(
+        this.textureMemo[name].textureType || this.gl.TEXTURE_2D,
         this.textures[name]
       );
       return this;
     }
 
-    if (opt.data && opt.data.type === gl.FLOAT) {
+    if (opt.data && opt.data.type === this.gl.FLOAT) {
       // Enable floating-point texture.
-      if (!gl.getExtension('OES_texture_float')) {
+      if (!this.gl.getExtension('OES_texture_float')) {
         throw new Error('OES_texture_float is not supported');
       }
     }
@@ -262,31 +262,31 @@ export default class Application {
     // get defaults
     // rye: TODO- use lodash.defaultsDeep instead of $merge.
     opt = $.merge(this.textureMemo[name] || {
-      textureType: gl.TEXTURE_2D,
+      textureType: this.gl.TEXTURE_2D,
       pixelStore: [{
-        name: gl.UNPACK_FLIP_Y_WEBGL,
+        name: this.gl.UNPACK_FLIP_Y_WEBGL,
         value: true
       }, {
-        name: gl.UNPACK_ALIGNMENT,
+        name: this.gl.UNPACK_ALIGNMENT,
         value: 1
       }],
       parameters: [{
-        name: gl.TEXTURE_MAG_FILTER,
-        value: gl.NEAREST
+        name: this.gl.TEXTURE_MAG_FILTER,
+        value: this.gl.NEAREST
       }, {
-        name: gl.TEXTURE_MIN_FILTER,
-        value: gl.NEAREST
+        name: this.gl.TEXTURE_MIN_FILTER,
+        value: this.gl.NEAREST
       }, {
-        name: gl.TEXTURE_WRAP_S,
-        value: gl.CLAMP_TO_EDGE
+        name: this.gl.TEXTURE_WRAP_S,
+        value: this.gl.CLAMP_TO_EDGE
       }, {
-        name: gl.TEXTURE_WRAP_T,
-        value: gl.CLAMP_TO_EDGE
+        name: this.gl.TEXTURE_WRAP_T,
+        value: this.gl.CLAMP_TO_EDGE
       }],
       data: {
-        format: gl.RGBA,
+        format: this.gl.RGBA,
         value: false,
-        type: gl.UNSIGNED_BYTE,
+        type: this.gl.UNSIGNED_BYTE,
 
         width: 0,
         height: 0,
@@ -296,12 +296,12 @@ export default class Application {
     }, opt || {});
 
     var textureType = ('textureType' in opt) ?
-      opt.textureType = gl.get(opt.textureType) : gl.TEXTURE_2D;
+      opt.textureType = this.gl.get(opt.textureType) : this.gl.TEXTURE_2D;
     const textureTarget = ('textureTarget' in opt) ?
-      opt.textureTarget = gl.get(opt.textureTarget) : textureType;
-    const isCube = textureType == gl.TEXTURE_CUBE_MAP;
+      opt.textureTarget = this.gl.get(opt.textureTarget) : textureType;
+    const isCube = textureType == this.gl.TEXTURE_CUBE_MAP;
     const hasTexture = name in this.textures;
-    const texture = hasTexture? this.textures[name] : gl.createTexture();
+    const texture = hasTexture? this.textures[name] : this.gl.createTexture();
     const pixelStore = opt.pixelStore;
     const parameters = opt.parameters;
     const data = opt.data;
@@ -314,12 +314,12 @@ export default class Application {
     if (!hasTexture) {
       this.textures[name] = texture;
     }
-    gl.bindTexture(textureType, texture);
+    this.gl.bindTexture(textureType, texture);
     if (!hasTexture) {
       // set texture properties
       pixelStore.forEach(opt => {
-        opt.name = typeof opt.name == 'string' ? gl.get(opt.name) : opt.name;
-        gl.pixelStorei(opt.name, opt.value);
+        opt.name = typeof opt.name == 'string' ? this.gl.get(opt.name) : opt.name;
+        this.gl.pixelStorei(opt.name, opt.value);
       });
     }
 
@@ -329,35 +329,35 @@ export default class Application {
       if (isCube) {
         for (var i = 0; i < 6; ++i) {
           if ((data.width || data.height) && (!value.width && !value.height)) {
-            gl.texImage2D(textureTarget[i], 0, format,
+            this.gl.texImage2D(textureTarget[i], 0, format,
               data.width, data.height, data.border, format, type, value[i]);
           } else {
-            gl.texImage2D(textureTarget[i], 0, format, format, type, value[i]);
+            this.gl.texImage2D(textureTarget[i], 0, format, format, type, value[i]);
           }
         }
       } else {
         if ((data.width || data.height) && (!value.width && !value.height)) {
-          gl.texImage2D(textureTarget, 0, format,
+          this.gl.texImage2D(textureTarget, 0, format,
             data.width, data.height, data.border, format, type, value);
         } else {
-          gl.texImage2D(textureTarget, 0, format, format, type, value);
+          this.gl.texImage2D(textureTarget, 0, format, format, type, value);
         }
       }
 
     // we're setting a texture to a framebuffer
     } else if (data.width || data.height) {
-      gl.texImage2D(textureTarget, 0, format,
+      this.gl.texImage2D(textureTarget, 0, format,
         data.width, data.height, data.border, format, type, null);
     }
     // set texture parameters
     if (!hasTexture) {
       for (i = 0; i < parameters.length ;i++) {
         var opti = parameters[i];
-        opti.name = gl.get(opti.name);
-        opti.value = gl.get(opti.value);
-        gl.texParameteri(textureType, opti.name, opti.value);
+        opti.name = this.gl.get(opti.name);
+        opti.value = this.gl.get(opti.value);
+        this.gl.texParameteri(textureType, opti.name, opti.value);
         if (opti.generateMipmap) {
-          gl.generateMipmap(textureType);
+          this.gl.generateMipmap(textureType);
         }
       }
     }
@@ -382,7 +382,7 @@ export default class Application {
   }
 
   use(program) {
-    gl.useProgram(program.program);
+    this.gl.useProgram(program.program);
     // remember last used program.
     this.usedProgram = program;
     return this;

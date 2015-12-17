@@ -141,7 +141,7 @@ function webGLStart() {
               }
             }),
             outerScene = app.scene,
-            innerScene = new PhiloGL.Scene(program, innerCamera, {
+            innerScene = new PhiloGL.Scene(app, program, innerCamera, {
               lights: {
                 enable: true,
                 points: {

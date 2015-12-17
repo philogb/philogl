@@ -7,7 +7,8 @@ import $ from './jquery-mini';
 // Scene class
 export default class Scene {
 
-  constructor(program, camera, opt = {}) {
+  constructor(app, program, camera, opt = {}) {
+    this.app = app;
     // rye: TODO- use lodash.defaultsDeep instead of $merge.
     opt = $.merge({
       lights: {
@@ -201,12 +202,12 @@ export default class Scene {
   }
 
   renderToTexture(name, opt = {}) {
-    const texture = app.textures[name + '-texture'];
-    const texMemo = app.textureMemo[name + '-texture'];
+    const texture = this.app.textures[name + '-texture'];
+    const texMemo = this.app.textureMemo[name + '-texture'];
     this.render(opt);
-    gl.bindTexture(texMemo.textureType, texture);
-    // gl.generateMipmap(texMemo.textureType);
-    // gl.bindTexture(texMemo.textureType, null);
+    this.app.gl.bindTexture(texMemo.textureType, texture);
+    // this.app.gl.generateMipmap(texMemo.textureType);
+    // this.app.gl.bindTexture(texMemo.textureType, null);
   }
 
   renderObject(obj, program) {
@@ -234,14 +235,14 @@ export default class Scene {
     // TODO(nico): move this into O3D, but, somehow,
     // abstract the gl.draw* methods inside that object.
     if (obj.render) {
-      obj.render(gl, program, camera);
+      obj.render(this.app.gl, program, camera);
     } else {
       const drawType = obj.drawType !== undefined ?
-        gl.get(obj.drawType) : gl.TRIANGLES;
+        this.app.gl.get(obj.drawType) : this.app.gl.TRIANGLES;
       if (obj.$indicesLength) {
-        gl.drawElements(drawType, obj.$indicesLength, gl.UNSIGNED_SHORT, 0);
+        this.app.gl.drawElements(drawType, obj.$indicesLength, this.app.gl.UNSIGNED_SHORT, 0);
       } else {
-        gl.drawArrays(drawType, 0, obj.$verticesLength / 3);
+        this.app.gl.drawArrays(drawType, 0, obj.$verticesLength / 3);
       }
     }
 
@@ -255,7 +256,7 @@ export default class Scene {
     const floor = Math.floor;
 
     // create framebuffer
-    app.setFrameBuffer('$picking', {
+    this.app.setFrameBuffer('$picking', {
       width: 5,
       height: 1,
       bindToTexture: {
@@ -276,7 +277,7 @@ export default class Scene {
       bindToRenderBuffer: true
     });
 
-    app.setFrameBuffer('$picking', false);
+    this.app.setFrameBuffer('$picking', false);
     this.pickingProgram = opt.pickingProgram || program;
   }
 
@@ -290,7 +291,7 @@ export default class Scene {
 
     const o3dHash = {};
     const o3dList = [];
-    const program = app.usedProgram;
+    const program = this.app.usedProgram;
     const pickingProgram = this.pickingProgram;
     const camera = this.camera;
     const oldtarget = camera.target;
@@ -298,7 +299,7 @@ export default class Scene {
     const config = this.config;
     const memoLightEnable = config.lights.enable;
     const memoFog = config.effects.fog;
-    const canvas = gl.canvas;
+    const canvas = this.app.gl.canvas;
     const viewport = opt.viewport || {};
     const pixelRatio = opt.pixelRatio || 1;
     const width = (viewport.width || canvas.offsetWidth || canvas.width);
@@ -321,16 +322,16 @@ export default class Scene {
     config.effects.fog = false;
 
     // enable picking and render to texture
-    app.setFrameBuffer('$picking', true);
+    this.app.setFrameBuffer('$picking', true);
     pickingProgram.use();
     pickingProgram.setUniform('enablePicking', true);
 
     // render the scene to a texture
-    gl.disable(gl.BLEND);
-    gl.viewport(0, 0, resWidth, resHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    this.app.gl.disable(this.app.gl.BLEND);
+    this.app.gl.viewport(0, 0, resWidth, resHeight);
+    this.app.gl.clear(this.app.gl.COLOR_BUFFER_BIT | this.app.gl.DEPTH_BUFFER_BIT);
     // read the background color so we don't step on it
-    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+    this.app.gl.readPixels(0, 0, 1, 1, this.app.gl.RGBA, this.app.gl.UNSIGNED_BYTE, pixel);
     backgroundColor = pixel[0] + pixel[1] * 256 + pixel[2] * 256 * 256;
 
     // render picking scene
@@ -343,7 +344,7 @@ export default class Scene {
 
     // the target point is in the center of the screen,
     // so it should be the center point.
-    gl.readPixels(2, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+    this.app.gl.readPixels(2, 0, 1, 1, this.app.gl.RGBA, this.app.gl.UNSIGNED_BYTE, pixel);
 
     var stringColor = [pixel[0], pixel[1], pixel[2]].join(),
         elem = o3dHash[stringColor],
@@ -364,8 +365,8 @@ export default class Scene {
     }
 
     // restore all values and unbind buffers
-    app.setFrameBuffer('$picking', false);
-    app.setTexture('$picking-texture', false);
+    this.app.setFrameBuffer('$picking', false);
+    this.app.setTexture('$picking-texture', false);
     pickingProgram.setUniform('enablePicking', false);
     config.lights.enable = memoLightEnable;
     config.effects.fog = memoFog;
@@ -373,7 +374,7 @@ export default class Scene {
     // restore previous program
     if (program) program.use();
     // restore the viewport size to original size
-    gl.viewport(viewport.x || 0,
+    this.app.gl.viewport(viewport.x || 0,
   		          viewport.y || 0,
   		          width,
   		          height);

@@ -62,8 +62,6 @@ var popt = {
   'uris': 'fromShaderURIs'
 };
 
-const globalContext = typeof window !== 'undefined' ? window : global;
-
 // Creates a single application object asynchronously
 // with a gl context, a camera, a program, a scene, and an event system.
 export function PhiloGL(canvasId, opt = {}) {
@@ -75,7 +73,22 @@ export function PhiloGL(canvasId, opt = {}) {
 
   // get Context global to all framework
   const gl = getContext(canvasId, optContext);
-  globalContext.gl = gl;
+
+  // get Camera
+  const canvas = gl.canvas;
+  const camera = new Camera(
+    opt.camera.fov,
+    opt.camera.aspect || (canvas.width / canvas.height),
+    opt.camera.near,
+    opt.camera.far,
+    opt.camera);
+  camera.update();
+
+  const app = new Application({
+    gl: gl,
+    canvas: canvas,
+    camera: camera
+  });
 
   if (!gl) {
     opt.onError('The WebGL context couldn\'t be initialized');
@@ -93,7 +106,7 @@ export function PhiloGL(canvasId, opt = {}) {
       count--;
       if (count === 0 && !error) {
         const program = programLength === 1 ? p : programs;
-        loadProgramDeps(gl, program, opt, (app) => {
+        loadProgramDeps(app, program, opt, (app) => {
           opt.onLoad(app);
         });
       }
@@ -106,6 +119,7 @@ export function PhiloGL(canvasId, opt = {}) {
   };
 
   optProgram.forEach(async (programOpts, i) => {
+    programOpts.app = app;
     let pfrom = programOpts.from;
     let program;
     for (const p in popt) {
@@ -128,36 +142,19 @@ export function PhiloGL(canvasId, opt = {}) {
 
 }
 
-async function loadProgramDeps(gl, program, opt, callback) {
+async function loadProgramDeps(app, program, opt, callback) {
 
-  const optCamera = opt.camera;
   const optEvents = opt.events;
   const optScene = opt.scene;
   const optTextures = opt.textures;
+  optTextures.app = app;
 
-  // get Camera
-  const canvas = gl.canvas;
-  const camera = new Camera(
-    optCamera.fov,
-    optCamera.aspect || (canvas.width / canvas.height),
-    optCamera.near,
-    optCamera.far,
-    optCamera);
-  camera.update();
+  app.program = program;
 
   // get Scene
-  var scene = new Scene(program, camera, optScene);
+  var scene = new Scene(app, app.program, app.camera, optScene);
 
-  // make app instance global to all framework
-  const app = new Application({
-    gl: gl,
-    canvas: canvas,
-    program: program,
-    scene: scene,
-    camera: camera
-  });
-
-  globalContext.app = app;
+  app.scene = scene;
 
   // Use program
   if (program.$$family === 'program') {
