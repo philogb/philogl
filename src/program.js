@@ -25,8 +25,8 @@ function createShader(gl, shaderSource, shaderType) {
 
 // Creates a program from vertex and fragment shader sources.
 function createProgram(gl, vertexShader, fragmentShader) {
-  const vs = createShader(gl, vertexShader, gl.VERTEX_SHADER));
-  const fs = createShader(gl, fragmentShader, gl.FRAGMENT_SHADER));
+  const vs = createShader(gl, vertexShader, gl.VERTEX_SHADER);
+  const fs = createShader(gl, fragmentShader, gl.FRAGMENT_SHADER);
 
   const glProgram = gl.createProgram();
   gl.attachShader(glProgram, vs);
@@ -170,11 +170,11 @@ function getUniformSetter(gl, glProgram, info, isArray) {
   // Set a uniform array
   if (isArray && typedArray) {
 
-    return val => glFunction(loc, new typedArray(val);
+    return val => glFunction(loc, new typedArray(val));
 
   } else if (matrix) {
     // Set a matrix uniform
-    return val => glFunction(loc, false, val.toFloat32Array();
+    return val => glFunction(loc, false, val.toFloat32Array());
 
   } else if (typedArray) {
 

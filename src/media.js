@@ -23,7 +23,7 @@ export default class Img {
   static postProcess(opt) {
     const program = app.program instanceof Program ?
       app.program :
-      app.program[opt.program],
+      app.program[opt.program];
     var textures = opt.fromTexture ? $.splat(opt.fromTexture) : [],
         framebuffer = opt.toFrameBuffer,
         screen = !!opt.toScreen,
