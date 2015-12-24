@@ -253,8 +253,8 @@ export default class Program {
 
     const {vs, fs, path} = opt;
     const [vertexShader, fragmentShader] = await Promise.all(
-      recursiveLoad(gl, path, vs.innerHTML),
-      recursiveLoad(gl, path, fs.innerHTML)
+      recursiveLoad(gl, path, document.getElementById(vs).innerHTML),
+      recursiveLoad(gl, path, document.getElementById(fs).innerHTML)
     );
 
     return new Program(opt.app, vertexShader, fragmentShader);
