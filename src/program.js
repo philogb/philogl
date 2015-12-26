@@ -367,7 +367,7 @@ export default class Program {
   }
 
   setTextures(...args) {
-    this.app.setTextures(this.app, ...args);
+    this.app.setTextures(...args);
     return this;
   }
 
