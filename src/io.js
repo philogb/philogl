@@ -6,6 +6,8 @@
 import $ from './jquery-mini';
 import Img from './media';
 
+function noop() {};
+
 export class XHR {
 
   constructor(opt = {}) {
@@ -163,7 +165,7 @@ XHR.State = {};
 });
 
 // Make parallel requests and group the responses.
-class XHRGroup {
+export class XHRGroup {
 
   constructor(opt = {}) {
     opt = {

@@ -3,7 +3,7 @@
 // buffers attributes and uniforms
 
 import Shaders from './shaders';
-import {XHR} from './io';
+import {XHR, XHRGroup} from './io';
 import $ from './jquery-mini';
 
 // Creates a shader from a string source.
@@ -297,15 +297,10 @@ export default class Program {
       noCache: noCache,
     }).sendAsync();
 
-    const [vertexShader, fragmentShader] = await Promise.all([
-      recursiveLoad(gl, vertexShaderURI, responses[0]),
-      recursiveLoad(gl, fragmentShaderURI, responses[1])
-    ]);
-
     return Program.fromShaderSources({
       ...opt,
-      vs: vertexShader,
-      fs: fragmentShader
+      vs: responses[0],
+      fs: responses[1]
     });
 
   }
