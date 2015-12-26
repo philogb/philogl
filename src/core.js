@@ -49,8 +49,13 @@ var PROGRAM_CONSTRUCTORS = {
 // Creates a single application object asynchronously
 // with a gl context, a camera, a program, a scene, and an event system.
 export async function PhiloGL(canvasId, opt = {}) {
+  // ** We can't merge DEFAULT_OPTS and opt in this way; it's not a
+  // deep merge. For example, if opt.camera doesn't define fov, then
+  // the result won't have camera.fov defined. **
+  // opt = {...DEFAULT_OPTS, ...opt};
+
   // rye: TODO- use lodash.defaultsDeep instead of $merge.
-  opt = {...DEFAULT_OPTS, ...opt};
+  opt = $.merge(DEFAULT_OPTS, opt);
 
   const {
     context: contextOpts,
@@ -132,8 +137,7 @@ async function loadProgramDeps(app, program, opt) {
 
   // load Textures
   if (optTextures.src.length) {
-    const textureMap = await loadTextures(optTextures);
-    app.setTextures(textureMap);
+    await loadTextures(optTextures);
   }
 }
 

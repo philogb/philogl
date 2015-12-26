@@ -1,6 +1,6 @@
 function webGLStart() {
   var pos, $id = function(d) { return document.getElementById(d); };
-  
+
   //Create moon
   var moon = new PhiloGL.O3D.Sphere({
     nlat: 30,
@@ -72,12 +72,12 @@ function webGLStart() {
             x: $id('lightDirectionX'),
             y: $id('lightDirectionY'),
             z: $id('lightDirectionZ'),
-          
+
             r: $id('directionalR'),
             g: $id('directionalG'),
             b: $id('directionalB')
           };
-      
+
       //Basic gl setup
       gl.clearColor(0.0, 0.0, 0.0, 1.0);
       gl.clearDepth(1.0);
