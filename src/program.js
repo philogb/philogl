@@ -362,7 +362,7 @@ export default class Program {
   }
 
   setTexture(...args) {
-    this.app.setTexture(this.app, ...args);
+    this.app.setTexture(...args);
     return this;
   }
 
