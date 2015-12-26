@@ -86,8 +86,9 @@ export async function PhiloGL(canvasId, opt = {}) {
     camera: camera
   });
 
-  const programs = await loadPrograms(app, programOpts);
-  app.program = await loadProgramDeps(app, programs, opt);
+  let programs = await loadPrograms(app, optProgram);
+  programs = programs.length === 1 ? programs[0] : programs;
+  await loadProgramDeps(app, programs, opt);
 
   // Create a default Scene
   app.scene = new Scene(app, app.program, app.camera, sceneOpts);
@@ -102,14 +103,12 @@ async function loadPrograms(app, programDescriptors) {
   const programPromises = programDescriptors.map(async (programOpts, i) => {
     const asyncProgramConstructor = programOpts.from;
     assert(asyncProgramConstructor in PROGRAM_CONSTRUCTORS);
-    const program = await Program[asyncProgramConstructor]({
+    const program = await Program[PROGRAM_CONSTRUCTORS[asyncProgramConstructor]]({
       ...programOpts,
       app: app
     });
-    programs[programOpts.id];
     return program;
   });
-
   return await Promise.all(programPromises);
 }
 

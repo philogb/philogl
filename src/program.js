@@ -250,13 +250,9 @@ export default class Program {
   static async fromShaderIds(...args) {
     const opt = Program._getOptions({}, ...args);
     const gl = opt.app.gl;
-
     const {vs, fs, path} = opt;
-    const [vertexShader, fragmentShader] = await Promise.all(
-      recursiveLoad(gl, path, document.getElementById(vs).innerHTML),
-      recursiveLoad(gl, path, document.getElementById(fs).innerHTML)
-    );
-
+    const vertexShader = document.getElementById(vs).innerHTML;
+    const fragmentShader = document.getElementById(fs).innerHTML;
     return new Program(opt.app, vertexShader, fragmentShader);
   }
 
