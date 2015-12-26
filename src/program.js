@@ -83,7 +83,6 @@ async function recursiveLoad(gl, base, source, duplist = {}) {
 
 // Returns a Magic Uniform Setter
 function getUniformSetter(gl, glProgram, info, isArray) {
-
   const {name, type} = info;
   const loc = gl.getUniformLocation(glProgram, name);
 
@@ -101,6 +100,18 @@ function getUniformSetter(gl, glProgram, info, isArray) {
       vector = false;
       break;
 
+    case gl.FLOAT_VEC3:
+      glFunction = gl.uniform3fv;
+      typedArray = Float32Array;
+      vector = true;
+      break;
+
+    case gl.FLOAT_MAT4:
+      glFunction = gl.uniformMatrix4fv;
+      typedArray = float32Array;
+      vector = true;
+      break;
+
     case gl.INT:
     case gl.BOOL:
     case gl.SAMPLER_2D:
@@ -111,7 +122,7 @@ function getUniformSetter(gl, glProgram, info, isArray) {
       break;
 
     default:
-      throw new Error('Uniform: Unknown GLSL type');
+      throw new Error('Uniform: Unknown GLSL type ' + type);
 
     }
   }
@@ -249,23 +260,16 @@ export default class Program {
   // Create a program from vertex and fragment shader node ids
   static async fromShaderIds(...args) {
     const opt = Program._getOptions({}, ...args);
-    const gl = opt.app.gl;
-    const {vs, fs, path} = opt;
-    const vertexShader = document.getElementById(vs).innerHTML;
-    const fragmentShader = document.getElementById(fs).innerHTML;
+    const vertexShader = document.getElementById(opt.vs).innerHTML;
+    const fragmentShader = document.getElementById(opt.fs).innerHTML;
     return new Program(opt.app, vertexShader, fragmentShader);
   }
 
   // Alternate constructor
   // Create a program from vs and fs sources
   static async fromShaderSources(...args) {
-    var opt = Program._getOptions({path: './', ...args});
-    const gl = opt.app.gl;
-    const [vertexShader, fragmentShader] = await Promise.all(
-      recursiveLoad(gl, opt.path, opt.vs),
-      recursiveLoad(gl, opt.path, opt.fs)
-    );
-    return new Program(opt.app, vertexShader, fragmentShader);
+    var opt = Program._getOptions({}, ...args);
+    return new Program(opt.app, opt.vs, opt.fs);
   }
 
   // Alternate constructor
