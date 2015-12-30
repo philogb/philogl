@@ -341,7 +341,7 @@ export default class Program {
   }
 
   setFrameBuffer(...args) {
-    this.app.setFrameBuffer(this.app, ...args);
+    this.app.setFrameBuffer(...args);
     return this;
   }
 

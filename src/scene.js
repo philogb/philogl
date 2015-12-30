@@ -36,12 +36,13 @@ export default class Scene {
 
     this.app = app;
 
-    // This isn't a deep merge, and might break things.
-    opt = {
-      ...DEFAULT_SCENE_OPTS,
-      ...opt
-    };
+    // This isn't a deep merge.
+    // opt = {
+    //   ...DEFAULT_SCENE_OPTS,
+    //   ...opt
+    // };
 
+    opt = $.merge(DEFAULT_SCENE_OPTS, opt);
 
     this.program = opt.program ? program[opt.program] : program;
     this.camera = camera;
