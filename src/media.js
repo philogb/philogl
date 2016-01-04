@@ -12,7 +12,6 @@ import $ from './jquery-mini';
 const length = 0.16568542494923805;
 const plane = new Plane({type: 'x,y', xlen: length, ylen: length, offset: 0});
 const camera = new Camera(45, 1, 0.1, 500, {position: {x: 0, y: 0, z: 0.2}});
-const scene = new Scene({}, camera);
 
 // rye: temporarily renaming this Img until we decide on a name that doesn't shadow
 //      the builtin Image class.
@@ -23,7 +22,7 @@ export default class Img {
   static postProcess(opt) {
     const program = app.program instanceof Program ?
       app.program :
-      app.program[opt.program],
+      app.program[opt.program];
     var textures = opt.fromTexture ? $.splat(opt.fromTexture) : [],
         framebuffer = opt.toFrameBuffer,
         screen = !!opt.toScreen,
@@ -35,6 +34,8 @@ export default class Img {
     camera.aspect = opt.aspectRatio ?
       opt.aspectRatio : Math.max(height / width, width / height);
     camera.update();
+
+    const scene = new Scene(app, program, camera);
 
     scene.program = program;
 

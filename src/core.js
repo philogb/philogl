@@ -49,8 +49,13 @@ var PROGRAM_CONSTRUCTORS = {
 // Creates a single application object asynchronously
 // with a gl context, a camera, a program, a scene, and an event system.
 export async function PhiloGL(canvasId, opt = {}) {
+  // ** We can't merge DEFAULT_OPTS and opt in this way; it's not a
+  // deep merge. For example, if opt.camera doesn't define fov, then
+  // the result won't have camera.fov defined. **
+  // opt = {...DEFAULT_OPTS, ...opt};
+
   // rye: TODO- use lodash.defaultsDeep instead of $merge.
-  opt = {...DEFAULT_OPTS, ...opt};
+  opt = $.merge(DEFAULT_OPTS, opt);
 
   const {
     context: contextOpts,
@@ -86,8 +91,9 @@ export async function PhiloGL(canvasId, opt = {}) {
     camera: camera
   });
 
-  const programs = await loadPrograms(app, programOpts);
-  app.program = await loadProgramDeps(app, programs, opt);
+  let programs = await loadPrograms(app, optProgram);
+  programs = Object.keys(programs).length === 1 ? programs[Object.keys(programs)[0]] : programs;
+  await loadProgramDeps(app, programs, opt);
 
   // Create a default Scene
   app.scene = new Scene(app, app.program, app.camera, sceneOpts);
@@ -99,18 +105,18 @@ export async function PhiloGL(canvasId, opt = {}) {
 }
 
 async function loadPrograms(app, programDescriptors) {
+  let programs = {};
   const programPromises = programDescriptors.map(async (programOpts, i) => {
     const asyncProgramConstructor = programOpts.from;
     assert(asyncProgramConstructor in PROGRAM_CONSTRUCTORS);
-    const program = await Program[asyncProgramConstructor]({
+    const program = await Program[PROGRAM_CONSTRUCTORS[asyncProgramConstructor]]({
       ...programOpts,
       app: app
     });
-    programs[programOpts.id];
-    return program;
+    programs[programOpts.id] = program;
   });
-
-  return await Promise.all(programPromises);
+  await Promise.all(programPromises);
+  return programs;
 }
 
 async function loadProgramDeps(app, program, opt) {
@@ -133,8 +139,7 @@ async function loadProgramDeps(app, program, opt) {
 
   // load Textures
   if (optTextures.src.length) {
-    const textureMap = await loadTextures(optTextures);
-    app.setTextures(textureMap);
+    await loadTextures(optTextures);
   }
 }
 

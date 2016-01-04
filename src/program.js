@@ -3,7 +3,7 @@
 // buffers attributes and uniforms
 
 import Shaders from './shaders';
-import {XHR} from './io';
+import {XHR, XHRGroup} from './io';
 import $ from './jquery-mini';
 
 // Creates a shader from a string source.
@@ -25,8 +25,8 @@ function createShader(gl, shaderSource, shaderType) {
 
 // Creates a program from vertex and fragment shader sources.
 function createProgram(gl, vertexShader, fragmentShader) {
-  const vs = createShader(gl, vertexShader, gl.VERTEX_SHADER));
-  const fs = createShader(gl, fragmentShader, gl.FRAGMENT_SHADER));
+  const vs = createShader(gl, vertexShader, gl.VERTEX_SHADER);
+  const fs = createShader(gl, fragmentShader, gl.FRAGMENT_SHADER);
 
   const glProgram = gl.createProgram();
   gl.attachShader(glProgram, vs);
@@ -83,7 +83,6 @@ async function recursiveLoad(gl, base, source, duplist = {}) {
 
 // Returns a Magic Uniform Setter
 function getUniformSetter(gl, glProgram, info, isArray) {
-
   const {name, type} = info;
   const loc = gl.getUniformLocation(glProgram, name);
 
@@ -101,6 +100,18 @@ function getUniformSetter(gl, glProgram, info, isArray) {
       vector = false;
       break;
 
+    case gl.FLOAT_VEC3:
+      glFunction = gl.uniform3fv;
+      typedArray = Float32Array;
+      vector = true;
+      break;
+
+    case gl.FLOAT_MAT4:
+      glFunction = gl.uniformMatrix4fv;
+      typedArray = float32Array;
+      vector = true;
+      break;
+
     case gl.INT:
     case gl.BOOL:
     case gl.SAMPLER_2D:
@@ -111,7 +122,7 @@ function getUniformSetter(gl, glProgram, info, isArray) {
       break;
 
     default:
-      throw new Error('Uniform: Unknown GLSL type');
+      throw new Error('Uniform: Unknown GLSL type ' + type);
 
     }
   }
@@ -170,11 +181,11 @@ function getUniformSetter(gl, glProgram, info, isArray) {
   // Set a uniform array
   if (isArray && typedArray) {
 
-    return val => glFunction(loc, new typedArray(val);
+    return val => glFunction(loc, new typedArray(val));
 
   } else if (matrix) {
     // Set a matrix uniform
-    return val => glFunction(loc, false, val.toFloat32Array();
+    return val => glFunction(loc, false, val.toFloat32Array());
 
   } else if (typedArray) {
 
@@ -249,27 +260,16 @@ export default class Program {
   // Create a program from vertex and fragment shader node ids
   static async fromShaderIds(...args) {
     const opt = Program._getOptions({}, ...args);
-    const gl = opt.app.gl;
-
-    const {vs, fs, path} = opt;
-    const [vertexShader, fragmentShader] = await Promise.all(
-      recursiveLoad(gl, path, vs.innerHTML),
-      recursiveLoad(gl, path, fs.innerHTML)
-    );
-
+    const vertexShader = document.getElementById(opt.vs).innerHTML;
+    const fragmentShader = document.getElementById(opt.fs).innerHTML;
     return new Program(opt.app, vertexShader, fragmentShader);
   }
 
   // Alternate constructor
   // Create a program from vs and fs sources
   static async fromShaderSources(...args) {
-    var opt = Program._getOptions({path: './', ...args});
-    const gl = opt.app.gl;
-    const [vertexShader, fragmentShader] = await Promise.all(
-      recursiveLoad(gl, opt.path, opt.vs),
-      recursiveLoad(gl, opt.path, opt.fs)
-    );
-    return new Program(opt.app, vertexShader, fragmentShader);
+    var opt = Program._getOptions({}, ...args);
+    return new Program(opt.app, opt.vs, opt.fs);
   }
 
   // Alternate constructor
@@ -297,15 +297,10 @@ export default class Program {
       noCache: noCache,
     }).sendAsync();
 
-    const [vertexShader, fragmentShader] = await Promise.all([
-      recursiveLoad(gl, vertexShaderURI, responses[0]),
-      recursiveLoad(gl, fragmentShaderURI, responses[1])
-    ]);
-
     return Program.fromShaderSources({
       ...opt,
-      vs: vertexShader,
-      fs: fragmentShader
+      vs: responses[0],
+      fs: responses[1]
     });
 
   }
@@ -346,7 +341,7 @@ export default class Program {
   }
 
   setFrameBuffer(...args) {
-    this.app.setFrameBuffer(this.app, ...args);
+    this.app.setFrameBuffer(...args);
     return this;
   }
 
@@ -366,12 +361,12 @@ export default class Program {
   }
 
   setTexture(...args) {
-    this.app.setTexture(this.app, ...args);
+    this.app.setTexture(...args);
     return this;
   }
 
   setTextures(...args) {
-    this.app.setTextures(this.app, ...args);
+    this.app.setTextures(...args);
     return this;
   }
 

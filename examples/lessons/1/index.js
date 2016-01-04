@@ -54,4 +54,3 @@ window.webGLStart = function() {
     }
   });
 }
-

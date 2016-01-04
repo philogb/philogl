@@ -35,11 +35,14 @@ export default class Scene {
     assert(camera);
 
     this.app = app;
-    // rye: TODO- use lodash.defaultsDeep instead of $merge.
-    opt = {
-      ...DEFAULT_SCENE_OPTS,
-      ...opt
-    };
+
+    // This isn't a deep merge.
+    // opt = {
+    //   ...DEFAULT_SCENE_OPTS,
+    //   ...opt
+    // };
+
+    opt = $.merge(DEFAULT_SCENE_OPTS, opt);
 
     this.program = opt.program ? program[opt.program] : program;
     this.camera = camera;
@@ -101,9 +104,11 @@ export default class Scene {
   // Setup the lighting system: ambient, directional, point lights.
   setupLighting(program) {
     // Setup Lighting
-    const {
+    let {
       enable, ambient, directional: {color, direction}, points = []
     } = this.config.lights;
+
+    points = points instanceof Array ? points : [points];
 
     // Set light uniforms. Ambient and directional lights.
     program.setUniform('enableLights', enable);
