@@ -38,6 +38,8 @@ import {PerspectiveCamera, OrthoCamera} from './camera';
 import Img from './media';
 import Program from './program';
 import Application from './application';
+import {loadTextures} from './io';
+
 
 if (typeof window !== 'undefined') {
     window.PhiloGL = {
@@ -51,6 +53,7 @@ if (typeof window !== 'undefined') {
         Scene: Scene,
         hasWebGL: hasWebGL,
         createGLContext: createGLContext,
+        loadTextures: loadTextures,
         WorkerGroup: WorkerGroup,
         Program: Program,
         Application: Application,

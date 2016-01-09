@@ -1,6 +1,15 @@
-function webGLStart() {
-  //Create object
-  var cube = new PhiloGL.O3D.Model({
+
+var webGLStart = function() {
+
+  var Application = PhiloGL.Application;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var O3D = PhiloGL.O3D;
+  var Mat4 = PhiloGL.Mat4;
+  var Fx = PhiloGL.Fx;
+  var loadTextures = PhiloGL.loadTextures;
+
+  var cube = new O3D.Model({
     texture: 'nehe.gif',
 
     vertices: [-1, -1,  1,
@@ -79,84 +88,79 @@ function webGLStart() {
               20, 21, 22, 20, 22, 23]
   });
 
-  PhiloGL('lesson05-canvas', {
-    program: {
-      from: 'ids',
-      vs: 'shader-vs',
-      fs: 'shader-fs'
-    },
-    textures: {
-      src: ['nehe.gif']
-    },
-    onError: function() {
-      alert("An error ocurred while loading the application");
-    },
-    onLoad: function(app) {
-      var gl = app.gl,
-          canvas = app.canvas,
-          program = app.program,
-          camera = app.camera,
-          view = new PhiloGL.Mat4,
-          rCube = 0;
+  var canvas = document.getElementById('lesson05-canvas');
 
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.clearColor(0, 0, 0, 1);
-      gl.clearDepth(1);
-      gl.enable(gl.DEPTH_TEST);
-      gl.depthFunc(gl.LEQUAL);
-      
-      camera.view.id();
+  var app = new Application(canvas);
 
-      //set buffers with cube data
-      program.setBuffers({
-        'aVertexPosition': {
-          value: cube.vertices,
-          size: 3
-        },
-        'aTextureCoord': {
-          value: cube.texCoords,
-          size: 2
-        },
-        'indices': {
-          value: cube.indices,
-          bufferType: gl.ELEMENT_ARRAY_BUFFER,
-          size: 1
-        }
-      });
-      
-      function drawScene() {
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        //draw Cube
-        rCube += 0.01;
-        cube.position.set(0, 0, -8);
-        cube.rotation.set(rCube, rCube, rCube);
-        //update element matrix
-        cube.update();
-        //get new view matrix out of element and camera matrices
-        view.mulMat42(camera.view, cube.matrix);
-        //set attributes, indices and textures
-        program.setBuffer('aVertexPosition')
-               .setBuffer('aTextureCoord')
-               .setBuffer('indices')
-               .setTexture('nehe.gif');
-        //set uniforms
-        program.setUniform('uMVMatrix', view);
-        program.setUniform('uPMatrix', camera.projection);
-        program.setUniform('uSampler', 0);
-        //draw triangles
-        gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
-        //request new frame
-        PhiloGL.Fx.requestAnimationFrame(drawScene);
-      }
-      
-      drawScene();
-    
+  var gl = app.gl;
+
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0, 0, 0, 1);
+  gl.clearDepth(1);
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+
+  var program = Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+
+  program.use();
+
+  //set buffers with cube data
+  program.setBuffers({
+    'aVertexPosition': {
+      value: cube.vertices,
+      size: 3
+    },
+    'aTextureCoord': {
+      value: cube.texCoords,
+      size: 2
+    },
+    'indices': {
+      value: cube.indices,
+      bufferType: gl.ELEMENT_ARRAY_BUFFER,
+      size: 1
     }
-   
   });
+
+  var camera = new PerspectiveCamera({
+    aspect: canvas.width/canvas.height,
+  });
+
+  var view = new Mat4();
+  var rCube = 0;
+
+  loadTextures(app, {
+
+    src: ['nehe.gif']
+
+  }).then(function() {
+
+    function drawScene() {
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      //draw Cube
+      rCube += 0.01;
+      cube.position.set(0, 0, -8);
+      cube.rotation.set(rCube, rCube, rCube);
+      //update element matrix
+      cube.update();
+      //get new view matrix out of element and camera matrices
+      view.mulMat42(camera.view, cube.matrix);
+      //set attributes, indices and textures
+      program.setBuffer('aVertexPosition')
+             .setBuffer('aTextureCoord')
+             .setBuffer('indices')
+             .setTexture('nehe.gif');
+      //set uniforms
+      program.setUniform('uMVMatrix', view);
+      program.setUniform('uPMatrix', camera.projection);
+      program.setUniform('uSampler', 0);
+      //draw triangles
+      gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
+      //request new frame
+      Fx.requestAnimationFrame(drawScene);
+    }
+
+    drawScene();
+
+  });
+
 }
-
-
-
-
-

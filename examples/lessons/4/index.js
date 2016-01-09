@@ -119,7 +119,7 @@ var webGLStart = function() {
     aspect: canvas.width/canvas.height,
   });
 
-  var view = new PhiloGL.Mat4;
+  var view = new Mat4;
   var rPyramid = 0;
   var rCube = 0;
 
@@ -173,7 +173,7 @@ var webGLStart = function() {
   function tick() {
     drawScene();
     animate();
-    PhiloGL.Fx.requestAnimationFrame(tick);
+    Fx.requestAnimationFrame(tick);
   }
 
   tick();
