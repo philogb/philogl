@@ -41,7 +41,6 @@ import Application from './application';
 import {loadTextures} from './io';
 import {Events} from './event';
 
-
 if (typeof window !== 'undefined') {
     window.PhiloGL = {
         Events: Events,

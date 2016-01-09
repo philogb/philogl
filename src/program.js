@@ -225,20 +225,18 @@ export default class Program {
 
   // Alternate constructor
   // Create a program from vs and fs sources
-  static async fromShaderSources(...args) {
-    var opt = Program._getOptions({}, ...args);
-    return new Program(opt.app, opt.vs, opt.fs);
+  static fromShaderSources(app, vs, fs) {
+    return new Program(app, vs, fs);
   }
 
   // Alternate constructor
   // Build program from default shaders (requires Shaders)
-  static async fromDefaultShaders(opt = {}) {
-    const {vs = 'Default', fs = 'Default'} = opt;
-    return Program.fromShaderSources({
-      ...opt,
-      vs: Shaders.Vertex[vs],
-      fs: Shaders.Fragment[fs]
-    });
+  static fromDefaultShaders(app) {
+    return Program.fromShaderSources(
+      app,
+      Shaders.Vertex['Default'],
+      Shaders.Fragment['Default']
+    );
   }
 
   // Alternate constructor
