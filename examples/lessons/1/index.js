@@ -19,8 +19,6 @@ window.webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
   var program = Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
 
   program.use();
@@ -42,6 +40,8 @@ window.webGLStart = function() {
   var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
+
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Draw Triangle
   camera.view.$translate(-1.5, 0, -7);
