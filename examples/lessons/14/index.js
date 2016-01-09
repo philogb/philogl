@@ -31,8 +31,6 @@ var webGLStart = function() {
     position: new pgl.Vec3(0, 0, -50),
   });
 
-  var program = null;
-
   function animateObject(teapot) {
     Promise.all([
       pgl.Program.fromShaderURIs(app, 'frag-lighting.vs.glsl', 'frag-lighting.fs.glsl', {
@@ -51,7 +49,7 @@ var webGLStart = function() {
         }]
       })
     ]).then(function(results) {
-      program = results[0];
+      var program = results[0];
       program.use();
       var scene = new pgl.Scene(app, program, camera);
       var shininess = $id('shininess'),
