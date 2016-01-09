@@ -7,7 +7,7 @@ var webGLStart = function() {
   var pos;
 
   //Create moon
-  var moon = new PhiloGL.O3D.Sphere({
+  var moon = new pgl.O3D.Sphere({
     nlat: 30,
     nlong: 30,
     radius: 2,
@@ -114,7 +114,7 @@ var webGLStart = function() {
       //render moon
       scene.render();
       //request new frame
-      PhiloGL.Fx.requestAnimationFrame(draw);
+      pgl.Fx.requestAnimationFrame(draw);
     }
     //Animate
     draw();

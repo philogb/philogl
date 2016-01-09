@@ -1,16 +1,9 @@
-webGLStart = function() {
+var webGLStart = function() {
 
-  var Application = PhiloGL.Application;
-  var Program = PhiloGL.Program;
-  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
-  var O3D = PhiloGL.O3D;
-  var Mat4 = PhiloGL.Mat4;
-  var Fx = PhiloGL.Fx;
-  var loadTextures = PhiloGL.loadTextures;
-  var Events = PhiloGL.Events;
+  var pgl = PhiloGL;
 
   //Create object
-  var cube = new PhiloGL.O3D.Model({
+  var cube = new pgl.O3D.Model({
     vertices: [-1, -1,  1,
                 1, -1,  1,
                 1,  1,  1,
@@ -89,7 +82,7 @@ webGLStart = function() {
 
   var canvas = document.getElementById('lesson06-canvas');
 
-  var app = new Application(canvas);
+  var app = new pgl.Application(canvas);
 
   var gl = app.gl;
 
@@ -104,17 +97,17 @@ webGLStart = function() {
       z = -5.0,
       filter = 0,
       filters = ['nearest', 'linear', 'mipmap'],
-      view = new PhiloGL.Mat4, rCube = 0;
+      view = new pgl.Mat4, rCube = 0;
 
-  var camera = new PerspectiveCamera({
+  var camera = new pgl.PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 
-  var program = Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+  var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
 
   program.use();
 
-  Events.create(app, {
+  pgl.Events.create(app, {
     onKeyDown: function(e) {
       switch(e.key) {
         case 'f':
@@ -204,7 +197,7 @@ webGLStart = function() {
     function tick() {
       drawScene();
       animate();
-      PhiloGL.Fx.requestAnimationFrame(tick);
+      pgl.Fx.requestAnimationFrame(tick);
     }
 
     function drawScene() {

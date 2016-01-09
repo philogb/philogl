@@ -1,13 +1,8 @@
 var webGLStart = function() {
 
-  var Application = PhiloGL.Application;
-  var Program = PhiloGL.Program;
-  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
-  var O3D = PhiloGL.O3D;
-  var Mat4 = PhiloGL.Mat4;
-  var Fx = PhiloGL.Fx;
+  var pgl = PhiloGL;
 
-  var pyramid = new O3D.Model({
+  var pyramid = new pgl.O3D.Model({
     vertices: [ 0,  1,  0,
                -1, -1,  1,
                 1, -1,  1,
@@ -35,7 +30,7 @@ var webGLStart = function() {
              0, 1, 0, 1]
   });
 
-  var cube = new O3D.Model({
+  var cube = new pgl.O3D.Model({
     vertices: [-1, -1,  1,
                 1, -1,  1,
                 1,  1,  1,
@@ -101,7 +96,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson04-canvas');
 
-  var app = new Application(canvas);
+  var app = new pgl.Application(canvas);
 
   var gl = app.gl;
 
@@ -111,15 +106,15 @@ var webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var program = Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+  var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
 
   program.use();
 
-  var camera = new PerspectiveCamera({
+  var camera = new pgl.PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 
-  var view = new Mat4;
+  var view = new pgl.Mat4;
   var rPyramid = 0;
   var rCube = 0;
 
@@ -173,7 +168,7 @@ var webGLStart = function() {
   function tick() {
     drawScene();
     animate();
-    Fx.requestAnimationFrame(tick);
+    pgl.Fx.requestAnimationFrame(tick);
   }
 
   tick();

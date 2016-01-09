@@ -4,7 +4,7 @@ var webGLStart = function() {
   var pgl = PhiloGL;
 
   // Create moon
-  var moon = new PhiloGL.O3D.Sphere({
+  var moon = new pgl.O3D.Sphere({
     nlat: 30,
     nlong: 30,
     radius: 2,
@@ -14,7 +14,7 @@ var webGLStart = function() {
   });
 
   // Create box
-  var box = new PhiloGL.O3D.Cube({
+  var box = new pgl.O3D.Cube({
     textures: 'crate.gif',
     program: 'vertex',
     colors: [1, 1, 1, 1]

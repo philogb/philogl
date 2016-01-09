@@ -4,22 +4,13 @@ var $id = function(d) { return document.getElementById(d); };
 
 var webGLStart = function() {
 
-  var Application = PhiloGL.Application;
-  var Program = PhiloGL.Program;
-  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
-  var O3D = PhiloGL.O3D;
-  var Mat4 = PhiloGL.Mat4;
-  var Fx = PhiloGL.Fx;
-  var loadTextures = PhiloGL.loadTextures;
-  var Events = PhiloGL.Events;
-  var Scene = PhiloGL.Scene;
-  var Shaders = PhiloGL.Shaders;
+  var pgl = PhiloGL;
 
   var canvas = document.getElementById('lesson08-canvas');
 
-  var app = new Application(canvas);
+  var app = new pgl.Application(canvas);
 
-  loadTextures(app, {
+  pgl.loadTextures(app, {
     src: ['glass.gif'],
     parameters: [{
       name: 'TEXTURE_MAG_FILTER',
@@ -57,7 +48,7 @@ var webGLStart = function() {
         alpha = $id('alpha');
 
     //Create object
-    var cube = new O3D.Model({
+    var cube = new pgl.O3D.Model({
       vertices: [-1, -1,  1,
                   1, -1,  1,
                   1,  1,  1,
@@ -198,11 +189,11 @@ var webGLStart = function() {
 
     ].join("\n");
 
-    var program = Program.fromShaderSources(app, Shaders.Vertex.Default, blendFS);
+    var program = pgl.Program.fromShaderSources(app, pgl.Shaders.Vertex.Default, blendFS);
 
     program.use();
 
-    Events.create(app, {
+    pgl.Events.create(app, {
       onKeyDown: function(e) {
         switch(e.key) {
           case 'f':
@@ -237,11 +228,11 @@ var webGLStart = function() {
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 
-    var camera = new PerspectiveCamera({
+    var camera = new pgl.PerspectiveCamera({
       aspect: canvas.width/canvas.height,
     });
 
-    var scene = new Scene(app, program, camera);
+    var scene = new pgl.Scene(app, program, camera);
 
     scene.add(cube);
 
@@ -290,7 +281,7 @@ var webGLStart = function() {
     function tick() {
       drawScene();
       animate();
-      PhiloGL.Fx.requestAnimationFrame(tick);
+      pgl.Fx.requestAnimationFrame(tick);
     }
 
     tick();

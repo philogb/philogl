@@ -2,13 +2,11 @@
 
 window.webGLStart = function() {
 
-  var Application = PhiloGL.Application;
-  var Program = PhiloGL.Program;
-  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var pgl = PhiloGL;
 
   var canvas = document.getElementById('lesson01-canvas');
 
-  var app = new Application(canvas);
+  var app = new pgl.Application(canvas);
 
   var gl = app.gl;
 
@@ -18,7 +16,7 @@ window.webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var program = Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+  var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
 
   program.use();
 
@@ -36,7 +34,7 @@ window.webGLStart = function() {
     }
   });
 
-  var camera = new PerspectiveCamera({
+  var camera = new pgl.PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 
