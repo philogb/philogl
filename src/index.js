@@ -39,10 +39,12 @@ import Img from './media';
 import Program from './program';
 import Application from './application';
 import {loadTextures} from './io';
+import {Events} from './event';
 
 
 if (typeof window !== 'undefined') {
     window.PhiloGL = {
+        Events: Events,
         O3D: O3D,
         Mat4: math.Mat4,
         Fx: Fx,

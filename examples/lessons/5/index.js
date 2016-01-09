@@ -9,130 +9,131 @@ var webGLStart = function() {
   var Fx = PhiloGL.Fx;
   var loadTextures = PhiloGL.loadTextures;
 
-  var cube = new O3D.Model({
-    texture: 'nehe.gif',
-
-    vertices: [-1, -1,  1,
-                1, -1,  1,
-                1,  1,  1,
-               -1,  1,  1,
-
-               -1, -1, -1,
-               -1,  1, -1,
-                1,  1, -1,
-                1, -1, -1,
-
-               -1,  1, -1,
-               -1,  1,  1,
-                1,  1,  1,
-                1,  1, -1,
-
-               -1, -1, -1,
-                1, -1, -1,
-                1, -1,  1,
-               -1, -1,  1,
-
-                1, -1, -1,
-                1,  1, -1,
-                1,  1,  1,
-                1, -1,  1,
-
-               -1, -1, -1,
-               -1, -1,  1,
-               -1,  1,  1,
-               -1,  1, -1],
-
-    texCoords: [
-            // Front face
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-
-            // Back face
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-            0.0, 0.0,
-
-            // Top face
-            0.0, 1.0,
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-
-            // Bottom face
-            1.0, 1.0,
-            0.0, 1.0,
-            0.0, 0.0,
-            1.0, 0.0,
-
-            // Right face
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-            0.0, 0.0,
-
-            // Left face
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0
-    ],
-
-    indices: [0, 1, 2, 0, 2, 3,
-              4, 5, 6, 4, 6, 7,
-              8, 9, 10, 8, 10, 11,
-              12, 13, 14, 12, 14, 15,
-              16, 17, 18, 16, 18, 19,
-              20, 21, 22, 20, 22, 23]
-  });
-
   var canvas = document.getElementById('lesson05-canvas');
 
   var app = new Application(canvas);
-
-  var gl = app.gl;
-
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(0, 0, 0, 1);
-  gl.clearDepth(1);
-  gl.enable(gl.DEPTH_TEST);
-  gl.depthFunc(gl.LEQUAL);
-
-  var program = Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
-
-  program.use();
-
-  //set buffers with cube data
-  program.setBuffers({
-    'aVertexPosition': {
-      value: cube.vertices,
-      size: 3
-    },
-    'aTextureCoord': {
-      value: cube.texCoords,
-      size: 2
-    },
-    'indices': {
-      value: cube.indices,
-      bufferType: gl.ELEMENT_ARRAY_BUFFER,
-      size: 1
-    }
-  });
-
-  var camera = new PerspectiveCamera({
-    aspect: canvas.width/canvas.height,
-  });
-
-  var view = new Mat4();
-  var rCube = 0;
 
   loadTextures(app, {
 
     src: ['nehe.gif']
 
   }).then(function() {
+    
+      var cube = new O3D.Model({
+        texture: 'nehe.gif',
+
+        vertices: [-1, -1,  1,
+                    1, -1,  1,
+                    1,  1,  1,
+                   -1,  1,  1,
+
+                   -1, -1, -1,
+                   -1,  1, -1,
+                    1,  1, -1,
+                    1, -1, -1,
+
+                   -1,  1, -1,
+                   -1,  1,  1,
+                    1,  1,  1,
+                    1,  1, -1,
+
+                   -1, -1, -1,
+                    1, -1, -1,
+                    1, -1,  1,
+                   -1, -1,  1,
+
+                    1, -1, -1,
+                    1,  1, -1,
+                    1,  1,  1,
+                    1, -1,  1,
+
+                   -1, -1, -1,
+                   -1, -1,  1,
+                   -1,  1,  1,
+                   -1,  1, -1],
+
+        texCoords: [
+                // Front face
+                0.0, 0.0,
+                1.0, 0.0,
+                1.0, 1.0,
+                0.0, 1.0,
+
+                // Back face
+                1.0, 0.0,
+                1.0, 1.0,
+                0.0, 1.0,
+                0.0, 0.0,
+
+                // Top face
+                0.0, 1.0,
+                0.0, 0.0,
+                1.0, 0.0,
+                1.0, 1.0,
+
+                // Bottom face
+                1.0, 1.0,
+                0.0, 1.0,
+                0.0, 0.0,
+                1.0, 0.0,
+
+                // Right face
+                1.0, 0.0,
+                1.0, 1.0,
+                0.0, 1.0,
+                0.0, 0.0,
+
+                // Left face
+                0.0, 0.0,
+                1.0, 0.0,
+                1.0, 1.0,
+                0.0, 1.0
+        ],
+
+        indices: [0, 1, 2, 0, 2, 3,
+                  4, 5, 6, 4, 6, 7,
+                  8, 9, 10, 8, 10, 11,
+                  12, 13, 14, 12, 14, 15,
+                  16, 17, 18, 16, 18, 19,
+                  20, 21, 22, 20, 22, 23]
+      });
+
+      var gl = app.gl;
+
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 1);
+      gl.clearDepth(1);
+      gl.enable(gl.DEPTH_TEST);
+      gl.depthFunc(gl.LEQUAL);
+
+      var program = Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+
+      program.use();
+
+      //set buffers with cube data
+      program.setBuffers({
+        'aVertexPosition': {
+          value: cube.vertices,
+          size: 3
+        },
+        'aTextureCoord': {
+          value: cube.texCoords,
+          size: 2
+        },
+        'indices': {
+          value: cube.indices,
+          bufferType: gl.ELEMENT_ARRAY_BUFFER,
+          size: 1
+        }
+      });
+
+      var camera = new PerspectiveCamera({
+        aspect: canvas.width/canvas.height,
+      });
+
+      var view = new Mat4();
+      var rCube = 0;
+
 
     function drawScene() {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

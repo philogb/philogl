@@ -5,7 +5,8 @@ import {createGLContext} from './webgl';
 export default class Application {
 
   constructor(canvas, options) {
-    this.gl = createGLContext(canvas, options);
+    this.canvas = typeof canvas === 'string' ? getElementById(canvas) : canvas;
+    this.gl = createGLContext(this.canvas, options);
     // handle buffers
     this.buffers = {};
     this.bufferMemo = {};
