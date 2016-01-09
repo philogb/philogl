@@ -204,8 +204,6 @@ var webGLStart = function() {
 
     var program = Program.fromDefaultShaders(app);
 
-    console.log(program);
-
     program.use();
 
     var camera = new PerspectiveCamera({
