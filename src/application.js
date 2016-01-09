@@ -1,14 +1,11 @@
 /* eslint-disable guard-for-in */
 import $ from './jquery-mini';
+import {createGLContext} from './webgl';
 
 export default class Application {
 
-  constructor(options) {
-    this.$$family = 'application';
-    // copy program, scene, camera, etc.
-    for (var prop in options) {
-      this[prop] = options[prop];
-    }
+  constructor(canvas, options) {
+    this.gl = createGLContext(canvas, options);
     // handle buffers
     this.buffers = {};
     this.bufferMemo = {};

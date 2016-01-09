@@ -2,21 +2,16 @@
 
 window.webGLStart = function() {
 
-  // ES5 replacement of
-  //  import {Program, Camera, createGLContext} = PhiloGL;
+  var Application = PhiloGL.Application;
   var Program = PhiloGL.Program;
-  var Camera = PhiloGL.Camera;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
   var createGLContext = PhiloGL.createGLContext;
 
   var canvas = document.getElementById('lesson01-canvas');
 
-  // Change the 
-  var gl = createGLContext(canvas, {
-    onError: function(e) {
-      alert("An error ocurred while loading the application");
-      console.log(e);
-    }
-  });
+  var app = new Application(canvas);
+
+  var gl = app.gl;
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -26,13 +21,9 @@ window.webGLStart = function() {
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Note: Does not need to be async as currently implemented...
-  // Only versions that use XMLHttpRequests need to be async
-  var program = Program.fromHTMLTemplates({
-      vs: 'shader-vs',
-      fs: 'shader-fs'
-  });
-  // Could also be implementd as new Program({'ids', ...})
+  var program = Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+
+  program.use();
 
   program.setBuffers({
     'triangle': {
@@ -48,11 +39,9 @@ window.webGLStart = function() {
     }
   });
 
-  // TODO - check that default parameters are supported and correspond
-  //  to how PhiloGL would normally create the camera...
-  var camera = new Camera();
-  // TODO - this should not be necessary for a new camera?
-  camera.view.id();
+  var camera = new PerspectiveCamera({
+    aspect: canvas.width/canvas.height,
+  });
 
   // Draw Triangle
   camera.view.$translate(-1.5, 0, -7);

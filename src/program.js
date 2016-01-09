@@ -41,46 +41,6 @@ function createProgram(gl, vertexShader, fragmentShader) {
   return glProgram;
 }
 
-// recursiveLoad a source with `#include ""` support
-// `duplist` records all the pending replacements
-async function recursiveLoad(gl, base, source, duplist = {}) {
-
-  function getpath(path) {
-    var last = path.lastIndexOf('/');
-    if (last === '/') {
-      return './';
-    }
-    return path.substr(0, last + 1);
-  }
-
-  var match;
-  if ((match = source.match(/#include "(.*?)"/))) {
-    const url = getpath(base) + match[1];
-
-    try {
-
-      if (duplist[url]) {
-        callbackError('Recursive include');
-      }
-
-      const response = new XHR({url: url, noCache: true}).sendAsync();
-      duplist[url] = true;
-      const replacement = await recursiveLoad(gl, url, response);
-      delete duplist[url];
-      source = source.replace(/#include ".*?"/, replacement);
-      source = source.replace(
-        /\sHAS_EXTENSION\s*\(\s*([A-Za-z_\-0-9]+)\s*\)/g,
-        (all, ext) => gl.getExtension(ext) ? ' 1 ': ' 0 '
-      );
-      return recursiveLoad(gl, url, source, duplist);
-
-    } catch (error) {
-      throw (new Error(`Load including file ${url} failed`));
-    }
-
-  }
-}
-
 // Returns a Magic Uniform Setter
 function getUniformSetter(gl, glProgram, info, isArray) {
   const {name, type} = info;
@@ -212,9 +172,8 @@ export default class Program {
    * @classdesc Handles loading of programs, mapping of attributes and uniforms
    */
   constructor(app, vertexShader, fragmentShader) {
-    const gl = app.gl;
-
     this.app = app;
+    const gl = app.gl;
     const glProgram = createProgram(gl, vertexShader, fragmentShader);
     if (!glProgram) {
       throw new Error('Failed to create program');
@@ -258,11 +217,10 @@ export default class Program {
 
   // Alternate constructor
   // Create a program from vertex and fragment shader node ids
-  static async fromShaderIds(...args) {
-    const opt = Program._getOptions({}, ...args);
-    const vertexShader = document.getElementById(opt.vs).innerHTML;
-    const fragmentShader = document.getElementById(opt.fs).innerHTML;
-    return new Program(opt.app, vertexShader, fragmentShader);
+  static fromHTMLTemplates(app, vs, fs) {
+    const vertexShader = document.getElementById(vs).innerHTML;
+    const fragmentShader = document.getElementById(fs).innerHTML;
+    return new Program(app, vertexShader, fragmentShader);
   }
 
   // Alternate constructor
@@ -305,8 +263,6 @@ export default class Program {
 
   }
 
-  // rye: TODO- This is a temporary measure to get things working
-  //            until we decide on how to manage uniforms.
   setUniform(name, value) {
     if (name in this.uniforms) {
       this.uniforms[name](value);
@@ -314,8 +270,6 @@ export default class Program {
     return this;
   }
 
-  // rye: TODO- This is a temporary measure to get things working
-  //            until we decide on how to manage uniforms.
   setUniforms(forms) {
     for (const name of Object.keys(forms)) {
       if (name in this.uniforms) {

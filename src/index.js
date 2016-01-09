@@ -1,4 +1,10 @@
+// rye: TODO- Research browserify --standalone esp. wrt babel.
+//            Can we create the two import paths this way and
+//            get rid of the babel-polyfill try/catch below?
+
 try {
+    // TODO: do we really need this? I tried without it and
+    // lesson 1, at least, worked fine.
     require('babel-polyfill');
 } catch (e) {
     console.warn('Already have an instance of babel-polyfill.');
@@ -20,32 +26,38 @@ export * from './media';
 //            the browserify imports and the <script> imports.
 //      TODO- Create separate build paths for the
 //            browserify/<script> imports.
-import {PhiloGL} from './core';
-import {hasWebGL} from './webgl';
+import Scene from './scene';
+import {hasWebGL, createGLContext} from './webgl';
 import * as O3D from './objects';
 import * as math from './math';
 import Fx from './addons/fx';
 import WorkerGroup from './addons/workers';
 import Shaders from './shaders';
 import * as IO from './io';
-import {default as Camera} from './camera';
-import {default as Scene} from './scene';
+import {PerspectiveCamera, OrthoCamera} from './camera';
 import Img from './media';
+import Program from './program';
+import Application from './application';
 
 if (typeof window !== 'undefined') {
-    window.PhiloGL = PhiloGL;
-    PhiloGL.O3D = O3D;
-    PhiloGL.Mat4 = math.Mat4;
-    PhiloGL.Fx = Fx;
-    PhiloGL.Shaders = Shaders;
-    PhiloGL.IO = IO;
-    PhiloGL.Camera = Camera;
-    PhiloGL.Scene = Scene;
-    PhiloGL.hasWebGL = hasWebGL;
-    PhiloGL.WorkerGroup = WorkerGroup;
-    PhiloGL.Media = {
-        Image: Img
-    }
+    window.PhiloGL = {
+        O3D: O3D,
+        Mat4: math.Mat4,
+        Fx: Fx,
+        Shaders: Shaders,
+        IO: IO,
+        PerspectiveCamera: PerspectiveCamera,
+        OrthoCamera: OrthoCamera,
+        Scene: Scene,
+        hasWebGL: hasWebGL,
+        createGLContext: createGLContext,
+        WorkerGroup: WorkerGroup,
+        Program: Program,
+        Application: Application,
+        Media: {
+            Image: Img,
+        },
+    };
 }
 
 // PhiloGL 1.X compatibility

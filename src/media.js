@@ -1,7 +1,7 @@
 // media.js
 // media has utility functions for image, video and audio manipulation (and
 // maybe others like device, etc).
-import Camera from './camera';
+import {PerspectiveCamera} from './camera';
 import Scene from './scene';
 import Program from './program';
 
@@ -11,7 +11,13 @@ import $ from './jquery-mini';
 // length given a 45 fov angle, and 0.2 distance to camera
 const length = 0.16568542494923805;
 const plane = new Plane({type: 'x,y', xlen: length, ylen: length, offset: 0});
-const camera = new Camera(45, 1, 0.1, 500, {position: {x: 0, y: 0, z: 0.2}});
+const camera = new PerspectiveCamera({
+  fov: 45,
+  aspect: 1,
+  near: 0.1,
+  far: 500,
+  position: {x: 0, y: 0, z: 0.2}
+});
 
 // rye: temporarily renaming this Img until we decide on a name that doesn't shadow
 //      the builtin Image class.
