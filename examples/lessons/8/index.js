@@ -57,7 +57,7 @@ var webGLStart = function() {
         alpha = $id('alpha');
 
     //Create object
-    var cube = new PhiloGL.O3D.Model({
+    var cube = new O3D.Model({
       vertices: [-1, -1,  1,
                   1, -1,  1,
                   1,  1,  1,
