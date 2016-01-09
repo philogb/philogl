@@ -1,6 +1,13 @@
-function webGLStart() {
-  //Load models
-  var pyramid = new PhiloGL.O3D.Model({
+var webGLStart = function() {
+
+  var Application = PhiloGL.Application;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var O3D = PhiloGL.O3D;
+  var Mat4 = PhiloGL.Mat4;
+  var Fx = PhiloGL.Fx;
+
+  var pyramid = new O3D.Model({
     vertices: [ 0,  1,  0,
                -1, -1,  1,
                 1, -1,  1,
@@ -13,7 +20,7 @@ function webGLStart() {
                 0,  1,  0,
                -1, -1, -1,
                -1, -1,  1],
-    
+
     colors: [1, 0, 0, 1,
              0, 1, 0, 1,
              0, 0, 1, 1,
@@ -28,7 +35,7 @@ function webGLStart() {
              0, 1, 0, 1]
   });
 
-  var cube = new PhiloGL.O3D.Model({
+  var cube = new O3D.Model({
     vertices: [-1, -1,  1,
                 1, -1,  1,
                 1,  1,  1,
@@ -59,26 +66,26 @@ function webGLStart() {
                -1,  1,  1,
                -1,  1, -1],
 
-    colors: [1, 0, 0, 1, 
+    colors: [1, 0, 0, 1,
              1, 0, 0, 1,
              1, 0, 0, 1,
              1, 0, 0, 1,
-             1, 1, 0, 1, 
-             1, 1, 0, 1, 
-             1, 1, 0, 1, 
-             1, 1, 0, 1, 
-             0, 1, 0, 1, 
-             0, 1, 0, 1, 
-             0, 1, 0, 1, 
-             0, 1, 0, 1, 
-             1, 0.5, 0.5, 1, 
-             1, 0.5, 0.5, 1, 
-             1, 0.5, 0.5, 1, 
-             1, 0.5, 0.5, 1, 
-             1, 0, 1, 1, 
-             1, 0, 1, 1, 
-             1, 0, 1, 1, 
-             1, 0, 1, 1, 
+             1, 1, 0, 1,
+             1, 1, 0, 1,
+             1, 1, 0, 1,
+             1, 1, 0, 1,
+             0, 1, 0, 1,
+             0, 1, 0, 1,
+             0, 1, 0, 1,
+             0, 1, 0, 1,
+             1, 0.5, 0.5, 1,
+             1, 0.5, 0.5, 1,
+             1, 0.5, 0.5, 1,
+             1, 0.5, 0.5, 1,
+             1, 0, 1, 1,
+             1, 0, 1, 1,
+             1, 0, 1, 1,
+             1, 0, 1, 1,
              0, 0, 1, 1,
              0, 0, 1, 1,
              0, 0, 1, 1,
@@ -92,89 +99,83 @@ function webGLStart() {
               20, 21, 22, 20, 22, 23]
   });
 
-  PhiloGL('lesson04-canvas', {
-    program: {
-      from: 'ids',
-      vs: 'shader-vs',
-      fs: 'shader-fs'
-    },
-    onError: function() {
-      alert("An error ocurred while loading the application");
-    },
-    onLoad: function(app) {
-      var gl = app.gl,
-          canvas = app.canvas,
-          program = app.program,
-          camera = app.camera,
-          view = new PhiloGL.Mat4,
-          rPyramid = 0, rCube = 0;
+  var canvas = document.getElementById('lesson04-canvas');
 
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.clearColor(0, 0, 0, 1);
-      gl.clearDepth(1);
-      gl.enable(gl.DEPTH_TEST);
-      gl.depthFunc(gl.LEQUAL);
-      
-      camera.view.id();
-  
-      function setupElement(elem) {
-        //update element matrix
-        elem.update();
-        //get new view matrix out of element and camera matrices
-        view.mulMat42(camera.view, elem.matrix);
-        //set buffers with element data
-        program.setBuffers({
-          'aVertexPosition': {
-            value: elem.vertices,
-            size: 3
-          },
-          'aVertexColor': {
-            value: elem.colors,
-            size: 4
-          }
-        });
-        //set uniforms
-        program.setUniform('uMVMatrix', view);
-        program.setUniform('uPMatrix', camera.projection);
-      }
+  var app = new Application(canvas);
 
-      function animate() {
-        rPyramid += 0.01;
-        rCube += 0.01;
-      }
+  var gl = app.gl;
 
-      function tick() {
-        drawScene();
-        animate();
-        PhiloGL.Fx.requestAnimationFrame(tick);
-      }
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0, 0, 0, 1);
+  gl.clearDepth(1);
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
 
-      function drawScene() {
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        
-        //Draw Pyramid
-        pyramid.position.set(-1.5, 0, -8);
-        pyramid.rotation.set(0, rPyramid, 0);
-        setupElement(pyramid);
-        gl.drawArrays(gl.TRIANGLES, 0, pyramid.vertices.length / 3);
-        
-        //Draw Cube
-        cube.position.set(1.5, 0, -8);
-        cube.rotation.set(rCube, rCube, rCube);
-        setupElement(cube);
-        program.setBuffer('indices', {
-          value: cube.indices,
-          bufferType: gl.ELEMENT_ARRAY_BUFFER,
-          size: 1
-        });
-        gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
-      }
-      
-      tick();
-    } 
+  var program = Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+
+  program.use();
+
+  var camera = new PerspectiveCamera({
+    aspect: canvas.width/canvas.height,
   });
-  
+
+  var view = new PhiloGL.Mat4;
+  var rPyramid = 0;
+  var rCube = 0;
+
+  function setupElement(elem) {
+    //update element matrix
+    elem.update();
+    //get new view matrix out of element and camera matrices
+    view.mulMat42(camera.view, elem.matrix);
+    //set buffers with element data
+    program.setBuffers({
+      'aVertexPosition': {
+        value: elem.vertices,
+        size: 3
+      },
+      'aVertexColor': {
+        value: elem.colors,
+        size: 4
+      }
+    });
+    //set uniforms
+    program.setUniform('uMVMatrix', view);
+    program.setUniform('uPMatrix', camera.projection);
+  }
+
+  function animate() {
+    rPyramid += 0.01;
+    rCube += 0.01;
+  }
+
+  function drawScene() {
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    //Draw Pyramid
+    pyramid.position.set(-1.5, 0, -8);
+    pyramid.rotation.set(0, rPyramid, 0);
+    setupElement(pyramid);
+    gl.drawArrays(gl.TRIANGLES, 0, pyramid.vertices.length / 3);
+
+    //Draw Cube
+    cube.position.set(1.5, 0, -8);
+    cube.rotation.set(rCube, rCube, rCube);
+    setupElement(cube);
+    program.setBuffer('indices', {
+      value: cube.indices,
+      bufferType: gl.ELEMENT_ARRAY_BUFFER,
+      size: 1
+    });
+    gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
+  }
+
+  function tick() {
+    drawScene();
+    animate();
+    PhiloGL.Fx.requestAnimationFrame(tick);
+  }
+
+  tick();
+
 }
-
-
-
