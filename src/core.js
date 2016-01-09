@@ -6,6 +6,7 @@
 /* eslint-disable callback-return */
 /* eslint-disable no-console */
 /* global console */
+// TODO: Remove this file.
 import {getContext} from './webgl';
 import Camera from './camera';
 import Scene from './scene';

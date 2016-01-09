@@ -3,7 +3,6 @@ window.webGLStart = function() {
   var Application = PhiloGL.Application;
   var Program = PhiloGL.Program;
   var PerspectiveCamera = PhiloGL.PerspectiveCamera;
-  var createGLContext = PhiloGL.createGLContext;
 
   var canvas = document.getElementById('lesson02-canvas');
 
