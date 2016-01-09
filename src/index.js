@@ -46,6 +46,7 @@ if (typeof window !== 'undefined') {
         Events: Events,
         O3D: O3D,
         Mat4: math.Mat4,
+        Vec3: math.Vec3,
         Fx: Fx,
         Shaders: Shaders,
         IO: IO,
