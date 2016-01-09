@@ -241,23 +241,22 @@ export default class Program {
 
   // Alternate constructor
   // Implement Program.fromShaderURIs (requires IO)
-  static async fromShaderURIs(opt = {}) {
-    const gl = opt.app.gl;
-    const {path = '', vs = '', fs = '', noCache = false} = opt;
+  static async fromShaderURIs(app, vs, fs, opts) {
+    const gl = app.gl;
+    opts = $.merge({
+      path: '/',
+      noCache: false
+    }, opts);
 
-    const vertexShaderURI = path + vs;
-    const fragmentShaderURI = path + fs;
+    const vertexShaderURI = opts.path + vs;
+    const fragmentShaderURI = opts.path + fs;
 
     const responses = await new XHRGroup({
       urls: [vertexShaderURI, fragmentShaderURI],
-      noCache: noCache,
+      noCache: opts.noCache,
     }).sendAsync();
 
-    return Program.fromShaderSources({
-      ...opt,
-      vs: responses[0],
-      fs: responses[1]
-    });
+    return Program.fromShaderSources(app, responses[0], responses[1]);
 
   }
 
