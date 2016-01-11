@@ -4,7 +4,6 @@
 import {Vec3, Mat4} from './math';
 import {merge} from './utils';
 
-
 class Camera {
 
   constructor(opts) {
@@ -44,16 +43,15 @@ class Camera {
 
 }
 
-
 export class PerspectiveCamera extends Camera {
 
   update() {
-    this.projection = new Mat4().perspective(this.fov, this.aspect, this.near, this.far);
+    this.projection =
+      new Mat4().perspective(this.fov, this.aspect, this.near, this.far);
     this.view.lookAt(this.position, this.target, this.up);
   }
 
 }
-
 
 export class OrthoCamera {
 
@@ -62,7 +60,8 @@ export class OrthoCamera {
     const ymin = -ymax;
     const xmin = ymin * this.aspect;
     const xmax = ymax * this.aspect;
-    this.projection = new Mat4().ortho(xmin, xmax, ymin, ymax, this.near, this.far);
+    this.projection =
+      new Mat4().ortho(xmin, xmax, ymin, ymax, this.near, this.far);
     this.view.lookAt(this.position, this.target, this.up);
   }
 
