@@ -1,10 +1,13 @@
-function webGLStart() {
+var webGLStart = function() {
+
   var $id = function(d) { return document.getElementById(d); };
+
+  var pgl = PhiloGL;
 
   //create all models
   var models = {};
   //Create moon
-  models.moon = new PhiloGL.O3D.Sphere({
+  models.moon = new pgl.O3D.Sphere({
     nlat: 30,
     nlong: 30,
     radius: 2,
@@ -19,7 +22,7 @@ function webGLStart() {
     }
   });
   //Create box
-  models.box = new PhiloGL.O3D.Cube({
+  models.box = new pgl.O3D.Cube({
     textures: 'crate.gif',
     uniforms: {
       shininess: 5,
@@ -33,7 +36,7 @@ function webGLStart() {
   models.box.scale.set(2, 2, 2);
 
   //Load macbook
-  models.macbookscreen = new PhiloGL.O3D.Model({
+  models.macbookscreen = new pgl.O3D.Model({
     normals: [
       0, -0.965926, 0.258819,
       0, -0.965926, 0.258819,
@@ -64,7 +67,7 @@ function webGLStart() {
     }
   });
 
-  new PhiloGL.IO.XHR({
+  new pgl.IO.XHR({
     url: 'macbook.json',
     onError: function() {
       alert('Unable to load macbook model');
@@ -79,26 +82,52 @@ function webGLStart() {
         'materialSpecularColor': [1.5, 1.5, 1.5],
         'materialEmissiveColor': [0, 0, 0]
       };
-      models.macbook = new PhiloGL.O3D.Model(json);
+      models.macbook = new pgl.O3D.Model(json);
       createApp(models);
     }
   }).send();
 
+  var canvas = document.getElementById('lesson16-canvas');
+
+  var app = new pgl.Application(canvas),
+      gl = app.gl;
+
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clearDepth(1.0);
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+
+  var outerCamera = new pgl.PerspectiveCamera({
+    aspect: canvas.width/canvas.height,
+    position: new pgl.Vec3(0, 0, -3),
+  });
+
   function createApp(models) {
-    //Create application
-    PhiloGL('lesson16-canvas', {
-      camera: {
-        position: {
-          x: 0, y: 0, z: -3
-        }
-      },
-      program: {
-        from: 'uris',
+
+    Promise.all([
+
+      pgl.Program.fromShaderURIs(app, 'render-tex.vs.glsl', 'render-tex.fs.glsl', {
         path: '../../../shaders/',
-        vs: 'render-tex.vs.glsl',
-        fs: 'render-tex.fs.glsl'
-      },
-      scene: {
+      }),
+
+      pgl.loadTextures(app, {
+        src: ['moon.gif', 'crate.gif'],
+        parameters: [{
+          name: 'TEXTURE_MAG_FILTER',
+          value: 'LINEAR'
+        }, {
+          name: 'TEXTURE_MIN_FILTER',
+          value: 'LINEAR_MIPMAP_NEAREST',
+          generateMipmap: true
+        }]
+      })
+
+    ]).then(function(results) {
+
+      var program = results[0];
+      program.use();
+
+      var outerScene = new pgl.Scene(app, program, outerCamera, {
         lights: {
           enable: true,
           points: {
@@ -113,146 +142,120 @@ function webGLStart() {
             }
           }
         }
-      },
-      textures: {
-        src: ['moon.gif', 'crate.gif'],
-        parameters: [{
-          name: 'TEXTURE_MAG_FILTER',
-          value: 'LINEAR'
-        }, {
-          name: 'TEXTURE_MIN_FILTER',
-          value: 'LINEAR_MIPMAP_NEAREST',
-          generateMipmap: true
-        }]
-      },
-      onError: function() {
-        alert("There was an error creating the app.");
-      },
-      onLoad: function(app) {
-        var screenWidth = 512,
-            screenHeight = 512,
-            screenRatio = 1.66,
-            gl = app.gl,
-            program = app.program,
-            outerCamera = app.camera,
-            innerCamera = new PhiloGL.Camera(45, screenRatio, 0.1, 100, {
-              position: {
-                x: 0, y: 0, z: -17
-              }
-            }),
-            outerScene = app.scene,
-            innerScene = new PhiloGL.Scene(app, program, innerCamera, {
-              lights: {
-                enable: true,
-                points: {
-                  position: {
-                    x: -1, y: 2, z: -1
-                  },
-                  diffuse: {
-                    r: 0.8, g: 0.8, b: 0.8
-                  },
-                  specular: {
-                    r: 0.8, g: 0.8, b: 0.8
-                  }
+      });
+
+      var screenWidth = 512,
+          screenHeight = 512,
+          screenRatio = 1.66,
+          innerCamera = new pgl.PerspectiveCamera({
+            fov: 45,
+            aspect: screenRatio,
+            near: 0.1,
+            far: 100,
+            position: new pgl.Vec3(0, 0, -17)
+          }),
+          innerScene = new pgl.Scene(app, program, innerCamera, {
+            lights: {
+              enable: true,
+              points: {
+                position: {
+                  x: -1, y: 2, z: -1
+                },
+                diffuse: {
+                  r: 0.8, g: 0.8, b: 0.8
+                },
+                specular: {
+                  r: 0.8, g: 0.8, b: 0.8
                 }
               }
-            }),
-            canvas = app.canvas,
-            rho = 4,
-            theta = 0,
-            laptopTheta = 0,
-            //models
-            macbook = models.macbook,
-            macbookscreen = models.macbookscreen,
-            box = models.box,
-            moon = models.moon;
+            }
+          }),
+          rho = 4,
+          theta = 0,
+          laptopTheta = 0,
+          //models
+          macbook = models.macbook,
+          macbookscreen = models.macbookscreen,
+          box = models.box,
+          moon = models.moon;
 
-        //create framebuffer
-        program.setFrameBuffer('monitor', {
-          width: screenWidth,
-          height: screenHeight,
-          bindToTexture: {
-            parameters: [{
-              name: 'TEXTURE_MAG_FILTER',
-              value: 'LINEAR'
-            }, {
-              name: 'TEXTURE_MIN_FILTER',
-              value: 'LINEAR',
-              generateMipmap: false
-            }]
-          },
-          bindToRenderBuffer: true
-        });
+      //create framebuffer
+      program.setFrameBuffer('monitor', {
+        width: screenWidth,
+        height: screenHeight,
+        bindToTexture: {
+          parameters: [{
+            name: 'TEXTURE_MAG_FILTER',
+            value: 'LINEAR'
+          }, {
+            name: 'TEXTURE_MIN_FILTER',
+            value: 'LINEAR',
+            generateMipmap: false
+          }]
+        },
+        bindToRenderBuffer: true
+      });
 
-        //Basic gl setup
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.clearDepth(1.0);
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
 
-        //Add objects to different scenes
-        outerScene.add(macbook, macbookscreen);
-        innerScene.add(moon, box);
+      //Add objects to different scenes
+      outerScene.add(macbook, macbookscreen);
+      innerScene.add(moon, box);
 
-        outerCamera.update();
-        innerCamera.update();
+      outerCamera.update();
+      innerCamera.update();
 
-        outerCamera.view.$translate(0, -0.5, 0);
+      outerCamera.view.$translate(0, -0.5, 0);
 
-        function drawInnerScene() {
-          program.setFrameBuffer('monitor', true);
+      function drawInnerScene() {
+        program.setFrameBuffer('monitor', true);
 
-          gl.viewport(0, 0, screenWidth, screenHeight);
-          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.viewport(0, 0, screenWidth, screenHeight);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-          theta += 0.01;
+        theta += 0.01;
 
-          moon.position = {
-            x: rho * Math.cos(theta),
-            y: 0,
-            z: rho * Math.sin(theta)
-          };
-          moon.update();
+        moon.position = {
+          x: rho * Math.cos(theta),
+          y: 0,
+          z: rho * Math.sin(theta)
+        };
+        moon.update();
 
-          box.position = {
-            x: rho * Math.cos(Math.PI + theta),
-            y: 0,
-            z: rho * Math.sin(Math.PI + theta)
-          };
-          box.update();
+        box.position = {
+          x: rho * Math.cos(Math.PI + theta),
+          y: 0,
+          z: rho * Math.sin(Math.PI + theta)
+        };
+        box.update();
 
-          innerScene.renderToTexture('monitor');
+        innerScene.renderToTexture('monitor');
 
-          program.setFrameBuffer('monitor', false);
-        }
-
-        function drawOuterScene() {
-          gl.viewport(0, 0, screenWidth, screenHeight);
-          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-          laptopTheta += 0.005;
-
-          macbook.rotation.set(-Math.PI /2, laptopTheta, 0);
-          macbook.update();
-
-          macbookscreen.rotation.set(-Math.PI /2, laptopTheta, 0);
-          macbookscreen.update();
-
-          outerScene.render();
-        }
-
-        function draw() {
-          drawInnerScene();
-          drawOuterScene();
-          PhiloGL.Fx.requestAnimationFrame(draw);
-        }
-
-        //Animate
-        draw();
+        program.setFrameBuffer('monitor', false);
       }
+
+      function drawOuterScene() {
+        gl.viewport(0, 0, screenWidth, screenHeight);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        laptopTheta += 0.005;
+
+        macbook.rotation.set(-Math.PI /2, laptopTheta, 0);
+        macbook.update();
+
+        macbookscreen.rotation.set(-Math.PI /2, laptopTheta, 0);
+        macbookscreen.update();
+
+        outerScene.render();
+      }
+
+      function draw() {
+        drawInnerScene();
+        drawOuterScene();
+        pgl.Fx.requestAnimationFrame(draw);
+      }
+
+      //Animate
+      draw();
     });
   }
 }
-
-
-

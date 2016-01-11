@@ -41,46 +41,6 @@ function createProgram(gl, vertexShader, fragmentShader) {
   return glProgram;
 }
 
-// recursiveLoad a source with `#include ""` support
-// `duplist` records all the pending replacements
-async function recursiveLoad(gl, base, source, duplist = {}) {
-
-  function getpath(path) {
-    var last = path.lastIndexOf('/');
-    if (last === '/') {
-      return './';
-    }
-    return path.substr(0, last + 1);
-  }
-
-  var match;
-  if ((match = source.match(/#include "(.*?)"/))) {
-    const url = getpath(base) + match[1];
-
-    try {
-
-      if (duplist[url]) {
-        callbackError('Recursive include');
-      }
-
-      const response = new XHR({url: url, noCache: true}).sendAsync();
-      duplist[url] = true;
-      const replacement = await recursiveLoad(gl, url, response);
-      delete duplist[url];
-      source = source.replace(/#include ".*?"/, replacement);
-      source = source.replace(
-        /\sHAS_EXTENSION\s*\(\s*([A-Za-z_\-0-9]+)\s*\)/g,
-        (all, ext) => gl.getExtension(ext) ? ' 1 ': ' 0 '
-      );
-      return recursiveLoad(gl, url, source, duplist);
-
-    } catch (error) {
-      throw (new Error(`Load including file ${url} failed`));
-    }
-
-  }
-}
-
 // Returns a Magic Uniform Setter
 function getUniformSetter(gl, glProgram, info, isArray) {
   const {name, type} = info;
@@ -212,9 +172,8 @@ export default class Program {
    * @classdesc Handles loading of programs, mapping of attributes and uniforms
    */
   constructor(app, vertexShader, fragmentShader) {
-    const gl = app.gl;
-
     this.app = app;
+    const gl = app.gl;
     const glProgram = createProgram(gl, vertexShader, fragmentShader);
     if (!glProgram) {
       throw new Error('Failed to create program');
@@ -258,55 +217,49 @@ export default class Program {
 
   // Alternate constructor
   // Create a program from vertex and fragment shader node ids
-  static async fromShaderIds(...args) {
-    const opt = Program._getOptions({}, ...args);
-    const vertexShader = document.getElementById(opt.vs).innerHTML;
-    const fragmentShader = document.getElementById(opt.fs).innerHTML;
-    return new Program(opt.app, vertexShader, fragmentShader);
+  static fromHTMLTemplates(app, vs, fs) {
+    const vertexShader = document.getElementById(vs).innerHTML;
+    const fragmentShader = document.getElementById(fs).innerHTML;
+    return new Program(app, vertexShader, fragmentShader);
   }
 
   // Alternate constructor
   // Create a program from vs and fs sources
-  static async fromShaderSources(...args) {
-    var opt = Program._getOptions({}, ...args);
-    return new Program(opt.app, opt.vs, opt.fs);
+  static fromShaderSources(app, vs, fs) {
+    return new Program(app, vs, fs);
   }
 
   // Alternate constructor
   // Build program from default shaders (requires Shaders)
-  static async fromDefaultShaders(opt = {}) {
-    const {vs = 'Default', fs = 'Default'} = opt;
-    return Program.fromShaderSources({
-      ...opt,
-      vs: Shaders.Vertex[vs],
-      fs: Shaders.Fragment[fs]
-    });
+  static fromDefaultShaders(app) {
+    return Program.fromShaderSources(
+      app,
+      Shaders.Vertex['Default'],
+      Shaders.Fragment['Default']
+    );
   }
 
   // Alternate constructor
   // Implement Program.fromShaderURIs (requires IO)
-  static async fromShaderURIs(opt = {}) {
-    const gl = opt.app.gl;
-    const {path = '', vs = '', fs = '', noCache = false} = opt;
+  static async fromShaderURIs(app, vs, fs, opts) {
+    const gl = app.gl;
+    opts = $.merge({
+      path: '/',
+      noCache: false
+    }, opts);
 
-    const vertexShaderURI = path + vs;
-    const fragmentShaderURI = path + fs;
+    const vertexShaderURI = opts.path + vs;
+    const fragmentShaderURI = opts.path + fs;
 
     const responses = await new XHRGroup({
       urls: [vertexShaderURI, fragmentShaderURI],
-      noCache: noCache,
+      noCache: opts.noCache,
     }).sendAsync();
 
-    return Program.fromShaderSources({
-      ...opt,
-      vs: responses[0],
-      fs: responses[1]
-    });
+    return Program.fromShaderSources(app, responses[0], responses[1]);
 
   }
 
-  // rye: TODO- This is a temporary measure to get things working
-  //            until we decide on how to manage uniforms.
   setUniform(name, value) {
     if (name in this.uniforms) {
       this.uniforms[name](value);
@@ -314,8 +267,6 @@ export default class Program {
     return this;
   }
 
-  // rye: TODO- This is a temporary measure to get things working
-  //            until we decide on how to manage uniforms.
   setUniforms(forms) {
     for (const name of Object.keys(forms)) {
       if (name in this.uniforms) {

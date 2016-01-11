@@ -325,7 +325,7 @@ async function loadImages(srcs) {
 // Load multiple textures from images
 // rye: TODO this needs to implement functionality from
 //           the original loadTextures function.
-export async function loadTextures(opt) {
+export async function loadTextures(app, opt) {
   var images = await loadImages(opt.src);
   var textures = {};
   images.forEach((img, i) => {
@@ -336,7 +336,7 @@ export async function loadTextures(opt) {
       }
     }, opt);
   });
-  opt.app.setTextures(textures);
+  app.setTextures(textures);
 }
 
 // // Load multiple textures from images

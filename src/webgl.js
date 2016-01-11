@@ -3,7 +3,7 @@
 /* global window */
 import $ from './jquery-mini';
 
-export function getContext(canvas, opt) {
+export function createGLContext(canvas, opt) {
   var gl = null;
   canvas = typeof canvas === 'string' ? $(canvas) : canvas;
   let ctx;
@@ -76,5 +76,6 @@ export function hasExtension(name) {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('webgl') ||
     canvas.getContext('experimental-webgl');
+  // Should maybe be return !!context.getExtension(name);
   return context.getExtension(name);
 }
