@@ -13,6 +13,18 @@ var webGLStart = function() {
 
   }).then(function() {
 
+      var gl = app.gl;
+
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 1);
+      gl.clearDepth(1);
+      gl.enable(gl.DEPTH_TEST);
+      gl.depthFunc(gl.LEQUAL);
+
+      var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+
+      program.use();
+
       var cube = new pgl.O3D.Model({
         texture: 'nehe.gif',
 
@@ -92,34 +104,23 @@ var webGLStart = function() {
                   20, 21, 22, 20, 22, 23]
       });
 
-      var gl = app.gl;
-
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.clearColor(0, 0, 0, 1);
-      gl.clearDepth(1);
-      gl.enable(gl.DEPTH_TEST);
-      gl.depthFunc(gl.LEQUAL);
-
-      var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
-
-      program.use();
-
-      //set buffers with cube data
-      program.setBuffers({
-        'aVertexPosition': {
-          value: cube.vertices,
-          size: 3
-        },
-        'aTextureCoord': {
-          value: cube.texCoords,
-          size: 2
-        },
-        'indices': {
-          value: cube.indices,
-          bufferType: gl.ELEMENT_ARRAY_BUFFER,
-          size: 1
-        }
-      });
+      var buffers = [
+        new pgl.Buffer(gl, {
+            attribute: 'aVertexPosition',
+            data: cube.vertices,
+            size: 3
+        }),
+        new pgl.Buffer(gl, {
+            attribute: 'aTextureCoord',
+            data: cube.texCoords,
+            size: 2
+        }),
+        new pgl.Buffer(gl, {
+            data: cube.indices,
+            bufferType: gl.ELEMENT_ARRAY_BUFFER,
+            size: 1
+        })
+      ];
 
       var camera = new pgl.PerspectiveCamera({
         aspect: canvas.width/canvas.height,
@@ -140,9 +141,7 @@ var webGLStart = function() {
       //get new view matrix out of element and camera matrices
       view.mulMat42(camera.view, cube.matrix);
       //set attributes, indices and textures
-      program.setBuffer('aVertexPosition')
-             .setBuffer('aTextureCoord')
-             .setBuffer('indices')
+      program.setBuffers(buffers)
              .setTexture('nehe.gif');
       //set uniforms
       program.setUniform('uMVMatrix', view);

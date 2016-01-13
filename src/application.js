@@ -7,10 +7,10 @@ export default class Application {
   constructor(canvas, options) {
     this.canvas = typeof canvas === 'string' ? getElementById(canvas) : canvas;
     this.gl = createGLContext(this.canvas, options);
-    // handle buffers
-    this.buffers = {};
-    this.bufferMemo = {};
-    // handle framebuffers
+// // handle buffers
+// this.buffers = {};
+// this.bufferMemo = {};
+// handle framebuffers
     this.frameBuffers = {};
     this.frameBufferMemo = {};
     // handle renderbuffers
@@ -21,97 +21,97 @@ export default class Application {
     this.textureMemo = {};
   }
 
-  setBuffer(program, name, opt) {
-    const gl = this.gl;
-
-    // unbind buffer
-    if (opt === false || opt === null) {
-      opt = this.bufferMemo[name];
-      // reset buffer
-      if (opt) {
-        gl.bindBuffer(opt.bufferType, null);
-      }
-      // disable vertex attrib array if the buffer maps to an attribute.
-      const attributeName = opt && opt.attribute || name;
-      const loc = program.attributes[attributeName];
-      // disable the attribute array
-      if (loc !== undefined) {
-        gl.disableVertexAttribArray(loc);
-      }
-      return this;
-    }
-
-    // set defaults
-    opt = $.extend(this.bufferMemo[name] || {
-      bufferType: gl.ARRAY_BUFFER,
-      size: 1,
-      dataType: gl.FLOAT,
-      stride: 0,
-      offset: 0,
-      drawType: gl.STATIC_DRAW,
-      instanced: 0
-    }, opt || {});
-
-    const attributeName = opt.attribute || name;
-    const bufferType = opt.bufferType;
-    const instanced = opt.instanced;
-    const hasBuffer = name in this.buffers;
-    const buffer = hasBuffer ? this.buffers[name] : gl.createBuffer();
-    const hasValue = 'value' in opt;
-    const value = opt.value;
-    const size = opt.size;
-    const dataType = opt.dataType;
-    const stride = opt.stride;
-    const offset = opt.offset;
-    const drawType = opt.drawType;
-    const loc = program.attributes[attributeName];
-    const isAttribute = loc !== undefined;
-    let ext;
-
-    if (!hasBuffer) {
-      this.buffers[name] = buffer;
-    }
-
-    if (isAttribute) {
-      gl.enableVertexAttribArray(loc);
-    }
-
-    gl.bindBuffer(bufferType, buffer);
-
-    if (hasValue) {
-      gl.bufferData(bufferType, value, drawType);
-    }
-
-    if (isAttribute) {
-      gl.vertexAttribPointer(loc, size, dataType, false, stride, offset);
-      if (instanced) {
-        ext = gl.getExtension('ANGLE_instanced_arrays');
-        if (!ext) {
-          console.warn('ANGLE_instanced_arrays not supported!');
-        } else {
-          ext.vertexAttribDivisorANGLE(loc, instanced === true ? 1 : instanced);
-        }
-      }
-    }
-
-    // set default options so we don't have to next time.
-    // set them under the buffer name and attribute name (if an
-    // attribute is defined)
-    delete opt.value;
-    this.bufferMemo[name] = opt;
-    if (isAttribute) {
-      this.bufferMemo[attributeName] = opt;
-    }
-
-    return this;
-  }
-
-  setBuffers(program, obj) {
-    for (var name in obj) {
-      this.setBuffer(program, name, obj[name]);
-    }
-    return this;
-  }
+// setBuffer(program, name, opt) {
+//   const gl = this.gl;
+//
+//   // unbind buffer
+//   if (opt === false || opt === null) {
+//     opt = this.bufferMemo[name];
+//     // reset buffer
+//     if (opt) {
+//       gl.bindBuffer(opt.bufferType, null);
+//     }
+//     // disable vertex attrib array if the buffer maps to an attribute.
+//     const attributeName = opt && opt.attribute || name;
+//     const loc = program.attributes[attributeName];
+//     // disable the attribute array
+//     if (loc !== undefined) {
+//       gl.disableVertexAttribArray(loc);
+//     }
+//     return this;
+//   }
+//
+//   // set defaults
+//   opt = $.extend(this.bufferMemo[name] || {
+//     bufferType: gl.ARRAY_BUFFER,
+//     size: 1,
+//     dataType: gl.FLOAT,
+//     stride: 0,
+//     offset: 0,
+//     drawType: gl.STATIC_DRAW,
+//     instanced: 0
+//   }, opt || {});
+//
+//   const attributeName = opt.attribute || name;
+//   const bufferType = opt.bufferType;
+//   const instanced = opt.instanced;
+//   const hasBuffer = name in this.buffers;
+//   const buffer = hasBuffer ? this.buffers[name] : gl.createBuffer();
+//   const hasValue = 'value' in opt;
+//   const value = opt.value;
+//   const size = opt.size;
+//   const dataType = opt.dataType;
+//   const stride = opt.stride;
+//   const offset = opt.offset;
+//   const drawType = opt.drawType;
+//   const loc = program.attributes[attributeName];
+//   const isAttribute = loc !== undefined;
+//   let ext;
+//
+//   if (!hasBuffer) {
+//     this.buffers[name] = buffer;
+//   }
+//
+//   if (isAttribute) {
+//     gl.enableVertexAttribArray(loc);
+//   }
+//
+//   gl.bindBuffer(bufferType, buffer);
+//
+//   if (hasValue) {
+//     gl.bufferData(bufferType, value, drawType);
+//   }
+//
+//   if (isAttribute) {
+//     gl.vertexAttribPointer(loc, size, dataType, false, stride, offset);
+//     if (instanced) {
+//       ext = gl.getExtension('ANGLE_instanced_arrays');
+//       if (!ext) {
+//         console.warn('ANGLE_instanced_arrays not supported!');
+//       } else {
+//         ext.vertexAttribDivisorANGLE(loc, instanced === true ? 1 : instanced);
+//       }
+//     }
+//   }
+//
+//   // set default options so we don't have to next time.
+//   // set them under the buffer name and attribute name (if an
+//   // attribute is defined)
+//   delete opt.value;
+//   this.bufferMemo[name] = opt;
+//   if (isAttribute) {
+//     this.bufferMemo[attributeName] = opt;
+//   }
+//
+//   return this;
+// }
+//
+// setBuffers(program, obj) {
+//   for (var name in obj) {
+//     this.setBuffer(program, name, obj[name]);
+//   }
+//   return this;
+// }
 
   setFrameBuffer(name, opt = {}) {
     const gl = this.gl;

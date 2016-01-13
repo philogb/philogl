@@ -3,6 +3,22 @@ window.webGLStart = function() {
 
   var pgl = PhiloGL;
 
+  var canvas = document.getElementById('lesson03-canvas');
+
+  var app = new pgl.Application(canvas);
+
+  var gl = app.gl;
+
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0, 0, 0, 1);
+  gl.clearDepth(1);
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+
+  var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+
+  program.use();
+
   var triangle = new pgl.O3D.Model({
     vertices: [ 0,  1, 0,
                -1, -1, 0,
@@ -25,22 +41,6 @@ window.webGLStart = function() {
              0.5, 0.5, 1, 1]
   });
 
-  var canvas = document.getElementById('lesson03-canvas');
-
-  var app = new pgl.Application(canvas);
-
-  var gl = app.gl;
-
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(0, 0, 0, 1);
-  gl.clearDepth(1);
-  gl.enable(gl.DEPTH_TEST);
-  gl.depthFunc(gl.LEQUAL);
-
-  var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
-
-  program.use();
-
   var camera = new pgl.PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
@@ -50,22 +50,27 @@ window.webGLStart = function() {
   var rSquare = 0.0;
 
   function setupElement(elem) {
+    // Set up buffers if we haven't already.
+    if (elem.buffers === undefined) {
+      elem.buffers = [
+        new pgl.Buffer(gl, {
+          attribute: 'aVertexPosition',
+          data: elem.vertices,
+          size: 3
+        }),
+        new pgl.Buffer(gl, {
+          attribute: 'aVertexColor',
+          data: elem.colors,
+          size: 4
+        })
+      ]
+    }
     //update element matrix
     elem.update();
     //get new view matrix out of element and camera matrices
     view.mulMat42(camera.view, elem.matrix);
     //set buffers with element data
-    program.setBuffers({
-      'aVertexPosition': {
-        value: elem.vertices,
-        size: 3
-      },
-
-      'aVertexColor': {
-        value: elem.colors,
-        size: 4
-      }
-    });
+    program.setBuffers(elem.buffers);
     //set uniforms
     program.setUniform('uMVMatrix', view);
     program.setUniform('uPMatrix', camera.projection);

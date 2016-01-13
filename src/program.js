@@ -276,13 +276,36 @@ export default class Program {
     return this;
   }
 
-  setBuffer(...args) {
-    this.app.setBuffer(this, ...args);
+  setBuffer(buf) {
+    const gl = this.app.gl;
+    const loc = this.attributes[buf.attribute];
+    const isAttribute = loc !== undefined;
+    if (isAttribute) {
+      gl.enableVertexAttribArray(loc);
+    }
+    gl.bindBuffer(buf.bufferType, buf.buffer);
+    if (isAttribute) {
+      gl.vertexAttribPointer(loc, buf.size, buf.dataType, false, buf.stride, buf.offset);
+    }
+    if (buf.instanced) {
+      const ext = gl.getExtension('ANGLE_instanced_arrays');
+      if (!ext) {
+        console.warn('ANGLE_instanced_arrays not supported!');
+      } else {
+        ext.vertexAttribDivisorANGLE(loc, buf.instanced === true ? 1 : instanced);
+      }
+    }
     return this;
   }
 
-  setBuffers(...args) {
-    this.app.setBuffers(this, ...args);
+  setBuffers() {
+    let args = arguments;
+    if (Array.isArray(args[0])) {
+      args = args[0];
+    }
+    for (const buf of args) {
+      this.setBuffer(buf);
+    }
     return this;
   }
 

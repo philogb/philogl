@@ -119,21 +119,37 @@ var webGLStart = function() {
   var rCube = 0;
 
   function setupElement(elem) {
+    // Set up buffers if we haven't already.
+    if (elem.buffers === undefined) {
+      elem.buffers = [];
+      if (elem.vertices) {
+        elem.buffers.push(new pgl.Buffer(gl, {
+          attribute: 'aVertexPosition',
+          data: elem.vertices,
+          size: 3
+        }));
+      }
+      if (elem.colors) {
+        elem.buffers.push(new pgl.Buffer(gl, {
+          attribute: 'aVertexColor',
+          data: elem.colors,
+          size: 4
+        }));
+      }
+      if (elem.indices) {
+        elem.buffers.push(new pgl.Buffer(gl, {
+          data: elem.indices,
+          bufferType: gl.ELEMENT_ARRAY_BUFFER,
+          size: 1
+        }));
+      }
+    }
     //update element matrix
     elem.update();
     //get new view matrix out of element and camera matrices
     view.mulMat42(camera.view, elem.matrix);
     //set buffers with element data
-    program.setBuffers({
-      'aVertexPosition': {
-        value: elem.vertices,
-        size: 3
-      },
-      'aVertexColor': {
-        value: elem.colors,
-        size: 4
-      }
-    });
+    program.setBuffers(elem.buffers);
     //set uniforms
     program.setUniform('uMVMatrix', view);
     program.setUniform('uPMatrix', camera.projection);
@@ -157,11 +173,6 @@ var webGLStart = function() {
     cube.position.set(1.5, 0, -8);
     cube.rotation.set(rCube, rCube, rCube);
     setupElement(cube);
-    program.setBuffer('indices', {
-      value: cube.indices,
-      bufferType: gl.ELEMENT_ARRAY_BUFFER,
-      size: 1
-    });
     gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
   }
 

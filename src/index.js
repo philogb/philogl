@@ -11,7 +11,6 @@ try {
 }
 
 export * from './webgl';
-export * from './core';
 export * from './math';
 export {default as Event} from './event';
 export {default as Program} from './program';
@@ -40,9 +39,11 @@ import Program from './program';
 import Application from './application';
 import {loadTextures} from './io';
 import {Events} from './event';
+import Buffer from './buffer';
 
 if (typeof window !== 'undefined') {
     window.PhiloGL = {
+        Buffer: Buffer,
         Events: Events,
         O3D: O3D,
         Mat4: math.Mat4,
