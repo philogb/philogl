@@ -51,8 +51,8 @@ window.webGLStart = function() {
 
   function setupElement(elem) {
     // Set up buffers if we haven't already.
-    if (elem.buffers === undefined) {
-      elem.buffers = [
+    if (elem.bufs === undefined) {
+      elem.bufs = [
         new pgl.Buffer(gl, {
           attribute: 'aVertexPosition',
           data: elem.vertices,
@@ -70,7 +70,7 @@ window.webGLStart = function() {
     //get new view matrix out of element and camera matrices
     view.mulMat42(camera.view, elem.matrix);
     //set buffers with element data
-    program.setBuffers(elem.buffers);
+    program.setBuffers(elem.bufs);
     //set uniforms
     program.setUniform('uMVMatrix', view);
     program.setUniform('uPMatrix', camera.projection);

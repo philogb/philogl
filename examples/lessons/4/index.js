@@ -120,24 +120,24 @@ var webGLStart = function() {
 
   function setupElement(elem) {
     // Set up buffers if we haven't already.
-    if (elem.buffers === undefined) {
-      elem.buffers = [];
+    if (elem.bufs === undefined) {
+      elem.bufs = [];
       if (elem.vertices) {
-        elem.buffers.push(new pgl.Buffer(gl, {
+        elem.bufs.push(new pgl.Buffer(gl, {
           attribute: 'aVertexPosition',
           data: elem.vertices,
           size: 3
         }));
       }
       if (elem.colors) {
-        elem.buffers.push(new pgl.Buffer(gl, {
+        elem.bufs.push(new pgl.Buffer(gl, {
           attribute: 'aVertexColor',
           data: elem.colors,
           size: 4
         }));
       }
       if (elem.indices) {
-        elem.buffers.push(new pgl.Buffer(gl, {
+        elem.bufs.push(new pgl.Buffer(gl, {
           data: elem.indices,
           bufferType: gl.ELEMENT_ARRAY_BUFFER,
           size: 1
@@ -149,7 +149,7 @@ var webGLStart = function() {
     //get new view matrix out of element and camera matrices
     view.mulMat42(camera.view, elem.matrix);
     //set buffers with element data
-    program.setBuffers(elem.buffers);
+    program.setBuffers(elem.bufs);
     //set uniforms
     program.setUniform('uMVMatrix', view);
     program.setUniform('uPMatrix', camera.projection);
