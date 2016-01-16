@@ -4,15 +4,7 @@ var webGLStart = function() {
 
   var pgl = PhiloGL;
 
-  var pos;
-
-  //Create moon
-  var moon = new pgl.O3D.Sphere({
-    nlat: 30,
-    nlong: 30,
-    radius: 2,
-    textures: 'moon.gif'
-  });
+  var moon, pos;
 
   var canvas = document.getElementById('lesson11-canvas');
 
@@ -58,17 +50,24 @@ var webGLStart = function() {
     }
   });
 
-  pgl.loadTextures(app, {
+  pgl.loadTextures(gl, {
     src: ['moon.gif'],
     parameters: [{
-      name: 'TEXTURE_MAG_FILTER',
-      value: 'LINEAR'
-    }, {
-      name: 'TEXTURE_MIN_FILTER',
-      value: 'LINEAR_MIPMAP_NEAREST',
+      magFilter: gl.LINEAR,
+      minFilter: gl.LINEAR_MIPMAP_NEAREST,
       generateMipmap: true
     }]
-  }).then(function() {
+  }).then(function(textures) {
+
+    var tMoon = textures[0];
+
+    moon = new pgl.O3D.Sphere({
+      nlat: 30,
+      nlong: 30,
+      radius: 2,
+      textures: tMoon
+    });
+
     var lighting = $id('lighting'),
         ambient = {
           r: $id('ambientR'),

@@ -219,16 +219,9 @@ export default class Scene {
     }
   }
 
-  renderToTexture(name, opt = {}) {
-    const gl = this.app.gl;
-
-    const texture = this.app.textures[name + '-texture'];
-    const texMemo = this.app.textureMemo[name + '-texture'];
+  renderToTexture(texture, opt = {}) {
     this.render(opt);
-
-    gl.bindTexture(texMemo.textureType, texture);
-    // gl.generateMipmap(texMemo.textureType);
-    // gl.bindTexture(texMemo.textureType, null);
+    texture.bind();
   }
 
   renderObject(object, program) {

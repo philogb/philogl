@@ -13,9 +13,6 @@ export default class Application {
     // handle renderbuffers
     this.renderBuffers = {};
     this.renderBufferMemo = {};
-    // handle textures
-    this.textures = {};
-    this.textureMemo = {};
   }
 
   setFrameBuffer(name, opt = {}) {
@@ -53,23 +50,12 @@ export default class Application {
     }
 
     if (bindToTexture) {
-      var texBindOpt = {
-        data: {
-          width: opt.width,
-          height: opt.height
-        },
-        ...($.type(bindToTexture) === 'object' ? bindToTexture : {})
-      };
-      const texName = name + '-texture';
-      const texOpt = opt.textureOptions;
-
-      this.setTexture(texName, texBindOpt);
-
+      bindToTexture.bind();
       gl.framebufferTexture2D(
         gl.FRAMEBUFFER,
-        texOpt.attachment,
-        this.textureMemo[texName].textureType,
-        this.textures[texName],
+        opt.textureOptions.attachment,
+        bindToTexture.target,
+        bindToTexture.texture,
         0
       );
     }
@@ -146,148 +132,6 @@ export default class Application {
   setRenderBuffers(obj) {
     for (var name in obj) {
       this.setRenderBuffer(name, obj[name]);
-    }
-    return this;
-  }
-
-  setTexture(name, opt) {
-    const gl = this.gl;
-
-    // bind texture
-    if (!opt || typeof opt !== 'object') {
-      gl.activeTexture(opt || gl.TEXTURE0);
-      gl.bindTexture(
-        this.textureMemo[name].textureType || gl.TEXTURE_2D,
-        this.textures[name]
-      );
-      return this;
-    }
-
-    if (opt.data && opt.data.type === gl.FLOAT) {
-      // Enable floating-point texture.
-      if (!gl.getExtension('OES_texture_float')) {
-        throw new Error('OES_texture_float is not supported');
-      }
-    }
-
-    // get defaults
-    // rye: TODO- use lodash.defaultsDeep instead of $merge.
-    opt = $.merge(this.textureMemo[name] || {
-      textureType: gl.TEXTURE_2D,
-      pixelStore: [{
-        name: gl.UNPACK_FLIP_Y_WEBGL,
-        value: true
-      }, {
-        name: gl.UNPACK_ALIGNMENT,
-        value: 1
-      }],
-      parameters: [{
-        name: gl.TEXTURE_MAG_FILTER,
-        value: gl.NEAREST
-      }, {
-        name: gl.TEXTURE_MIN_FILTER,
-        value: gl.NEAREST
-      }, {
-        name: gl.TEXTURE_WRAP_S,
-        value: gl.CLAMP_TO_EDGE
-      }, {
-        name: gl.TEXTURE_WRAP_T,
-        value: gl.CLAMP_TO_EDGE
-      }],
-      data: {
-        format: gl.RGBA,
-        value: false,
-        type: gl.UNSIGNED_BYTE,
-
-        width: 0,
-        height: 0,
-        border: 0
-      }
-
-    }, opt || {});
-
-    var textureType = ('textureType' in opt) ?
-      opt.textureType = gl.get(opt.textureType) : gl.TEXTURE_2D;
-    const textureTarget = ('textureTarget' in opt) ?
-      opt.textureTarget = gl.get(opt.textureTarget) : textureType;
-    const isCube = textureType == gl.TEXTURE_CUBE_MAP;
-    const hasTexture = name in this.textures;
-    const texture = hasTexture? this.textures[name] : gl.createTexture();
-    const pixelStore = opt.pixelStore;
-    const parameters = opt.parameters;
-    const data = opt.data;
-    const value = data.value;
-    const type = data.type;
-    const format = data.format;
-    const hasValue = Boolean(data.value);
-
-    // save texture
-    if (!hasTexture) {
-      this.textures[name] = texture;
-    }
-    gl.bindTexture(textureType, texture);
-    if (!hasTexture) {
-      // set texture properties
-      pixelStore.forEach(opt => {
-        opt.name = typeof opt.name == 'string' ? gl.get(opt.name) : opt.name;
-        gl.pixelStorei(opt.name, opt.value);
-      });
-    }
-
-    // load texture
-    if (hasValue) {
-      // beware that we can be loading multiple textures (i.e. it could be a cubemap)
-      if (isCube) {
-        for (var i = 0; i < 6; ++i) {
-          if ((data.width || data.height) && (!value.width && !value.height)) {
-            gl.texImage2D(textureTarget[i], 0, format,
-              data.width, data.height, data.border, format, type, value[i]);
-          } else {
-            gl.texImage2D(textureTarget[i], 0, format, format, type, value[i]);
-          }
-        }
-      } else {
-        if ((data.width || data.height) && (!value.width && !value.height)) {
-          gl.texImage2D(textureTarget, 0, format,
-            data.width, data.height, data.border, format, type, value);
-        } else {
-          gl.texImage2D(textureTarget, 0, format, format, type, value);
-        }
-      }
-
-    // we're setting a texture to a framebuffer
-    } else if (data.width || data.height) {
-      gl.texImage2D(textureTarget, 0, format,
-        data.width, data.height, data.border, format, type, null);
-    }
-    // set texture parameters
-    if (!hasTexture) {
-      for (i = 0; i < parameters.length; i++) {
-        var opti = parameters[i];
-        opti.name = gl.get(opti.name);
-        opti.value = gl.get(opti.value);
-        gl.texParameteri(textureType, opti.name, opti.value);
-        if (opti.generateMipmap) {
-          gl.generateMipmap(textureType);
-        }
-      }
-    }
-    // remember whether the texture is a cubemap or not
-    opt.isCube = isCube;
-
-    // set default options so we don't have to next time.
-    if (hasValue) {
-      opt.data.value = false;
-    }
-
-    this.textureMemo[name] = opt;
-
-    return this;
-  }
-
-  setTextures(obj) {
-    for (var name in obj) {
-      this.setTexture(name, obj[name]);
     }
     return this;
   }

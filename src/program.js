@@ -334,8 +334,8 @@ export default class Program {
     return this;
   }
 
-  setTexture(...args) {
-    this.app.setTexture(...args);
+  setTexture(texture, index) {
+    texture.bind(index);
     return this;
   }
 

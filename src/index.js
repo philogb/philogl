@@ -40,9 +40,11 @@ import Application from './application';
 import {loadTextures} from './io';
 import {Events} from './event';
 import Buffer from './buffer';
+import {Texture2D} from './texture';
 
 if (typeof window !== 'undefined') {
     window.PhiloGL = {
+        Texture2D: Texture2D,
         Buffer: Buffer,
         Events: Events,
         O3D: O3D,

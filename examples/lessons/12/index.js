@@ -4,20 +4,7 @@ var webGLStart = function() {
 
   var pgl = PhiloGL;
 
-  var pos;
-
-  //Create moon
-  var moon = new pgl.O3D.Sphere({
-    nlat: 30,
-    nlong: 30,
-    radius: 2,
-    textures: 'moon.gif'
-  });
-  //Create box
-  var box = new pgl.O3D.Cube({
-    textures: 'crate.gif'
-  });
-  box.scale.set(2, 2, 2);
+  var moon, box, pos;
 
   var canvas = document.getElementById('lesson12-canvas');
 
@@ -62,17 +49,33 @@ var webGLStart = function() {
     }
   });
 
-  pgl.loadTextures(app, {
+  pgl.loadTextures(gl, {
     src: ['moon.gif', 'crate.gif'],
     parameters: [{
-      name: 'TEXTURE_MAG_FILTER',
-      value: 'LINEAR'
-    }, {
-      name: 'TEXTURE_MIN_FILTER',
-      value: 'LINEAR_MIPMAP_NEAREST',
+      magFilter: gl.LINEAR,
+      minFilter: gl.LINEAR_MIPMAP_NEAREST,
+      generateMipmap: true
+    },{
+      magFilter: gl.LINEAR,
+      minFilter: gl.LINEAR_MIPMAP_NEAREST,
       generateMipmap: true
     }]
-  }).then(function() {
+  }).then(function(textures) {
+    var tMoon = textures[0];
+    var tCrate = textures[1];
+
+    //Create moon
+    moon = new pgl.O3D.Sphere({
+      nlat: 30,
+      nlong: 30,
+      radius: 2,
+      textures: tMoon
+    });
+    //Create box
+    box = new pgl.O3D.Cube({
+      textures: tCrate
+    });
+    box.scale.set(2, 2, 2);
     //Unpack app properties
     var lighting = $id('lighting'),
         ambient = {

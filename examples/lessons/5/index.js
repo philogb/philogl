@@ -6,14 +6,15 @@ var webGLStart = function() {
   var canvas = document.getElementById('lesson05-canvas');
 
   var app = new pgl.Application(canvas);
+  var gl = app.gl;
 
-  pgl.loadTextures(app, {
+  pgl.loadTextures(gl, {
 
     src: ['nehe.gif']
 
-  }).then(function() {
+  }).then(function(textures) {
 
-      var gl = app.gl;
+      var nehe = textures[0];
 
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0, 0, 0, 1);
@@ -26,8 +27,6 @@ var webGLStart = function() {
       program.use();
 
       var cube = new pgl.O3D.Model({
-        texture: 'nehe.gif',
-
         vertices: [-1, -1,  1,
                     1, -1,  1,
                     1,  1,  1,
@@ -142,7 +141,7 @@ var webGLStart = function() {
       view.mulMat42(camera.view, cube.matrix);
       //set attributes, indices and textures
       program.setBuffers(buffers)
-             .setTexture('nehe.gif');
+             .setTexture(nehe);
       //set uniforms
       program.setUniform('uMVMatrix', view);
       program.setUniform('uPMatrix', camera.projection);

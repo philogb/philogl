@@ -496,25 +496,25 @@ export default class Model {
 
   setTextures(program, force) {
     const gl = program.app.gl;
-    const app = program.app;
     this.textures = this.textures ? $.splat(this.textures) : [];
     let tex2D = 0;
     let texCube = 0;
     const mtexs = Scene.MAX_TEXTURES;
     for (let i = 0, texs = this.textures, l = texs.length; i < mtexs; i++) {
       if (i < l) {
-        const isCube = app.textureMemo[texs[i]].isCube;
-        if (isCube) {
-          program.setUniform('hasTextureCube' + (i + 1), true);
-          program.setTexture(texs[i], gl['TEXTURE' + i]);
-          program.setUniform('samplerCube' + (texCube + 1), i);
-          texCube++;
-        } else {
+        // rye TODO: update this when TextureCube is implemented.
+        // const isCube = app.textureMemo[texs[i]].isCube;
+        // if (isCube) {
+        //   program.setUniform('hasTextureCube' + (i + 1), true);
+        //   program.setTexture(texs[i], gl['TEXTURE' + i]);
+        //   program.setUniform('samplerCube' + (texCube + 1), i);
+        //   texCube++;
+        // } else {
           program.setUniform('hasTexture' + (i + 1), true);
-          program.setTexture(texs[i], gl['TEXTURE' + i]);
+          program.setTexture(texs[i], tex2D);
           program.setUniform('sampler' + (tex2D + 1), i);
           tex2D++;
-        }
+        // }
       } else {
         program.setUniform('hasTextureCube' + (i + 1), false);
         program.setUniform('hasTexture' + (i + 1), false);

@@ -3,24 +3,6 @@ var webGLStart = function() {
 
   var pgl = PhiloGL;
 
-  // Create moon
-  var moon = new pgl.O3D.Sphere({
-    nlat: 30,
-    nlong: 30,
-    radius: 2,
-    textures: 'moon.gif',
-    program: 'vertex',
-    colors: [1, 1, 1, 1]
-  });
-
-  // Create box
-  var box = new pgl.O3D.Cube({
-    textures: 'crate.gif',
-    program: 'vertex',
-    colors: [1, 1, 1, 1]
-  });
-  box.scale.set(2, 2, 2);
-
   var canvas = document.getElementById('lesson13-canvas');
 
   var app = new pgl.Application(canvas),
@@ -74,17 +56,39 @@ var webGLStart = function() {
     }
   });
 
-  pgl.loadTextures(app, {
+  pgl.loadTextures(gl, {
     src: ['moon.gif', 'crate.gif'],
     parameters: [{
-      name: 'TEXTURE_MAG_FILTER',
-      value: 'LINEAR'
-    }, {
-      name: 'TEXTURE_MIN_FILTER',
-      value: 'LINEAR_MIPMAP_NEAREST',
+      magFilter: gl.LINEAR,
+      minFilter: gl.LINEAR_MIPMAP_NEAREST,
+      generateMipmap: true
+    },{
+      magFilter: gl.LINEAR,
+      minFilter: gl.LINEAR_MIPMAP_NEAREST,
       generateMipmap: true
     }]
-  }).then(function() {
+  }).then(function(textures) {
+    var tMoon = textures[0];
+    var tCrate = textures[1];
+
+    // Create moon
+    var moon = new pgl.O3D.Sphere({
+      nlat: 30,
+      nlong: 30,
+      radius: 2,
+      textures: tMoon,
+      program: 'vertex',
+      colors: [1, 1, 1, 1]
+    });
+
+    // Create box
+    var box = new pgl.O3D.Cube({
+      textures: tCrate,
+      program: 'vertex',
+      colors: [1, 1, 1, 1]
+    });
+    box.scale.set(2, 2, 2);
+
     //Unpack app properties
     var lighting = $id('lighting'),
         ambient = {
@@ -145,8 +149,8 @@ var webGLStart = function() {
 
       //Set textures
       if (textures.checked) {
-        moon.textures = 'moon.gif';
-        box.textures = 'crate.gif';
+        moon.textures = tMoon;
+        box.textures = tCrate;
       } else {
         delete moon.textures;
         delete box.textures;

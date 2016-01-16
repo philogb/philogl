@@ -155,40 +155,21 @@ var webGLStart = function() {
   });
 
   var img = new Image();
+  var textures = {};
   img.onload = function() {
-    program.setTextures({
-      'nearest': {
-        data: {
-          value: img
-        }
-      },
-
-      'linear': {
-        data: {
-          value: img
-        },
-        parameters: [{
-          name: gl.TEXTURE_MAG_FILTER,
-          value: gl.LINEAR
-        }, {
-          name: gl.TEXTURE_MIN_FILTER,
-          value: gl.LINEAR
-        }]
-      },
-
-      'mipmap': {
-        data: {
-          value: img
-        },
-        parameters: [{
-          name: gl.TEXTURE_MAG_FILTER,
-          value: gl.LINEAR
-        }, {
-          name: gl.TEXTURE_MIN_FILTER,
-          value: gl.LINEAR_MIPMAP_NEAREST,
-          generateMipmap: true
-        }]
-      }
+    textures.nearest = new pgl.Texture2D(gl, {
+      data: img
+    });
+    textures.linear = new pgl.Texture2D(gl, {
+      data: img,
+      minFilter: gl.LINEAR,
+      magFilter: gl.LINEAR
+    });
+    textures.mipmap = new pgl.Texture2D(gl, {
+      data: img,
+      minFilter: gl.LINEAR_MIPMAP_LINEAR,
+      magFilter: gl.LINEAR,
+      generateMipmap: true
     });
 
     function animate() {
@@ -213,7 +194,7 @@ var webGLStart = function() {
       view.mulMat42(camera.view, cube.matrix);
       //set attributes, indices and textures
       program.setBuffers(buffers)
-            .setTexture(filters[filter]);
+            .setTexture(textures[filters[filter]]);
       //set uniforms
       program.setUniform('uMVMatrix', view);
       program.setUniform('uPMatrix', camera.projection);
