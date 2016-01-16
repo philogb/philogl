@@ -330,9 +330,11 @@ export async function loadTextures(gl, opt) {
   var images = await loadImages(opt.src);
   var textures = [];
   images.forEach((img, i) => {
+    var params = Array.isArray(opt.parameters) ? opt.parameters[i] : opt.parameters;
+    params = params === undefined ? {} : params;
     textures.push(new Texture2D(gl, $.merge({
       data: img
-    }, opt.parameters[i])));
+    }, params)));
   });
   return textures;
 }
