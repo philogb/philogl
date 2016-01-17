@@ -5,8 +5,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson13-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -14,9 +13,9 @@ var webGLStart = function() {
   gl.depthFunc(gl.LEQUAL);
   gl.viewport(0, 0, +canvas.width, +canvas.height);
 
-  var defaultProgram = pgl.Program.fromDefaultShaders(app);
+  var defaultProgram = pgl.Program.fromDefaultShaders(gl);
   var perpixelProgram = pgl.Program.fromHTMLTemplates(
-    app,
+    gl,
     'per-fragment-lighting-vs',
     'per-fragment-lighting-fs'
   );
@@ -27,7 +26,7 @@ var webGLStart = function() {
   });
 
   var scene = new pgl.Scene(
-    app,
+    gl,
     {
       'vertex': defaultProgram,
       'fragment': perpixelProgram
@@ -46,7 +45,7 @@ var webGLStart = function() {
     }
   });
 
-  pgl.Events.create(app, {
+  pgl.Events.create(canvas, {
     onMouseWheel: function(e, info) {
       info.stop();
       var camera = this.camera;

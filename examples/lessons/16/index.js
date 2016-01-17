@@ -25,8 +25,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson16-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -42,7 +41,7 @@ var webGLStart = function() {
 
     Promise.all([
 
-      pgl.Program.fromShaderURIs(app, 'render-tex.vs.glsl', 'render-tex.fs.glsl', {
+      pgl.Program.fromShaderURIs(gl, 'render-tex.vs.glsl', 'render-tex.fs.glsl', {
         path: '../../../shaders/',
       }),
 
@@ -134,7 +133,7 @@ var webGLStart = function() {
 
       models.macbook = new pgl.O3D.Model(macbookJSON);
 
-      var outerScene = new pgl.Scene(app, program, outerCamera, {
+      var outerScene = new pgl.Scene(gl, program, outerCamera, {
         lights: {
           enable: true,
           points: {
@@ -158,7 +157,7 @@ var webGLStart = function() {
           far: 100,
           position: new pgl.Vec3(0, 0, -17)
         }),
-        innerScene = new pgl.Scene(app, program, innerCamera, {
+        innerScene = new pgl.Scene(gl, program, innerCamera, {
           lights: {
             enable: true,
             points: {

@@ -344,7 +344,7 @@ export default class Model {
     }
 
     if (!this.buffers.position) {
-      this.buffers.position = new Buffer(program.app.gl, {
+      this.buffers.position = new Buffer(program.gl, {
         attribute: 'position',
         data: this.$vertices,
         size: 3
@@ -364,7 +364,7 @@ export default class Model {
     }
 
     if (!this.buffers.normal) {
-      this.buffers.normal = new Buffer(program.app.gl, {
+      this.buffers.normal = new Buffer(program.gl, {
         attribute: 'normal',
         data: this.$normals,
         size: 3
@@ -383,10 +383,10 @@ export default class Model {
       return;
     }
 
-    const gl = program.app.gl;
+    const gl = program.gl;
 
     if (!this.buffers.indices) {
-      this.buffers.indices = new Buffer(program.app.gl, {
+      this.buffers.indices = new Buffer(program.gl, {
         bufferType: gl.ELEMENT_ARRAY_BUFFER,
         drawType: gl.STATIC_DRAW,
         data: this.$indices,
@@ -408,7 +408,7 @@ export default class Model {
 
 
     if (!this.buffers.pickingColors) {
-      this.buffers.pickingColors = new Buffer(program.app.gl, {
+      this.buffers.pickingColors = new Buffer(program.gl, {
         attribute: 'pickingColor',
         data: this.$pickingColors,
         size: 4
@@ -428,7 +428,7 @@ export default class Model {
     }
 
     if (!this.buffers.colors) {
-      this.buffers.colors = new Buffer(program.app.gl, {
+      this.buffers.colors = new Buffer(program.gl, {
         attribute: 'color',
         data: this.$colors,
         size: 3
@@ -447,7 +447,7 @@ export default class Model {
       return;
     }
 
-    const gl = program.app.gl;
+    const gl = program.gl;
     const multi = $.type(this.$texCoords) === 'object';
     let i, txs, l, tex;
 
@@ -495,7 +495,7 @@ export default class Model {
   }
 
   setTextures(program, force) {
-    const gl = program.app.gl;
+    const gl = program.gl;
     this.textures = this.textures ? $.splat(this.textures) : [];
     let tex2D = 0;
     let texCube = 0;
@@ -537,7 +537,7 @@ export default class Model {
   }
 
   unsetState(program) {
-    const gl = program.app.gl;
+    const gl = program.gl;
     var attributes = program.attributes;
 
     // unbind the array and element buffers

@@ -5,8 +5,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson05-canvas');
 
-  var app = new pgl.Application(canvas);
-  var gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   pgl.loadTextures(gl, {
 
@@ -22,7 +21,7 @@ var webGLStart = function() {
       gl.enable(gl.DEPTH_TEST);
       gl.depthFunc(gl.LEQUAL);
 
-      var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+      var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
       program.use();
 

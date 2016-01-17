@@ -8,8 +8,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson08-canvas');
 
-  var app = new pgl.Application(canvas);
-  var gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   pgl.loadTextures(gl, {
     src: ['glass.gif'],
@@ -187,11 +186,11 @@ var webGLStart = function() {
 
     ].join("\n");
 
-    var program = pgl.Program.fromShaderSources(app, pgl.Shaders.Vertex.Default, blendFS);
+    var program = pgl.Program.fromShaderSources(gl, pgl.Shaders.Vertex.Default, blendFS);
 
     program.use();
 
-    pgl.Events.create(app, {
+    pgl.Events.create(canvas, {
       onKeyDown: function(e) {
         switch(e.key) {
           case 'f':
@@ -230,7 +229,7 @@ var webGLStart = function() {
       aspect: canvas.width/canvas.height,
     });
 
-    var scene = new pgl.Scene(app, program, camera);
+    var scene = new pgl.Scene(gl, program, camera);
 
     scene.add(cube);
 

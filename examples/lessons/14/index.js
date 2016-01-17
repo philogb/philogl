@@ -14,8 +14,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson14-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -30,7 +29,7 @@ var webGLStart = function() {
 
   function animateObject(teapotJSON) {
     Promise.all([
-      pgl.Program.fromShaderURIs(app, 'frag-lighting.vs.glsl', 'frag-lighting.fs.glsl', {
+      pgl.Program.fromShaderURIs(gl, 'frag-lighting.vs.glsl', 'frag-lighting.fs.glsl', {
           path: '../../../shaders/',
           noCache: true
       }),
@@ -58,7 +57,7 @@ var webGLStart = function() {
       teapotJSON.textures = tGalvanized;
       var teapot = new pgl.O3D.Model(teapotJSON);
       program.use();
-      var scene = new pgl.Scene(app, program, camera);
+      var scene = new pgl.Scene(gl, program, camera);
       var shininess = $id('shininess'),
           //specular
           specular = $id('specular'),

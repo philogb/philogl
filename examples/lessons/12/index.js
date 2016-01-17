@@ -8,8 +8,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson12-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   //Basic gl setup
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -18,7 +17,7 @@ var webGLStart = function() {
   gl.depthFunc(gl.LEQUAL);
   gl.viewport(0, 0, +canvas.width, +canvas.height);
 
-  var program = pgl.Program.fromDefaultShaders(app);
+  var program = pgl.Program.fromDefaultShaders(gl);
   program.use();
 
   var camera = new pgl.PerspectiveCamera({
@@ -26,7 +25,7 @@ var webGLStart = function() {
     position: new pgl.Vec3(0, 0, 30),
   });
 
-  var scene = new pgl.Scene(app, program, camera, {
+  var scene = new pgl.Scene(gl, program, camera, {
     lights: {
       directional: {
         color: {
@@ -39,7 +38,7 @@ var webGLStart = function() {
     }
   });
 
-  pgl.Events.create(app, {
+  pgl.Events.create(canvas, {
     onMouseWheel: function(e, info) {
       info.stop();
       var camera = this.camera;

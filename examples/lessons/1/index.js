@@ -6,9 +6,7 @@ window.webGLStart = function() {
 
   var canvas = document.getElementById('lesson01-canvas');
 
-  var app = new pgl.Application(canvas);
-
-  var gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -16,7 +14,7 @@ window.webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+  var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
   program.use();
 

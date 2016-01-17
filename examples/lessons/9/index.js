@@ -7,8 +7,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson09-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   var tStar;
 
@@ -125,16 +124,16 @@ var webGLStart = function() {
 
   ].join("\n");
 
-  var program = pgl.Program.fromShaderSources(app, pgl.Shaders.Vertex.Default, colorUniformFS);
+  var program = pgl.Program.fromShaderSources(gl, pgl.Shaders.Vertex.Default, colorUniformFS);
   program.use();
 
   var camera = new pgl.PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 
-  var scene = new pgl.Scene(app, program, camera);
+  var scene = new pgl.Scene(gl, program, camera);
 
-  pgl.Events.create(app, {
+  pgl.Events.create(canvas, {
     onKeyDown: function(e) {
       switch(e.key) {
         case 'up':

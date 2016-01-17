@@ -36,7 +36,6 @@ import * as IO from './io';
 import {PerspectiveCamera, OrthoCamera} from './camera';
 import Img from './media';
 import Program from './program';
-import Application from './application';
 import {loadTextures} from './io';
 import {Events} from './event';
 import Buffer from './buffer';
@@ -63,7 +62,6 @@ if (typeof window !== 'undefined') {
         loadTextures: loadTextures,
         WorkerGroup: WorkerGroup,
         Program: Program,
-        Application: Application,
         Media: {
             Image: Img,
         },

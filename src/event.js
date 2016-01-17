@@ -93,9 +93,8 @@ export function stop(e) {
 }
 
 export class EventsProxy {
-  constructor(app, opt) {
-    const domElem = app.canvas;
-    this.scene = app.scene;
+  constructor(domElem, opt) {
+    this.scene = opt.scene;
     this.domElem = domElem;
     this.pos = _getPos(domElem);
     this.opt = this.callbacks = opt;
@@ -368,7 +367,7 @@ Object.assign(EventsProxy.prototype, {
 
 export const Events = {
 
-  create(app, opt = {}) {
+  create(gl, opt = {}) {
     opt = {
       cachePosition: true,
       cacheSize: true,
@@ -416,9 +415,9 @@ export const Events = {
       }
     }
 
-    new EventsProxy(app, opt);
+    new EventsProxy(gl, opt);
     // assign event handler to app.
-    app.events = opt;
+    // app.events = opt;
   }
 
 };

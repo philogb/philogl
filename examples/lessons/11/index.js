@@ -8,8 +8,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson11-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -17,7 +16,7 @@ var webGLStart = function() {
   gl.depthFunc(gl.LEQUAL);
   gl.viewport(0, 0, +canvas.width, +canvas.height);
 
-  var program = pgl.Program.fromDefaultShaders(app);
+  var program = pgl.Program.fromDefaultShaders(gl);
   program.use();
 
   var camera = new pgl.PerspectiveCamera({
@@ -25,9 +24,9 @@ var webGLStart = function() {
     position: new pgl.Vec3(0, 0, -7),
   });
 
-  var scene = new pgl.Scene(app, program, camera);
+  var scene = new pgl.Scene(gl, program, camera);
 
-  pgl.Events.create(app, {
+  pgl.Events.create(canvas, {
     onDragStart: function(e) {
       pos = {
         x: e.x,

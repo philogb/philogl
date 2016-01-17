@@ -171,9 +171,8 @@ export default class Program {
   /**
    * @classdesc Handles loading of programs, mapping of attributes and uniforms
    */
-  constructor(app, vertexShader, fragmentShader) {
-    this.app = app;
-    const gl = app.gl;
+  constructor(gl, vertexShader, fragmentShader) {
+    this.gl = gl;
     const glProgram = createProgram(gl, vertexShader, fragmentShader);
     if (!glProgram) {
       throw new Error('Failed to create program');
@@ -217,23 +216,23 @@ export default class Program {
 
   // Alternate constructor
   // Create a program from vertex and fragment shader node ids
-  static fromHTMLTemplates(app, vs, fs) {
+  static fromHTMLTemplates(gl, vs, fs) {
     const vertexShader = document.getElementById(vs).innerHTML;
     const fragmentShader = document.getElementById(fs).innerHTML;
-    return new Program(app, vertexShader, fragmentShader);
+    return new Program(gl, vertexShader, fragmentShader);
   }
 
   // Alternate constructor
   // Create a program from vs and fs sources
-  static fromShaderSources(app, vs, fs) {
-    return new Program(app, vs, fs);
+  static fromShaderSources(gl, vs, fs) {
+    return new Program(gl, vs, fs);
   }
 
   // Alternate constructor
   // Build program from default shaders (requires Shaders)
-  static fromDefaultShaders(app) {
+  static fromDefaultShaders(gl) {
     return Program.fromShaderSources(
-      app,
+      gl,
       Shaders.Vertex['Default'],
       Shaders.Fragment['Default']
     );
@@ -241,8 +240,7 @@ export default class Program {
 
   // Alternate constructor
   // Implement Program.fromShaderURIs (requires IO)
-  static async fromShaderURIs(app, vs, fs, opts) {
-    const gl = app.gl;
+  static async fromShaderURIs(gl, vs, fs, opts) {
     opts = $.merge({
       path: '/',
       noCache: false
@@ -256,7 +254,7 @@ export default class Program {
       noCache: opts.noCache,
     }).sendAsync();
 
-    return Program.fromShaderSources(app, responses[0], responses[1]);
+    return Program.fromShaderSources(gl, responses[0], responses[1]);
 
   }
 
@@ -277,7 +275,7 @@ export default class Program {
   }
 
   setBuffer(buf) {
-    const gl = this.app.gl;
+    const gl = this.gl;
     const loc = this.attributes[buf.attribute];
     const isAttribute = loc !== undefined;
     if (isAttribute) {
@@ -309,38 +307,13 @@ export default class Program {
     return this;
   }
 
-  use(...args) {
-    this.app.use(this, ...args);
-    return this;
-  }
-
-  setFrameBuffer(...args) {
-    this.app.setFrameBuffer(...args);
-    return this;
-  }
-
-  setFrameBuffers(...args) {
-    this.app.setFrameBuffers(this.app, ...args);
-    return this;
-  }
-
-  setRenderBuffer(...args) {
-    this.app.setRenderBuffer(this.app, ...args);
-    return this;
-  }
-
-  setRenderBuffers(...args) {
-    this.app.setRenderBuffers(this.app, ...args);
+  use() {
+    this.gl.useProgram(this.program);
     return this;
   }
 
   setTexture(texture, index) {
     texture.bind(index);
-    return this;
-  }
-
-  setTextures(...args) {
-    this.app.setTextures(...args);
     return this;
   }
 

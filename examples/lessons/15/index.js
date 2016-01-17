@@ -5,8 +5,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson15-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -21,7 +20,7 @@ var webGLStart = function() {
 
   Promise.all([
 
-    pgl.Program.fromShaderURIs(app, 'spec-map.vs.glsl', 'spec-map.fs.glsl', {
+    pgl.Program.fromShaderURIs(gl, 'spec-map.vs.glsl', 'spec-map.fs.glsl', {
       path: '../../../shaders/',
     }),
 
@@ -56,7 +55,7 @@ var webGLStart = function() {
     });
 
     program.use();
-    var scene = new pgl.Scene(app, program, camera);
+    var scene = new pgl.Scene(gl, program, camera);
     var specularMap = $id('specular-map'),
         colorMap = $id('color-map'),
         //get light config from forms
