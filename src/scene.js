@@ -219,11 +219,6 @@ export default class Scene {
     }
   }
 
-  renderToTexture(texture, opt = {}) {
-    this.render(opt);
-    texture.bind();
-  }
-
   renderObject(object, program) {
     const gl = this.app.gl;
 

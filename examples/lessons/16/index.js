@@ -68,13 +68,7 @@ var webGLStart = function() {
 
       var screenWidth = 512,
           screenHeight = 512,
-          screenRatio = 1.66,
-          tMonitor = new pgl.Texture2D(gl, {
-            magFilter: gl.LINEAR,
-            minFilter: gl.LINEAR,
-            width: screenWidth,
-            height: screenHeight
-          });
+          screenRatio = 1.66;
 
       var models = {};
 
@@ -92,7 +86,7 @@ var webGLStart = function() {
           'materialEmissiveColor': [0, 0, 0]
         }
       });
-      //Create box
+
       models.box = new pgl.O3D.Cube({
         textures: tCrate,
         uniforms: {
@@ -106,7 +100,6 @@ var webGLStart = function() {
       });
       models.box.scale.set(2, 2, 2);
 
-      //Load macbook
       models.macbookscreen = new pgl.O3D.Model({
         normals: [
           0, -0.965926, 0.258819,
@@ -126,7 +119,6 @@ var webGLStart = function() {
           1.0, 0.0,
           0.0, 0.0
         ],
-        textures: tMonitor,
         drawType: 'TRIANGLE_STRIP',
         uniforms: {
           shininess: 0.2,
@@ -184,7 +176,7 @@ var webGLStart = function() {
         }),
         rho = 4,
         theta = 0,
-        laptopTheta = 0,
+        laptopTheta = Math.PI,
         //models
         macbook = models.macbook,
         macbookscreen = models.macbookscreen,
@@ -192,13 +184,14 @@ var webGLStart = function() {
         moon = models.moon;
 
       //create framebuffer
-      program.setFrameBuffer('monitor', {
+      var fb = new pgl.Framebuffer(gl, {
         width: screenWidth,
         height: screenHeight,
-        bindToTexture: tMonitor,
-        bindToRenderBuffer: true
+        minFilter: gl.LINEAR,
+        magFilter: gl.LINEAR,
       });
 
+      models.macbookscreen.textures = fb.texture;
 
       //Add objects to different scenes
       outerScene.add(macbook, macbookscreen);
@@ -210,12 +203,7 @@ var webGLStart = function() {
       outerCamera.view.$translate(0, -0.5, 0);
 
       function drawInnerScene() {
-        program.setFrameBuffer('monitor', true);
-
-        gl.viewport(0, 0, screenWidth, screenHeight);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        theta += 0.01;
+        theta += 0.04;
 
         moon.position = {
           x: rho * Math.cos(theta),
@@ -231,9 +219,12 @@ var webGLStart = function() {
         };
         box.update();
 
-        innerScene.renderToTexture(tMonitor);
+        gl.viewport(0, 0, screenWidth, screenHeight);
 
-        program.setFrameBuffer('monitor', false);
+        fb.bind();
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        innerScene.render();
+        fb.unbind();
       }
 
       function drawOuterScene() {
@@ -242,10 +233,12 @@ var webGLStart = function() {
 
         laptopTheta += 0.005;
 
-        macbook.rotation.set(-Math.PI /2, laptopTheta, 0);
+        var phi = Math.sin(laptopTheta) * 1.77 + Math.PI;
+
+        macbook.rotation.set(-Math.PI/2, phi, 0);
         macbook.update();
 
-        macbookscreen.rotation.set(-Math.PI /2, laptopTheta, 0);
+        macbookscreen.rotation.set(-Math.PI/2, phi, 0);
         macbookscreen.update();
 
         outerScene.render();

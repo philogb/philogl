@@ -41,9 +41,11 @@ import {loadTextures} from './io';
 import {Events} from './event';
 import Buffer from './buffer';
 import {Texture2D} from './texture';
+import Framebuffer from './fbo';
 
 if (typeof window !== 'undefined') {
     window.PhiloGL = {
+        Framebuffer: Framebuffer,
         Texture2D: Texture2D,
         Buffer: Buffer,
         Events: Events,
