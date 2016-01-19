@@ -96,9 +96,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson04-canvas');
 
-  var app = new pgl.Application(canvas);
-
-  var gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -106,7 +104,7 @@ var webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+  var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
   program.use();
 
@@ -119,21 +117,37 @@ var webGLStart = function() {
   var rCube = 0;
 
   function setupElement(elem) {
+    // Set up buffers if we haven't already.
+    if (elem.bufs === undefined) {
+      elem.bufs = [];
+      if (elem.vertices) {
+        elem.bufs.push(new pgl.Buffer(gl, {
+          attribute: 'aVertexPosition',
+          data: elem.vertices,
+          size: 3
+        }));
+      }
+      if (elem.colors) {
+        elem.bufs.push(new pgl.Buffer(gl, {
+          attribute: 'aVertexColor',
+          data: elem.colors,
+          size: 4
+        }));
+      }
+      if (elem.indices) {
+        elem.bufs.push(new pgl.Buffer(gl, {
+          data: elem.indices,
+          bufferType: gl.ELEMENT_ARRAY_BUFFER,
+          size: 1
+        }));
+      }
+    }
     //update element matrix
     elem.update();
     //get new view matrix out of element and camera matrices
     view.mulMat42(camera.view, elem.matrix);
     //set buffers with element data
-    program.setBuffers({
-      'aVertexPosition': {
-        value: elem.vertices,
-        size: 3
-      },
-      'aVertexColor': {
-        value: elem.colors,
-        size: 4
-      }
-    });
+    program.setBuffers(elem.bufs);
     //set uniforms
     program.setUniform('uMVMatrix', view);
     program.setUniform('uPMatrix', camera.projection);
@@ -157,11 +171,6 @@ var webGLStart = function() {
     cube.position.set(1.5, 0, -8);
     cube.rotation.set(rCube, rCube, rCube);
     setupElement(cube);
-    program.setBuffer('indices', {
-      value: cube.indices,
-      bufferType: gl.ELEMENT_ARRAY_BUFFER,
-      size: 1
-    });
     gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
   }
 

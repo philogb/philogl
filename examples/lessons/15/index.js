@@ -3,22 +3,9 @@ var webGLStart = function() {
 
   var pgl = PhiloGL;
 
-  //Create moon
-  var earth = new pgl.O3D.Sphere({
-    nlat: 30,
-    nlong: 30,
-    radius: 2,
-    uniforms: {
-      shininess: 32
-    },
-    textures: ['earth.jpg', 'earth-specular.gif'],
-    colors: [1, 1, 1, 1]
-  });
-
   var canvas = document.getElementById('lesson15-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -33,18 +20,19 @@ var webGLStart = function() {
 
   Promise.all([
 
-    pgl.Program.fromShaderURIs(app, 'spec-map.vs.glsl', 'spec-map.fs.glsl', {
+    pgl.Program.fromShaderURIs(gl, 'spec-map.vs.glsl', 'spec-map.fs.glsl', {
       path: '../../../shaders/',
     }),
 
-    pgl.loadTextures(app, {
+    pgl.loadTextures(gl, {
       src: ['earth.jpg', 'earth-specular.gif'],
       parameters: [{
-        name: 'TEXTURE_MAG_FILTER',
-        value: 'LINEAR'
-      }, {
-        name: 'TEXTURE_MIN_FILTER',
-        value: 'LINEAR_MIPMAP_NEAREST',
+        magFilter: gl.LINEAR,
+        minFilter: gl.LINEAR_MIPMAP_NEAREST,
+        generateMipmap: true
+      },{
+        magFilter: gl.LINEAR,
+        minFilter: gl.LINEAR_MIPMAP_NEAREST,
         generateMipmap: true
       }]
     })
@@ -52,8 +40,22 @@ var webGLStart = function() {
   ]).then(function(results) {
 
     var program = results[0];
+    var tDiffuse = results[1][0];
+    var tSpecular = results[1][1];
+
+    var earth = new pgl.O3D.Sphere({
+      nlat: 30,
+      nlong: 30,
+      radius: 2,
+      uniforms: {
+        shininess: 32
+      },
+      textures: [tDiffuse, tSpecular],
+      colors: [1, 1, 1, 1]
+    });
+
     program.use();
-    var scene = new pgl.Scene(app, program, camera);
+    var scene = new pgl.Scene(gl, program, camera);
     var specularMap = $id('specular-map'),
         colorMap = $id('color-map'),
         //get light config from forms

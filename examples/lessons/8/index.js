@@ -8,21 +8,18 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson08-canvas');
 
-  var app = new pgl.Application(canvas);
+  var gl = pgl.createGLContext(canvas);
 
-  pgl.loadTextures(app, {
+  pgl.loadTextures(gl, {
     src: ['glass.gif'],
     parameters: [{
-      name: 'TEXTURE_MAG_FILTER',
-      value: 'LINEAR'
-    }, {
-      name: 'TEXTURE_MIN_FILTER',
-      value: 'LINEAR_MIPMAP_NEAREST',
+      minFilter: gl.LINEAR_MIPMAP_NEAREST,
+      magFilter: gl.LINEAR,
       generateMipmap: true
     }]
-  }).then(function() {
+  }).then(function(textures) {
 
-    var gl = app.gl;
+    var glass = textures[0];
 
     var xRot = 0, xSpeed = 0.01,
         yRot = 0, ySpeed = 0.013,
@@ -79,7 +76,7 @@ var webGLStart = function() {
                  -1,  1,  1,
                  -1,  1, -1],
 
-      textures: 'glass.gif',
+      textures: glass,
 
       texCoords: [0.0, 0.0,
                   1.0, 0.0,
@@ -189,11 +186,11 @@ var webGLStart = function() {
 
     ].join("\n");
 
-    var program = pgl.Program.fromShaderSources(app, pgl.Shaders.Vertex.Default, blendFS);
+    var program = pgl.Program.fromShaderSources(gl, pgl.Shaders.Vertex.Default, blendFS);
 
     program.use();
 
-    pgl.Events.create(app, {
+    pgl.Events.create(canvas, {
       onKeyDown: function(e) {
         switch(e.key) {
           case 'f':
@@ -232,7 +229,7 @@ var webGLStart = function() {
       aspect: canvas.width/canvas.height,
     });
 
-    var scene = new pgl.Scene(app, program, camera);
+    var scene = new pgl.Scene(gl, program, camera);
 
     scene.add(cube);
 

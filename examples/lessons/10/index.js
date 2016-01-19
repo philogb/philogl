@@ -16,6 +16,10 @@ var webGLStart = function() {
   //Model
   var world;
 
+  var canvas = document.getElementById('lesson10-canvas');
+
+  var gl = pgl.createGLContext(canvas);
+
   //load world
   new pgl.IO.XHR({
     url: 'world.txt',
@@ -40,13 +44,24 @@ var webGLStart = function() {
         }
       }
 
-      world = new pgl.O3D.Model({
-        vertices: vertexPositions,
-        texCoords: vertexTextureCoords,
-        textures: 'mud.gif'
+      pgl.loadTextures(gl, {
+        src: ['mud.gif'],
+        parameters: [{
+          magFilter: gl.LINEAR,
+          minFilter: gl.LINEAR_MIPMAP_NEAREST,
+          wrapS: gl.REPEAT,
+          wrapT: gl.REPEAT,
+          generateMipmap: true
+        }]
+      }).then(function(textures) {
+        world = new pgl.O3D.Model({
+          vertices: vertexPositions,
+          texCoords: vertexTextureCoords,
+          textures: textures[0]
+        });
+        startApp();
       });
 
-      startApp();
     },
     onError: function() {
       console.log("There was something wrong with loading the world.");
@@ -55,27 +70,22 @@ var webGLStart = function() {
 
   function startApp() {
 
-    var canvas = document.getElementById('lesson10-canvas');
-
-    var app = new pgl.Application(canvas),
-        gl = app.gl;
-
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(0, 0, 0, 1);
     gl.clearDepth(1);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 
-    var program = pgl.Program.fromDefaultShaders(app);
+    var program = pgl.Program.fromDefaultShaders(gl);
     program.use();
 
     var camera = new pgl.PerspectiveCamera({
       aspect: canvas.width/canvas.height,
     });
 
-    var scene = new pgl.Scene(app, program, camera);
+    var scene = new pgl.Scene(gl, program, camera);
 
-    pgl.Events.create(app, {
+    pgl.Events.create(canvas, {
       onKeyDown: function(e) {
         switch(e.key) {
           case 'left': case 'a':
@@ -104,59 +114,47 @@ var webGLStart = function() {
       }
     })
 
-    pgl.loadTextures(app, {
-      src: ['mud.gif'],
-      parameters: [{
-        name: 'TEXTURE_MAG_FILTER',
-        value: 'LINEAR'
-      }, {
-        name: 'TEXTURE_MIN_FILTER',
-        value: 'LINEAR_MIPMAP_NEAREST',
-        generateMipmap: true
-      }]
-    }).then(function() {
-      scene.add(world);
+    scene.add(world);
 
-      var lastTime = 0;
-      function animate() {
-        var timeNow = Date.now();
-        if (lastTime != 0) {
-          var elapsed = timeNow - lastTime;
+    var lastTime = 0;
+    function animate() {
+      var timeNow = Date.now();
+      if (lastTime != 0) {
+        var elapsed = timeNow - lastTime;
 
-          if (speed != 0) {
-            xPos -= Math.sin(yaw) * speed * elapsed;
-            zPos -= Math.cos(yaw) * speed * elapsed;
+        if (speed != 0) {
+          xPos -= Math.sin(yaw) * speed * elapsed;
+          zPos -= Math.cos(yaw) * speed * elapsed;
 
-            joggingAngle += elapsed * 0.01;  // 0.6 "fiddle factor" - makes it feel more realistic :-)
-            yPos = Math.sin(joggingAngle) / 100 + 0.4
-          }
-
-          yaw += yawRate * elapsed;
-          pitch += pitchRate * elapsed;
-
+          joggingAngle += elapsed * 0.01;  // 0.6 "fiddle factor" - makes it feel more realistic :-)
+          yPos = Math.sin(joggingAngle) / 100 + 0.4
         }
-        lastTime = timeNow;
+
+        yaw += yawRate * elapsed;
+        pitch += pitchRate * elapsed;
+
       }
+      lastTime = timeNow;
+    }
 
-      function drawScene() {
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    function drawScene() {
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        //Update Camera Position
-        camera.view.id()
-                        .$rotateXYZ(-pitch, -yaw, 0)
-                        .$translate(-xPos, -yPos, -zPos);
+      //Update Camera Position
+      camera.view.id()
+                      .$rotateXYZ(-pitch, -yaw, 0)
+                      .$translate(-xPos, -yPos, -zPos);
 
-        //Render all elements in the Scene
-        scene.render();
-      }
+      //Render all elements in the Scene
+      scene.render();
+    }
 
-      function tick() {
-        drawScene();
-        animate();
-        pgl.Fx.requestAnimationFrame(tick);
-      }
+    function tick() {
+      drawScene();
+      animate();
+      pgl.Fx.requestAnimationFrame(tick);
+    }
 
-      tick();
-    })
+    tick();
   }
 }

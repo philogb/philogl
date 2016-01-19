@@ -4,25 +4,11 @@ var webGLStart = function() {
 
   var pgl = PhiloGL;
 
-  var pos;
-
-  //Create moon
-  var moon = new pgl.O3D.Sphere({
-    nlat: 30,
-    nlong: 30,
-    radius: 2,
-    textures: 'moon.gif'
-  });
-  //Create box
-  var box = new pgl.O3D.Cube({
-    textures: 'crate.gif'
-  });
-  box.scale.set(2, 2, 2);
+  var moon, box, pos;
 
   var canvas = document.getElementById('lesson12-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   //Basic gl setup
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -31,7 +17,7 @@ var webGLStart = function() {
   gl.depthFunc(gl.LEQUAL);
   gl.viewport(0, 0, +canvas.width, +canvas.height);
 
-  var program = pgl.Program.fromDefaultShaders(app);
+  var program = pgl.Program.fromDefaultShaders(gl);
   program.use();
 
   var camera = new pgl.PerspectiveCamera({
@@ -39,7 +25,7 @@ var webGLStart = function() {
     position: new pgl.Vec3(0, 0, 30),
   });
 
-  var scene = new pgl.Scene(app, program, camera, {
+  var scene = new pgl.Scene(gl, program, camera, {
     lights: {
       directional: {
         color: {
@@ -52,7 +38,7 @@ var webGLStart = function() {
     }
   });
 
-  pgl.Events.create(app, {
+  pgl.Events.create(canvas, {
     onMouseWheel: function(e, info) {
       info.stop();
       var camera = this.camera;
@@ -62,17 +48,33 @@ var webGLStart = function() {
     }
   });
 
-  pgl.loadTextures(app, {
+  pgl.loadTextures(gl, {
     src: ['moon.gif', 'crate.gif'],
     parameters: [{
-      name: 'TEXTURE_MAG_FILTER',
-      value: 'LINEAR'
-    }, {
-      name: 'TEXTURE_MIN_FILTER',
-      value: 'LINEAR_MIPMAP_NEAREST',
+      magFilter: gl.LINEAR,
+      minFilter: gl.LINEAR_MIPMAP_NEAREST,
+      generateMipmap: true
+    },{
+      magFilter: gl.LINEAR,
+      minFilter: gl.LINEAR_MIPMAP_NEAREST,
       generateMipmap: true
     }]
-  }).then(function() {
+  }).then(function(textures) {
+    var tMoon = textures[0];
+    var tCrate = textures[1];
+
+    //Create moon
+    moon = new pgl.O3D.Sphere({
+      nlat: 30,
+      nlong: 30,
+      radius: 2,
+      textures: tMoon
+    });
+    //Create box
+    box = new pgl.O3D.Cube({
+      textures: tCrate
+    });
+    box.scale.set(2, 2, 2);
     //Unpack app properties
     var lighting = $id('lighting'),
         ambient = {

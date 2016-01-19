@@ -5,6 +5,7 @@
 // Define some locals
 import {Vec3, Mat4} from '../math';
 import Scene from '../scene';
+import Buffer from '../buffer';
 import $ from '../jquery-mini';
 
 const slice = Array.prototype.slice;
@@ -94,6 +95,7 @@ export default class Model {
     this.rotation = new Vec3();
     this.scale = new Vec3(1, 1, 1);
     this.matrix = new Mat4();
+    this.buffers = {};
 
     if (opt.computeCentroids) {
       this.computeCentroids();
@@ -331,17 +333,8 @@ export default class Model {
   }
 
   setAttributes(program) {
-    const attributes = this.attributes;
-    for (const name in attributes) {
-      const descriptor = attributes[name];
-      const bufferId = this.id + '-' + name;
-      if (!Object.keys(descriptor).length) {
-        program.setBuffer(bufferId, true);
-      } else {
-        descriptor.attribute = name;
-        program.setBuffer(bufferId, descriptor);
-        delete descriptor.value;
-      }
+    for (const key in Object.keys(this.attributes)) {
+        program.setBuffer(this.attributes[key]);
     }
   }
 
@@ -350,15 +343,19 @@ export default class Model {
       return;
     }
 
-    if (this.dynamic) {
-      program.setBuffer('position-' + this.id, {
+    if (!this.buffers.position) {
+      this.buffers.position = new Buffer(program.gl, {
         attribute: 'position',
-        value: this.$vertices,
+        data: this.$vertices,
         size: 3
-      });
-    } else {
-      program.setBuffer('position-' + this.id);
+      })
+    } else if (this.dynamic) {
+      this.buffers.position.update({
+        data: this.$vertices
+      })
     }
+
+    program.setBuffer(this.buffers.position);
   }
 
   setNormals(program) {
@@ -366,33 +363,42 @@ export default class Model {
       return;
     }
 
-    if (this.dynamic) {
-      program.setBuffer('normal-' + this.id, {
+    if (!this.buffers.normal) {
+      this.buffers.normal = new Buffer(program.gl, {
         attribute: 'normal',
-        value: this.$normals,
+        data: this.$normals,
         size: 3
-      });
-    } else {
-      program.setBuffer('normal-' + this.id);
+      })
+    } else if (this.dynamic) {
+      this.buffers.normal.update({
+        data: this.$normals
+      })
     }
+
+    program.setBuffer(this.buffers.normal);
   }
 
   setIndices(program) {
-    const gl = program.app.gl;
     if (!this.$indices) {
       return;
     }
 
-    if (this.dynamic) {
-      program.setBuffer('indices-' + this.id, {
+    const gl = program.gl;
+
+    if (!this.buffers.indices) {
+      this.buffers.indices = new Buffer(program.gl, {
         bufferType: gl.ELEMENT_ARRAY_BUFFER,
         drawType: gl.STATIC_DRAW,
-        value: this.$indices,
+        data: this.$indices,
         size: 1
-      });
-    } else {
-      program.setBuffer('indices-' + this.id);
+      })
+    } else if (this.dynamic) {
+      this.buffers.indices.update({
+        data: this.$indices
+      })
     }
+
+    program.setBuffer(this.buffers.indices);
   }
 
   setPickingColors(program) {
@@ -400,15 +406,20 @@ export default class Model {
       return;
     }
 
-    if (this.dynamic) {
-      program.setBuffer('pickingColor-' + this.id, {
+
+    if (!this.buffers.pickingColors) {
+      this.buffers.pickingColors = new Buffer(program.gl, {
         attribute: 'pickingColor',
-        value: this.$pickingColors,
+        data: this.$pickingColors,
         size: 4
-      });
-    } else {
-      program.setBuffer('pickingColor-' + this.id);
+      })
+    } else if (this.dynamic) {
+      this.buffers.pickingColors.update({
+        data: this.$pickingColors
+      })
     }
+
+    program.setBuffer(this.buffers.pickingColors);
   }
 
   setColors(program) {
@@ -416,15 +427,19 @@ export default class Model {
       return;
     }
 
-    if (this.dynamic) {
-      program.setBuffer('color-' + this.id, {
+    if (!this.buffers.colors) {
+      this.buffers.colors = new Buffer(program.gl, {
         attribute: 'color',
-        value: this.$colors,
-        size: 4
-      });
-    } else {
-      program.setBuffer('color-' + this.id);
+        data: this.$colors,
+        size: 3
+      })
+    } else if (this.dynamic) {
+      this.buffers.colors.update({
+        data: this.$colors
+      })
     }
+
+    program.setBuffer(this.buffers.colors);
   }
 
   setTexCoords(program) {
@@ -432,62 +447,74 @@ export default class Model {
       return;
     }
 
-    const id = this.id;
-    let i;
-    let txs;
-    let l;
-    let tex;
+    const gl = program.gl;
+    const multi = $.type(this.$texCoords) === 'object';
+    let i, txs, l, tex;
 
-    if (this.dynamic) {
-      // If is an object containing textureName -> textureCoordArray
-      // Set all textures, samplers and textureCoords.
-      if ($.type(this.$texCoords) === 'object') {
+    if (!this.buffers.texCoords) {
+      if (multi) {
+        this.buffers.texCoords = {};
         for (i = 0, txs = this.textures, l = txs.length; i < l; i++) {
           tex = txs[i];
-          program.setBuffer('texCoord-' + i + '-' + id, {
+          this.buffers.texCoords['texCoord' + (i + 1)] = new Buffer(gl, {
             attribute: 'texCoord' + (i + 1),
-            value: this.$texCoords[tex],
+            data: this.$texCoords[tex],
             size: 2
+          })
+        }
+      } else {
+        this.buffers.texCoords = new Buffer(gl, {
+          attribute: 'texCoord1',
+          data: this.$texCoords,
+          size: 2
+        })
+      }
+    } else if (this.dynamic) {
+      if (multi) {
+        for (i = 0, txs = this.textures, l = txs.length; i < l; i++) {
+          tex = txs[i];
+          this.buffers.texCoords['texCoord' + (i + 1)].update({
+            data: this.$texCoords[tex],
           });
         }
-      // An array of textureCoordinates
       } else {
-        program.setBuffer('texCoord-' + id, {
-          attribute: 'texCoord1',
-          value: this.$texCoords,
-          size: 2
+        this.buffers.texCoords.update({
+          data: this.$texCoords
         });
       }
-    } else if ($.type(this.$texCoords) === 'object') {
+    }
+
+    if (multi) {
       for (i = 0, txs = this.textures, l = txs.length; i < l; i++) {
-        program.setBuffer('texCoord-' + i + '-' + id);
+        tex = txs[i];
+        program.setBuffer(this.buffers.texCoords['texCoord' + (i + 1)]);
       }
     } else {
-      program.setBuffer('texCoord-' + id);
+      program.setBuffer(this.buffers.texCoords);
     }
   }
 
   setTextures(program, force) {
-    const gl = program.app.gl;
-    const app = program.app;
+    const gl = program.gl;
     this.textures = this.textures ? $.splat(this.textures) : [];
     let tex2D = 0;
     let texCube = 0;
     const mtexs = Scene.MAX_TEXTURES;
     for (let i = 0, texs = this.textures, l = texs.length; i < mtexs; i++) {
       if (i < l) {
-        const isCube = app.textureMemo[texs[i]].isCube;
-        if (isCube) {
-          program.setUniform('hasTextureCube' + (i + 1), true);
-          program.setTexture(texs[i], gl['TEXTURE' + i]);
-          program.setUniform('samplerCube' + (texCube + 1), i);
-          texCube++;
-        } else {
+        // rye TODO: update this when TextureCube is implemented.
+        // const isCube = app.textureMemo[texs[i]].isCube;
+        // if (isCube) {
+        //   program.setUniform('hasTextureCube' + (i + 1), true);
+        //   program.setTexture(texs[i], gl['TEXTURE' + i]);
+        //   program.setUniform('samplerCube' + (texCube + 1), i);
+        //   texCube++;
+        // } else {
           program.setUniform('hasTexture' + (i + 1), true);
-          program.setTexture(texs[i], gl['TEXTURE' + i]);
+          program.setTexture(texs[i], tex2D);
           program.setUniform('sampler' + (tex2D + 1), i);
           tex2D++;
-        }
+        // }
       } else {
         program.setUniform('hasTextureCube' + (i + 1), false);
         program.setUniform('hasTexture' + (i + 1), false);
@@ -510,7 +537,7 @@ export default class Model {
   }
 
   unsetState(program) {
-    const gl = program.app.gl;
+    const gl = program.gl;
     var attributes = program.attributes;
 
     // unbind the array and element buffers

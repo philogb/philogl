@@ -5,7 +5,12 @@ var webGLStart = function() {
 
   var pgl = PhiloGL;
 
-  // Define a Star Class
+  var canvas = document.getElementById('lesson09-canvas');
+
+  var gl = pgl.createGLContext(canvas);
+
+  var tStar;
+
   var Star = function(startingDistance, rotationSpeed) {
     pgl.O3D.Model.call(this, {
       vertices: [
@@ -22,7 +27,7 @@ var webGLStart = function() {
         1.0, 1.0
       ],
 
-      textures: 'star.gif',
+      textures: tStar,
 
       indices: [0, 1, 3, 3, 2, 0],
 
@@ -87,11 +92,6 @@ var webGLStart = function() {
       spin = 0,
       twinkle = $id('twinkle');
 
-  var canvas = document.getElementById('lesson09-canvas');
-
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
-
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
   gl.clearDepth(1);
@@ -124,16 +124,16 @@ var webGLStart = function() {
 
   ].join("\n");
 
-  var program = pgl.Program.fromShaderSources(app, pgl.Shaders.Vertex.Default, colorUniformFS);
+  var program = pgl.Program.fromShaderSources(gl, pgl.Shaders.Vertex.Default, colorUniformFS);
   program.use();
 
   var camera = new pgl.PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 
-  var scene = new pgl.Scene(app, program, camera);
+  var scene = new pgl.Scene(gl, program, camera);
 
-  pgl.Events.create(app, {
+  pgl.Events.create(canvas, {
     onKeyDown: function(e) {
       switch(e.key) {
         case 'up':
@@ -153,17 +153,15 @@ var webGLStart = function() {
     }
   });
 
-  pgl.loadTextures(app, {
+  pgl.loadTextures(gl, {
     src: ['star.gif'],
     parameters: [{
-      name: 'TEXTURE_MAG_FILTER',
-      value: 'LINEAR'
-    }, {
-      name: 'TEXTURE_MIN_FILTER',
-      value: 'LINEAR_MIPMAP_NEAREST',
+      magFilter: gl.LINEAR,
+      minFilter: gl.LINEAR_MIPMAP_NEAREST,
       generateMipmap: true
     }]
-  }).then(function() {
+  }).then(function(textures) {
+    tStar = textures[0];
     //Load all world objects
     var numStars = 50;
     for (var i = 0; i < numStars; i++) {

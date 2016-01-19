@@ -6,9 +6,7 @@ window.webGLStart = function() {
 
   var canvas = document.getElementById('lesson01-canvas');
 
-  var app = new pgl.Application(canvas);
-
-  var gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -16,22 +14,20 @@ window.webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var program = pgl.Program.fromHTMLTemplates(app, 'shader-vs', 'shader-fs');
+  var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
   program.use();
 
-  program.setBuffers({
-    'triangle': {
-      attribute: 'aVertexPosition',
-      value: new Float32Array([0, 1, 0, -1, -1, 0, 1, -1, 0]),
-      size: 3
-    },
+  var triangle = new pgl.Buffer(gl, {
+    attribute: 'aVertexPosition',
+    data: new Float32Array([0, 1, 0, -1, -1, 0, 1, -1, 0]),
+    size: 3
+  });
 
-    'square': {
-      attribute: 'aVertexPosition',
-      value: new Float32Array([1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1, 0]),
-      size: 3
-    }
+  var square = new pgl.Buffer(gl, {
+    attribute: 'aVertexPosition',
+    data: new Float32Array([1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1, 0]),
+    size: 3
   });
 
   var camera = new pgl.PerspectiveCamera({
@@ -44,14 +40,14 @@ window.webGLStart = function() {
   camera.view.$translate(-1.5, 0, -7);
   program.setUniform('uMVMatrix', camera.view);
   program.setUniform('uPMatrix', camera.projection);
-  program.setBuffer('triangle');
+  program.setBuffer(triangle);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 
   // Draw Square
   camera.view.$translate(3, 0, 0);
   program.setUniform('uMVMatrix', camera.view);
   program.setUniform('uPMatrix', camera.projection);
-  program.setBuffer('square');
+  program.setBuffer(square);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 };

@@ -11,7 +11,6 @@ try {
 }
 
 export * from './webgl';
-export * from './core';
 export * from './math';
 export {default as Event} from './event';
 export {default as Program} from './program';
@@ -37,12 +36,17 @@ import * as IO from './io';
 import {PerspectiveCamera, OrthoCamera} from './camera';
 import Img from './media';
 import Program from './program';
-import Application from './application';
 import {loadTextures} from './io';
 import {Events} from './event';
+import Buffer from './buffer';
+import {Texture2D} from './texture';
+import Framebuffer from './fbo';
 
 if (typeof window !== 'undefined') {
     window.PhiloGL = {
+        Framebuffer: Framebuffer,
+        Texture2D: Texture2D,
+        Buffer: Buffer,
         Events: Events,
         O3D: O3D,
         Mat4: math.Mat4,
@@ -58,7 +62,6 @@ if (typeof window !== 'undefined') {
         loadTextures: loadTextures,
         WorkerGroup: WorkerGroup,
         Program: Program,
-        Application: Application,
         Media: {
             Image: Img,
         },

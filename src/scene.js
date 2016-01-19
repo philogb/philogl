@@ -30,11 +30,11 @@ const DEFAULT_SCENE_OPTS = {
 // Scene class
 export default class Scene {
 
-  constructor(app, program, camera, opt = {}) {
-    assert(app);
+  constructor(gl, program, camera, opt = {}) {
+    assert(gl);
     assert(camera);
 
-    this.app = app;
+    this.gl = gl;
 
     // This isn't a deep merge.
     // opt = {
@@ -219,20 +219,8 @@ export default class Scene {
     }
   }
 
-  renderToTexture(name, opt = {}) {
-    const gl = this.app.gl;
-
-    const texture = this.app.textures[name + '-texture'];
-    const texMemo = this.app.textureMemo[name + '-texture'];
-    this.render(opt);
-
-    gl.bindTexture(texMemo.textureType, texture);
-    // gl.generateMipmap(texMemo.textureType);
-    // gl.bindTexture(texMemo.textureType, null);
-  }
-
   renderObject(object, program) {
-    const gl = this.app.gl;
+    const gl = this.gl;
 
     const {view} = this.camera;
     const {matrix} = object;
@@ -281,6 +269,7 @@ export default class Scene {
     const program = Program.fromDefaultShaders();
 
     // create framebuffer
+    // rye TODO: use the new FBO
     this.app.setFrameBuffer('$picking', {
       width: 5,
       height: 1,
@@ -302,12 +291,13 @@ export default class Scene {
       bindToRenderBuffer: true
     });
 
+    // rye TODO; use the new FBO
     this.app.setFrameBuffer('$picking', false);
     this.pickingProgram = opt.pickingProgram || program;
   }
 
   pick(x, y, opt = {}) {
-    const gl = this.app.gl;
+    const gl = this.gl;
 
     // setup the picking program if this is
     // the first time we enter the method.
@@ -317,6 +307,7 @@ export default class Scene {
 
     const o3dHash = {};
     const o3dList = [];
+    // rye TODO: figure out a non-global way to get the current program
     const program = this.app.usedProgram;
     const pickingProgram = this.pickingProgram;
     const camera = this.camera;
@@ -349,6 +340,7 @@ export default class Scene {
     config.effects.fog = false;
 
     // enable picking and render to texture
+    // rye TODO: use the new FBO
     this.app.setFrameBuffer('$picking', true);
     pickingProgram.use();
     pickingProgram.setUniform('enablePicking', true);
@@ -391,7 +383,9 @@ export default class Scene {
     }
 
     // restore all values and unbind buffers
+    // rye TODO: use the new FBO
     this.app.setFrameBuffer('$picking', false);
+    // rye TODO: use the new Texture2D class
     this.app.setTexture('$picking-texture', false);
     pickingProgram.setUniform('enablePicking', false);
     config.lights.enable = memoLightEnable;

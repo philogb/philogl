@@ -5,6 +5,7 @@
 /* global document */
 import $ from './jquery-mini';
 import Img from './media';
+import {Texture2D} from './texture.js';
 
 function noop() {};
 
@@ -325,18 +326,17 @@ async function loadImages(srcs) {
 // Load multiple textures from images
 // rye: TODO this needs to implement functionality from
 //           the original loadTextures function.
-export async function loadTextures(app, opt) {
+export async function loadTextures(gl, opt) {
   var images = await loadImages(opt.src);
-  var textures = {};
+  var textures = [];
   images.forEach((img, i) => {
-    // rye: TODO- use lodash.defaultsDeep instead of $merge.
-    textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = $.merge({
-      data: {
-        value: img
-      }
-    }, opt);
+    var params = Array.isArray(opt.parameters) ? opt.parameters[i] : opt.parameters;
+    params = params === undefined ? {} : params;
+    textures.push(new Texture2D(gl, $.merge({
+      data: img
+    }, params)));
   });
-  app.setTextures(textures);
+  return textures;
 }
 
 // // Load multiple textures from images

@@ -8,17 +8,13 @@ var webGLStart = function() {
     url: 'Teapot.json',
     onSuccess: function(text) {
       var json = JSON.parse(text);
-      json.colors = [1, 1, 1, 1];
-      json.textures = 'arroway.de_metal+structure+06_d100_flat.jpg';
-      var teapot = new pgl.O3D.Model(json);
-      animateObject(teapot);
+      animateObject(json);
     }
   }).send();
 
   var canvas = document.getElementById('lesson14-canvas');
 
-  var app = new pgl.Application(canvas),
-      gl = app.gl;
+  var gl = pgl.createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -31,27 +27,37 @@ var webGLStart = function() {
     position: new pgl.Vec3(0, 0, -50),
   });
 
-  function animateObject(teapot) {
+  function animateObject(teapotJSON) {
     Promise.all([
-      pgl.Program.fromShaderURIs(app, 'frag-lighting.vs.glsl', 'frag-lighting.fs.glsl', {
+      pgl.Program.fromShaderURIs(gl, 'frag-lighting.vs.glsl', 'frag-lighting.fs.glsl', {
           path: '../../../shaders/',
           noCache: true
       }),
-      pgl.loadTextures(app, {
+      pgl.loadTextures(gl, {
         src: ['arroway.de_metal+structure+06_d100_flat.jpg', 'earth.jpg'],
         parameters: [{
-          name: 'TEXTURE_MAG_FILTER',
-          value: 'LINEAR'
-        }, {
-          name: 'TEXTURE_MIN_FILTER',
-          value: 'LINEAR_MIPMAP_NEAREST',
+          magFilter: gl.LINEAR,
+          minFilter: gl.LINEAR_MIPMAP_NEAREST,
+          wrapS: gl.REPEAT,
+          wrapT: gl.REPEAT,
+          generateMipmap: true
+        },{
+          magFilter: gl.LINEAR,
+          minFilter: gl.LINEAR_MIPMAP_NEAREST,
+          wrapS: gl.REPEAT,
+          wrapT: gl.REPEAT,
           generateMipmap: true
         }]
       })
     ]).then(function(results) {
       var program = results[0];
+      var tGalvanized = results[1][0];
+      var tEarth = results[1][1];
+      teapotJSON.colors = [1, 1, 1, 1];
+      teapotJSON.textures = tGalvanized;
+      var teapot = new pgl.O3D.Model(teapotJSON);
       program.use();
-      var scene = new pgl.Scene(app, program, camera);
+      var scene = new pgl.Scene(gl, program, camera);
       var shininess = $id('shininess'),
           //specular
           specular = $id('specular'),
@@ -124,9 +130,9 @@ var webGLStart = function() {
         if (texture.value == 'none') {
           delete teapot.textures;
         } else if (texture.value == 'galvanized') {
-          teapot.textures = ['arroway.de_metal+structure+06_d100_flat.jpg'];
+          teapot.textures = tGalvanized;
         } else {
-          teapot.textures = ['earth.jpg'];
+          teapot.textures = tEarth;
         }
 
         //Update position
