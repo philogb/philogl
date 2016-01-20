@@ -2,9 +2,20 @@ var webGLStart = function() {
 
   var $id = function(d) { return document.getElementById(d); };
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var loadTextures = PhiloGL.loadTextures;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Scene = PhiloGL.Scene;
+  var Fx = PhiloGL.Fx;
+  var Vec3 = PhiloGL.Vec3;
+  var Sphere = PhiloGL.Sphere;
+  var Cube = PhiloGL.Cube;
+  var IO = PhiloGL.IO;
+  var Model = PhiloGL.Model;
+  var Framebuffer = PhiloGL.Framebuffer;
 
-  new pgl.IO.XHR({
+  new IO.XHR({
     url: 'macbook.json',
     onError: function() {
       alert('Unable to load macbook model');
@@ -25,27 +36,27 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson16-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var outerCamera = new pgl.PerspectiveCamera({
+  var outerCamera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
-    position: new pgl.Vec3(0, 0, -3),
+    position: new Vec3(0, 0, -3),
   });
 
   function createApp(macbookJSON) {
 
     Promise.all([
 
-      pgl.Program.fromShaderURIs(gl, 'render-tex.vs.glsl', 'render-tex.fs.glsl', {
+      Program.fromShaderURIs(gl, 'render-tex.vs.glsl', 'render-tex.fs.glsl', {
         path: '../../../shaders/',
       }),
 
-      pgl.loadTextures(gl, {
+      loadTextures(gl, {
         src: ['moon.gif', 'crate.gif'],
         parameters: [{
           magFilter: gl.LINEAR,
@@ -71,7 +82,7 @@ var webGLStart = function() {
 
       var models = {};
 
-      models.moon = new pgl.Sphere({
+      models.moon = new Sphere({
         nlat: 30,
         nlong: 30,
         radius: 2,
@@ -86,7 +97,7 @@ var webGLStart = function() {
         }
       });
 
-      models.box = new pgl.Cube({
+      models.box = new Cube({
         textures: tCrate,
         uniforms: {
           shininess: 5,
@@ -99,7 +110,7 @@ var webGLStart = function() {
       });
       models.box.scale.set(2, 2, 2);
 
-      models.macbookscreen = new pgl.Model({
+      models.macbookscreen = new Model({
         normals: [
           0, -0.965926, 0.258819,
           0, -0.965926, 0.258819,
@@ -131,9 +142,9 @@ var webGLStart = function() {
 
       program.use();
 
-      models.macbook = new pgl.Model(macbookJSON);
+      models.macbook = new Model(macbookJSON);
 
-      var outerScene = new pgl.Scene(gl, program, outerCamera, {
+      var outerScene = new Scene(gl, program, outerCamera, {
         lights: {
           enable: true,
           points: {
@@ -150,14 +161,14 @@ var webGLStart = function() {
         }
       });
 
-      var innerCamera = new pgl.PerspectiveCamera({
+      var innerCamera = new PerspectiveCamera({
           fov: 45,
           aspect: screenRatio,
           near: 0.1,
           far: 100,
-          position: new pgl.Vec3(0, 0, -17)
+          position: new Vec3(0, 0, -17)
         }),
-        innerScene = new pgl.Scene(gl, program, innerCamera, {
+        innerScene = new Scene(gl, program, innerCamera, {
           lights: {
             enable: true,
             points: {
@@ -183,7 +194,7 @@ var webGLStart = function() {
         moon = models.moon;
 
       //create framebuffer
-      var fb = new pgl.Framebuffer(gl, {
+      var fb = new Framebuffer(gl, {
         width: screenWidth,
         height: screenHeight,
         minFilter: gl.LINEAR,
@@ -246,7 +257,7 @@ var webGLStart = function() {
       function draw() {
         drawInnerScene();
         drawOuterScene();
-        pgl.Fx.requestAnimationFrame(draw);
+        Fx.requestAnimationFrame(draw);
       }
 
       //Animate

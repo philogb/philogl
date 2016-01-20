@@ -1,13 +1,20 @@
 
 var webGLStart = function() {
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var loadTextures = PhiloGL.loadTextures;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Fx = PhiloGL.Fx;
+  var Mat4 = PhiloGL.Mat4;
+  var Model = PhiloGL.Model;
+  var Buffer = PhiloGL.Buffer;
 
   var canvas = document.getElementById('lesson05-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
-  pgl.loadTextures(gl, {
+  loadTextures(gl, {
 
     src: ['nehe.gif']
 
@@ -21,11 +28,11 @@ var webGLStart = function() {
       gl.enable(gl.DEPTH_TEST);
       gl.depthFunc(gl.LEQUAL);
 
-      var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
+      var program = Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
       program.use();
 
-      var cube = new pgl.Model({
+      var cube = new Model({
         vertices: [-1, -1,  1,
                     1, -1,  1,
                     1,  1,  1,
@@ -103,28 +110,28 @@ var webGLStart = function() {
       });
 
       var buffers = [
-        new pgl.Buffer(gl, {
+        new Buffer(gl, {
             attribute: 'aVertexPosition',
             data: cube.vertices,
             size: 3
         }),
-        new pgl.Buffer(gl, {
+        new Buffer(gl, {
             attribute: 'aTextureCoord',
             data: cube.texCoords,
             size: 2
         }),
-        new pgl.Buffer(gl, {
+        new Buffer(gl, {
             data: cube.indices,
             bufferType: gl.ELEMENT_ARRAY_BUFFER,
             size: 1
         })
       ];
 
-      var camera = new pgl.PerspectiveCamera({
+      var camera = new PerspectiveCamera({
         aspect: canvas.width/canvas.height,
       });
 
-      var view = new pgl.Mat4();
+      var view = new Mat4();
       var rCube = 0;
 
 
@@ -148,7 +155,7 @@ var webGLStart = function() {
       //draw triangles
       gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
       //request new frame
-      pgl.Fx.requestAnimationFrame(drawScene);
+      Fx.requestAnimationFrame(drawScene);
     }
 
     drawScene();

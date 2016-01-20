@@ -1,7 +1,15 @@
 
 var webGLStart = function() {
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var IO = PhiloGL.IO;
+  var loadTextures = PhiloGL.loadTextures;
+  var Program = PhiloGL.Program;
+  var Model = PhiloGL.Model;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Scene = PhiloGL.Scene;
+  var Events = PhiloGL.Events;
+  var Fx = PhiloGL.Fx;
 
   var pitch = 0,
       pitchRate = 0,
@@ -18,10 +26,10 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson10-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   //load world
-  new pgl.IO.XHR({
+  new IO.XHR({
     url: 'world.txt',
     onSuccess: function(data) {
       var lines = data.split("\n");
@@ -44,7 +52,7 @@ var webGLStart = function() {
         }
       }
 
-      pgl.loadTextures(gl, {
+      loadTextures(gl, {
         src: ['mud.gif'],
         parameters: [{
           magFilter: gl.LINEAR,
@@ -54,7 +62,7 @@ var webGLStart = function() {
           generateMipmap: true
         }]
       }).then(function(textures) {
-        world = new pgl.Model({
+        world = new Model({
           vertices: vertexPositions,
           texCoords: vertexTextureCoords,
           textures: textures[0]
@@ -76,16 +84,16 @@ var webGLStart = function() {
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 
-    var program = pgl.Program.fromDefaultShaders(gl);
+    var program = Program.fromDefaultShaders(gl);
     program.use();
 
-    var camera = new pgl.PerspectiveCamera({
+    var camera = new PerspectiveCamera({
       aspect: canvas.width/canvas.height,
     });
 
-    var scene = new pgl.Scene(gl, program, camera);
+    var scene = new Scene(gl, program, camera);
 
-    pgl.Events.create(canvas, {
+    Events.create(canvas, {
       onKeyDown: function(e) {
         switch(e.key) {
           case 'left': case 'a':
@@ -152,7 +160,7 @@ var webGLStart = function() {
     function tick() {
       drawScene();
       animate();
-      pgl.Fx.requestAnimationFrame(tick);
+      Fx.requestAnimationFrame(tick);
     }
 
     tick();

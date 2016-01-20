@@ -1,8 +1,15 @@
 var webGLStart = function() {
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Fx = PhiloGL.Fx;
+  var Mat4 = PhiloGL.Mat4;
+  var IO = PhiloGL.IO;
+  var Model = PhiloGL.Model;
+  var Buffer = PhiloGL.Buffer;
 
-  var pyramid = new pgl.Model({
+  var pyramid = new Model({
     vertices: [ 0,  1,  0,
                -1, -1,  1,
                 1, -1,  1,
@@ -30,7 +37,7 @@ var webGLStart = function() {
              0, 1, 0, 1]
   });
 
-  var cube = new pgl.Model({
+  var cube = new Model({
     vertices: [-1, -1,  1,
                 1, -1,  1,
                 1,  1,  1,
@@ -96,7 +103,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson04-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -104,15 +111,15 @@ var webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
+  var program = Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
   program.use();
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 
-  var view = new pgl.Mat4;
+  var view = new Mat4;
   var rPyramid = 0;
   var rCube = 0;
 
@@ -121,21 +128,21 @@ var webGLStart = function() {
     if (elem.bufs === undefined) {
       elem.bufs = [];
       if (elem.vertices) {
-        elem.bufs.push(new pgl.Buffer(gl, {
+        elem.bufs.push(new Buffer(gl, {
           attribute: 'aVertexPosition',
           data: elem.vertices,
           size: 3
         }));
       }
       if (elem.colors) {
-        elem.bufs.push(new pgl.Buffer(gl, {
+        elem.bufs.push(new Buffer(gl, {
           attribute: 'aVertexColor',
           data: elem.colors,
           size: 4
         }));
       }
       if (elem.indices) {
-        elem.bufs.push(new pgl.Buffer(gl, {
+        elem.bufs.push(new Buffer(gl, {
           data: elem.indices,
           bufferType: gl.ELEMENT_ARRAY_BUFFER,
           size: 1
@@ -177,7 +184,7 @@ var webGLStart = function() {
   function tick() {
     drawScene();
     animate();
-    pgl.Fx.requestAnimationFrame(tick);
+    Fx.requestAnimationFrame(tick);
   }
 
   tick();

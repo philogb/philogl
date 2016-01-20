@@ -1,11 +1,17 @@
 
 window.webGLStart = function() {
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Fx = PhiloGL.Fx;
+  var Mat4 = PhiloGL.Mat4;
+  var Model = PhiloGL.Model;
+  var Buffer = PhiloGL.Buffer;
 
   var canvas = document.getElementById('lesson03-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -13,11 +19,11 @@ window.webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
+  var program = Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
   program.use();
 
-  var triangle = new pgl.Model({
+  var triangle = new Model({
     vertices: [ 0,  1, 0,
                -1, -1, 0,
                 1, -1, 0],
@@ -27,7 +33,7 @@ window.webGLStart = function() {
              0, 0, 1, 1]
   });
 
-  var square = new pgl.Model({
+  var square = new Model({
     vertices: [ 1,  1, 0,
                -1,  1, 0,
                 1, -1, 0,
@@ -39,11 +45,11 @@ window.webGLStart = function() {
              0.5, 0.5, 1, 1]
   });
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 
-  var view = new pgl.Mat4();
+  var view = new Mat4();
   var rTri = 0.0;
   var rSquare = 0.0;
 
@@ -51,12 +57,12 @@ window.webGLStart = function() {
     // Set up buffers if we haven't already.
     if (elem.bufs === undefined) {
       elem.bufs = [
-        new pgl.Buffer(gl, {
+        new Buffer(gl, {
           attribute: 'aVertexPosition',
           data: elem.vertices,
           size: 3
         }),
-        new pgl.Buffer(gl, {
+        new Buffer(gl, {
           attribute: 'aVertexColor',
           data: elem.colors,
           size: 4
@@ -98,7 +104,7 @@ window.webGLStart = function() {
   function tick() {
     drawScene();
     animate();
-    pgl.Fx.requestAnimationFrame(tick);
+    Fx.requestAnimationFrame(tick);
   }
 
   tick();

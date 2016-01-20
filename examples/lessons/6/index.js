@@ -1,10 +1,18 @@
 var webGLStart = function() {
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Fx = PhiloGL.Fx;
+  var Mat4 = PhiloGL.Mat4;
+  var Model = PhiloGL.Model;
+  var Buffer = PhiloGL.Buffer;
+  var Texture2D = PhiloGL.Texture2D;
+  var Events = PhiloGL.Events;
 
   var canvas = document.getElementById('lesson06-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -17,18 +25,18 @@ var webGLStart = function() {
       z = -5.0,
       filter = 0,
       filters = ['nearest', 'linear', 'mipmap'],
-      view = new pgl.Mat4, rCube = 0;
+      view = new Mat4, rCube = 0;
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 
-  var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
+  var program = Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
   program.use();
 
   //Create object
-  var cube = new pgl.Model({
+  var cube = new Model({
     vertices: [-1, -1,  1,
                 1, -1,  1,
                 1,  1,  1,
@@ -106,24 +114,24 @@ var webGLStart = function() {
   });
 
   var buffers = [
-    new pgl.Buffer(gl, {
+    new Buffer(gl, {
         attribute: 'aVertexPosition',
         data: cube.vertices,
         size: 3
     }),
-    new pgl.Buffer(gl, {
+    new Buffer(gl, {
         attribute: 'aTextureCoord',
         data: cube.texCoords,
         size: 2
     }),
-    new pgl.Buffer(gl, {
+    new Buffer(gl, {
         data: cube.indices,
         bufferType: gl.ELEMENT_ARRAY_BUFFER,
         size: 1
     })
   ];
 
-  pgl.Events.create(canvas, {
+  Events.create(canvas, {
     onKeyDown: function(e) {
       switch(e.key) {
         case 'f':
@@ -155,15 +163,15 @@ var webGLStart = function() {
   var img = new Image();
   var textures = {};
   img.onload = function() {
-    textures.nearest = new pgl.Texture2D(gl, {
+    textures.nearest = new Texture2D(gl, {
       data: img
     });
-    textures.linear = new pgl.Texture2D(gl, {
+    textures.linear = new Texture2D(gl, {
       data: img,
       minFilter: gl.LINEAR,
       magFilter: gl.LINEAR
     });
-    textures.mipmap = new pgl.Texture2D(gl, {
+    textures.mipmap = new Texture2D(gl, {
       data: img,
       minFilter: gl.LINEAR_MIPMAP_LINEAR,
       magFilter: gl.LINEAR,
@@ -178,7 +186,7 @@ var webGLStart = function() {
     function tick() {
       drawScene();
       animate();
-      pgl.Fx.requestAnimationFrame(tick);
+      Fx.requestAnimationFrame(tick);
     }
 
     function drawScene() {

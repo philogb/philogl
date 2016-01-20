@@ -2,13 +2,21 @@ var webGLStart = function() {
 
   var $id = function(d) { return document.getElementById(d); };
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var loadTextures = PhiloGL.loadTextures;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Scene = PhiloGL.Scene;
+  var Events = PhiloGL.Events;
+  var Fx = PhiloGL.Fx;
+  var Vec3 = PhiloGL.Vec3;
+  var Sphere = PhiloGL.Sphere;
 
   var moon, pos;
 
   var canvas = document.getElementById('lesson11-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -16,17 +24,17 @@ var webGLStart = function() {
   gl.depthFunc(gl.LEQUAL);
   gl.viewport(0, 0, +canvas.width, +canvas.height);
 
-  var program = pgl.Program.fromDefaultShaders(gl);
+  var program = Program.fromDefaultShaders(gl);
   program.use();
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
-    position: new pgl.Vec3(0, 0, -7),
+    position: new Vec3(0, 0, -7),
   });
 
-  var scene = new pgl.Scene(gl, program, camera);
+  var scene = new Scene(gl, program, camera);
 
-  pgl.Events.create(canvas, {
+  Events.create(canvas, {
     onDragStart: function(e) {
       pos = {
         x: e.x,
@@ -49,7 +57,7 @@ var webGLStart = function() {
     }
   });
 
-  pgl.loadTextures(gl, {
+  loadTextures(gl, {
     src: ['moon.gif'],
     parameters: [{
       magFilter: gl.LINEAR,
@@ -60,7 +68,7 @@ var webGLStart = function() {
 
     var tMoon = textures[0];
 
-    moon = new pgl.Sphere({
+    moon = new Sphere({
       nlat: 30,
       nlong: 30,
       radius: 2,
@@ -112,7 +120,7 @@ var webGLStart = function() {
       //render moon
       scene.render();
       //request new frame
-      pgl.Fx.requestAnimationFrame(draw);
+      Fx.requestAnimationFrame(draw);
     }
     //Animate
     draw();
