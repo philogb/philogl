@@ -124,7 +124,7 @@ var webGLStart = function() {
 
   ].join("\n");
 
-  var program = pgl.Program.fromShaderSources(gl, pgl.Shaders.Vertex.Default, colorUniformFS);
+  var program = new pgl.Program(gl, pgl.Shaders.Vertex.Default, colorUniformFS);
   program.use();
 
   var camera = new pgl.PerspectiveCamera({

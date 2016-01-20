@@ -186,7 +186,7 @@ var webGLStart = function() {
 
     ].join("\n");
 
-    var program = pgl.Program.fromShaderSources(gl, pgl.Shaders.Vertex.Default, blendFS);
+    var program = new pgl.Program(gl, pgl.Shaders.Vertex.Default, blendFS);
 
     program.use();
 
