@@ -17,7 +17,7 @@ window.webGLStart = function() {
 
   program.use();
 
-  var triangle = new pgl.O3D.Model({
+  var triangle = new pgl.Model({
     vertices: [ 0,  1, 0,
                -1, -1, 0,
                 1, -1, 0],
@@ -27,7 +27,7 @@ window.webGLStart = function() {
              0, 0, 1, 1]
   });
 
-  var square = new pgl.O3D.Model({
+  var square = new pgl.Model({
     vertices: [ 1,  1, 0,
                -1,  1, 0,
                 1, -1, 0,

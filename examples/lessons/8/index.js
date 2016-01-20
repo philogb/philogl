@@ -45,7 +45,7 @@ var webGLStart = function() {
         alpha = $id('alpha');
 
     //Create object
-    var cube = new pgl.O3D.Model({
+    var cube = new pgl.Model({
       vertices: [-1, -1,  1,
                   1, -1,  1,
                   1,  1,  1,

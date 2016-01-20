@@ -60,7 +60,7 @@ var webGLStart = function() {
 
     var tMoon = textures[0];
 
-    moon = new pgl.O3D.Sphere({
+    moon = new pgl.Sphere({
       nlat: 30,
       nlong: 30,
       radius: 2,

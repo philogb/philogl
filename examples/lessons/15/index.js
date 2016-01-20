@@ -43,7 +43,7 @@ var webGLStart = function() {
     var tDiffuse = results[1][0];
     var tSpecular = results[1][1];
 
-    var earth = new pgl.O3D.Sphere({
+    var earth = new pgl.Sphere({
       nlat: 30,
       nlong: 30,
       radius: 2,

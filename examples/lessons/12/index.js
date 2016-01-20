@@ -64,14 +64,14 @@ var webGLStart = function() {
     var tCrate = textures[1];
 
     //Create moon
-    moon = new pgl.O3D.Sphere({
+    moon = new pgl.Sphere({
       nlat: 30,
       nlong: 30,
       radius: 2,
       textures: tMoon
     });
     //Create box
-    box = new pgl.O3D.Cube({
+    box = new pgl.Cube({
       textures: tCrate
     });
     box.scale.set(2, 2, 2);

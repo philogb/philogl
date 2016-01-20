@@ -54,7 +54,7 @@ var webGLStart = function() {
           generateMipmap: true
         }]
       }).then(function(textures) {
-        world = new pgl.O3D.Model({
+        world = new pgl.Model({
           vertices: vertexPositions,
           texCoords: vertexTextureCoords,
           textures: textures[0]

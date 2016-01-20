@@ -55,7 +55,7 @@ var webGLStart = function() {
       var tEarth = results[1][1];
       teapotJSON.colors = [1, 1, 1, 1];
       teapotJSON.textures = tGalvanized;
-      var teapot = new pgl.O3D.Model(teapotJSON);
+      var teapot = new pgl.Model(teapotJSON);
       program.use();
       var scene = new pgl.Scene(gl, program, camera);
       var shininess = $id('shininess'),

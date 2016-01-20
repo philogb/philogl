@@ -12,7 +12,7 @@ var webGLStart = function() {
   var tStar;
 
   var Star = function(startingDistance, rotationSpeed) {
-    pgl.O3D.Model.call(this, {
+    pgl.Model.call(this, {
       vertices: [
         -1.0, -1.0,  0.0,
         1.0, -1.0,  0.0,
@@ -50,7 +50,7 @@ var webGLStart = function() {
     this.randomiseColors();
   };
 
-  Star.prototype = Object.create(pgl.O3D.Model.prototype, {
+  Star.prototype = Object.create(pgl.Model.prototype, {
 
     randomiseColors: {
       value: function() {

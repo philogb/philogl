@@ -71,7 +71,7 @@ var webGLStart = function() {
     var tCrate = textures[1];
 
     // Create moon
-    var moon = new pgl.O3D.Sphere({
+    var moon = new pgl.Sphere({
       nlat: 30,
       nlong: 30,
       radius: 2,
@@ -81,7 +81,7 @@ var webGLStart = function() {
     });
 
     // Create box
-    var box = new pgl.O3D.Cube({
+    var box = new pgl.Cube({
       textures: tCrate,
       program: 'vertex',
       colors: [1, 1, 1, 1]

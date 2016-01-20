@@ -2,7 +2,7 @@ var webGLStart = function() {
 
   var pgl = PhiloGL;
 
-  var pyramid = new pgl.O3D.Model({
+  var pyramid = new pgl.Model({
     vertices: [ 0,  1,  0,
                -1, -1,  1,
                 1, -1,  1,
@@ -30,7 +30,7 @@ var webGLStart = function() {
              0, 1, 0, 1]
   });
 
-  var cube = new pgl.O3D.Model({
+  var cube = new pgl.Model({
     vertices: [-1, -1,  1,
                 1, -1,  1,
                 1,  1,  1,

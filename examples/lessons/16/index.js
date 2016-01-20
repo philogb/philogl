@@ -71,7 +71,7 @@ var webGLStart = function() {
 
       var models = {};
 
-      models.moon = new pgl.O3D.Sphere({
+      models.moon = new pgl.Sphere({
         nlat: 30,
         nlong: 30,
         radius: 2,
@@ -86,7 +86,7 @@ var webGLStart = function() {
         }
       });
 
-      models.box = new pgl.O3D.Cube({
+      models.box = new pgl.Cube({
         textures: tCrate,
         uniforms: {
           shininess: 5,
@@ -99,7 +99,7 @@ var webGLStart = function() {
       });
       models.box.scale.set(2, 2, 2);
 
-      models.macbookscreen = new pgl.O3D.Model({
+      models.macbookscreen = new pgl.Model({
         normals: [
           0, -0.965926, 0.258819,
           0, -0.965926, 0.258819,
@@ -131,7 +131,7 @@ var webGLStart = function() {
 
       program.use();
 
-      models.macbook = new pgl.O3D.Model(macbookJSON);
+      models.macbook = new pgl.Model(macbookJSON);
 
       var outerScene = new pgl.Scene(gl, program, outerCamera, {
         lights: {
