@@ -3,13 +3,21 @@ var $id = function(d) { return document.getElementById(d); };
 
 var webGLStart = function() {
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var loadTextures = PhiloGL.loadTextures;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Scene = PhiloGL.Scene;
+  var Events = PhiloGL.Events;
+  var Fx = PhiloGL.Fx;
+  var IO = PhiloGL.IO;
+  var Model = PhiloGL.Model;
 
   var canvas = document.getElementById('lesson07-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
-  pgl.loadTextures(gl, {
+  loadTextures(gl, {
     src: ['crate.gif'],
     parameters: [{
       magFilter: gl.LINEAR,
@@ -42,7 +50,7 @@ var webGLStart = function() {
         };
 
     //Create object
-    var cube = new pgl.O3D.Model({
+    var cube = new Model({
       vertices: [-1, -1,  1,
                   1, -1,  1,
                   1,  1,  1,
@@ -156,7 +164,7 @@ var webGLStart = function() {
                 20, 21, 22, 20, 22, 23]
     });
 
-    pgl.Events.create(canvas, {
+    Events.create(canvas, {
       onKeyDown: function(e) {
         switch(e.key) {
           case 'f':
@@ -191,15 +199,15 @@ var webGLStart = function() {
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 
-    var program = pgl.Program.fromDefaultShaders(gl);
+    var program = Program.fromDefaultShaders(gl);
 
     program.use();
 
-    var camera = new pgl.PerspectiveCamera({
+    var camera = new PerspectiveCamera({
       aspect: canvas.width/canvas.height,
     });
 
-    var scene = new pgl.Scene(gl, program, camera);
+    var scene = new Scene(gl, program, camera);
 
     scene.add(cube);
 
@@ -239,7 +247,7 @@ var webGLStart = function() {
     function tick() {
       drawScene();
       animate();
-      pgl.Fx.requestAnimationFrame(tick);
+      Fx.requestAnimationFrame(tick);
     }
 
     tick();

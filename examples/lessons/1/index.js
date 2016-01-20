@@ -2,11 +2,14 @@
 
 window.webGLStart = function() {
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var Program = PhiloGL.Program;
+  var Buffer = PhiloGL.Buffer;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
 
   var canvas = document.getElementById('lesson01-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -14,23 +17,23 @@ window.webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
+  var program = Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
   program.use();
 
-  var triangle = new pgl.Buffer(gl, {
+  var triangle = new Buffer(gl, {
     attribute: 'aVertexPosition',
     data: new Float32Array([0, 1, 0, -1, -1, 0, 1, -1, 0]),
     size: 3
   });
 
-  var square = new pgl.Buffer(gl, {
+  var square = new Buffer(gl, {
     attribute: 'aVertexPosition',
     data: new Float32Array([1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1, 0]),
     size: 3
   });
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 

@@ -1,11 +1,20 @@
 var webGLStart = function() {
   var $id = function(d) { return document.getElementById(d); };
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var loadTextures = PhiloGL.loadTextures;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Scene = PhiloGL.Scene;
+  var Events = PhiloGL.Events;
+  var Fx = PhiloGL.Fx;
+  var Vec3 = PhiloGL.Vec3;
+  var Sphere = PhiloGL.Sphere;
+  var Cube = PhiloGL.Cube;
 
   var canvas = document.getElementById('lesson13-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -13,19 +22,19 @@ var webGLStart = function() {
   gl.depthFunc(gl.LEQUAL);
   gl.viewport(0, 0, +canvas.width, +canvas.height);
 
-  var defaultProgram = pgl.Program.fromDefaultShaders(gl);
-  var perpixelProgram = pgl.Program.fromHTMLTemplates(
+  var defaultProgram = Program.fromDefaultShaders(gl);
+  var perpixelProgram = Program.fromHTMLTemplates(
     gl,
     'per-fragment-lighting-vs',
     'per-fragment-lighting-fs'
   );
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
-    position: new pgl.Vec3(0, 0, -30),
+    position: new Vec3(0, 0, -30),
   });
 
-  var scene = new pgl.Scene(
+  var scene = new Scene(
     gl,
     {
       'vertex': defaultProgram,
@@ -45,7 +54,7 @@ var webGLStart = function() {
     }
   });
 
-  pgl.Events.create(canvas, {
+  Events.create(canvas, {
     onMouseWheel: function(e, info) {
       info.stop();
       var camera = this.camera;
@@ -55,7 +64,7 @@ var webGLStart = function() {
     }
   });
 
-  pgl.loadTextures(gl, {
+  loadTextures(gl, {
     src: ['moon.gif', 'crate.gif'],
     parameters: [{
       magFilter: gl.LINEAR,
@@ -71,7 +80,7 @@ var webGLStart = function() {
     var tCrate = textures[1];
 
     // Create moon
-    var moon = new pgl.O3D.Sphere({
+    var moon = new Sphere({
       nlat: 30,
       nlong: 30,
       radius: 2,
@@ -81,7 +90,7 @@ var webGLStart = function() {
     });
 
     // Create box
-    var box = new pgl.O3D.Cube({
+    var box = new Cube({
       textures: tCrate,
       program: 'vertex',
       colors: [1, 1, 1, 1]
@@ -176,7 +185,7 @@ var webGLStart = function() {
       scene.render();
 
       //request new frame
-      pgl.Fx.requestAnimationFrame(draw);
+      Fx.requestAnimationFrame(draw);
     }
 
     //Animate

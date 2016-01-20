@@ -1,10 +1,18 @@
 var webGLStart = function() {
   var $id = function(d) { return document.getElementById(d); };
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var loadTextures = PhiloGL.loadTextures;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Scene = PhiloGL.Scene;
+  var Fx = PhiloGL.Fx;
+  var Vec3 = PhiloGL.Vec3;
+  var IO = PhiloGL.IO;
+  var Model = PhiloGL.Model;
 
   //Get Model
-  new pgl.IO.XHR({
+  new IO.XHR({
     url: 'Teapot.json',
     onSuccess: function(text) {
       var json = JSON.parse(text);
@@ -14,7 +22,7 @@ var webGLStart = function() {
 
   var canvas = document.getElementById('lesson14-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -22,18 +30,18 @@ var webGLStart = function() {
   gl.depthFunc(gl.LEQUAL);
   gl.viewport(0, 0, +canvas.width, +canvas.height);
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
-    position: new pgl.Vec3(0, 0, -50),
+    position: new Vec3(0, 0, -50),
   });
 
   function animateObject(teapotJSON) {
     Promise.all([
-      pgl.Program.fromShaderURIs(gl, 'frag-lighting.vs.glsl', 'frag-lighting.fs.glsl', {
+      Program.fromShaderURIs(gl, 'frag-lighting.vs.glsl', 'frag-lighting.fs.glsl', {
           path: '../../../shaders/',
           noCache: true
       }),
-      pgl.loadTextures(gl, {
+      loadTextures(gl, {
         src: ['arroway.de_metal+structure+06_d100_flat.jpg', 'earth.jpg'],
         parameters: [{
           magFilter: gl.LINEAR,
@@ -55,9 +63,9 @@ var webGLStart = function() {
       var tEarth = results[1][1];
       teapotJSON.colors = [1, 1, 1, 1];
       teapotJSON.textures = tGalvanized;
-      var teapot = new pgl.O3D.Model(teapotJSON);
+      var teapot = new Model(teapotJSON);
       program.use();
-      var scene = new pgl.Scene(gl, program, camera);
+      var scene = new Scene(gl, program, camera);
       var shininess = $id('shininess'),
           //specular
           specular = $id('specular'),
@@ -144,7 +152,7 @@ var webGLStart = function() {
         scene.render();
 
         //request new frame
-        pgl.Fx.requestAnimationFrame(draw);
+        Fx.requestAnimationFrame(draw);
       }
     });
   }

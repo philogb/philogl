@@ -1,10 +1,13 @@
 window.webGLStart = function() {
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Buffer = PhiloGL.Buffer;
 
   var canvas = document.getElementById('lesson02-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -12,35 +15,35 @@ window.webGLStart = function() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
 
-  var program = pgl.Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
+  var program = Program.fromHTMLTemplates(gl, 'shader-vs', 'shader-fs');
 
   program.use();
 
-  var triangle = new pgl.Buffer(gl, {
+  var triangle = new Buffer(gl, {
     attribute: 'aVertexPosition',
     data: new Float32Array([0, 1, 0, -1, -1, 0, 1, -1, 0]),
     size: 3
   });
 
-  var triangleColors = new pgl.Buffer(gl, {
+  var triangleColors = new Buffer(gl, {
     attribute: 'aVertexColor',
     data: new Float32Array([1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1]),
     size: 4
   });
 
-  var square = new pgl.Buffer(gl, {
+  var square = new Buffer(gl, {
     attribute: 'aVertexPosition',
     data: new Float32Array([1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1, 0]),
     size: 3
   });
 
-  var squareColors = new pgl.Buffer(gl, {
+  var squareColors = new Buffer(gl, {
     attribute: 'aVertexColor',
     data: new Float32Array([0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1]),
     size: 4
   });
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 

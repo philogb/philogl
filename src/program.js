@@ -223,19 +223,9 @@ export default class Program {
   }
 
   // Alternate constructor
-  // Create a program from vs and fs sources
-  static fromShaderSources(gl, vs, fs) {
-    return new Program(gl, vs, fs);
-  }
-
-  // Alternate constructor
   // Build program from default shaders (requires Shaders)
   static fromDefaultShaders(gl) {
-    return Program.fromShaderSources(
-      gl,
-      Shaders.Vertex['Default'],
-      Shaders.Fragment['Default']
-    );
+    return new Program(gl, Shaders.Vertex['Default'], Shaders.Fragment['Default']);
   }
 
   // Alternate constructor
@@ -254,7 +244,7 @@ export default class Program {
       noCache: opts.noCache,
     }).sendAsync();
 
-    return Program.fromShaderSources(gl, responses[0], responses[1]);
+    return new Program(gl, responses[0], responses[1]);
 
   }
 

@@ -3,16 +3,24 @@ var webGLStart = function() {
 
   var $id = function(d) { return document.getElementById(d); };
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var loadTextures = PhiloGL.loadTextures;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Scene = PhiloGL.Scene;
+  var Events = PhiloGL.Events;
+  var Fx = PhiloGL.Fx;
+  var Model = PhiloGL.Model;
+  var Shaders = PhiloGL.Shaders;
 
   var canvas = document.getElementById('lesson09-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   var tStar;
 
   var Star = function(startingDistance, rotationSpeed) {
-    pgl.O3D.Model.call(this, {
+    Model.call(this, {
       vertices: [
         -1.0, -1.0,  0.0,
         1.0, -1.0,  0.0,
@@ -50,7 +58,7 @@ var webGLStart = function() {
     this.randomiseColors();
   };
 
-  Star.prototype = Object.create(pgl.O3D.Model.prototype, {
+  Star.prototype = Object.create(Model.prototype, {
 
     randomiseColors: {
       value: function() {
@@ -124,16 +132,16 @@ var webGLStart = function() {
 
   ].join("\n");
 
-  var program = pgl.Program.fromShaderSources(gl, pgl.Shaders.Vertex.Default, colorUniformFS);
+  var program = new Program(gl, Shaders.Vertex.Default, colorUniformFS);
   program.use();
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
   });
 
-  var scene = new pgl.Scene(gl, program, camera);
+  var scene = new Scene(gl, program, camera);
 
-  pgl.Events.create(canvas, {
+  Events.create(canvas, {
     onKeyDown: function(e) {
       switch(e.key) {
         case 'up':
@@ -153,7 +161,7 @@ var webGLStart = function() {
     }
   });
 
-  pgl.loadTextures(gl, {
+  loadTextures(gl, {
     src: ['star.gif'],
     parameters: [{
       magFilter: gl.LINEAR,
@@ -188,7 +196,7 @@ var webGLStart = function() {
     function tick() {
       drawScene();
       animate();
-      pgl.Fx.requestAnimationFrame(tick);
+      Fx.requestAnimationFrame(tick);
     }
 
     tick();

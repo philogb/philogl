@@ -1,11 +1,18 @@
 var webGLStart = function() {
   var $id = function(d) { return document.getElementById(d); };
 
-  var pgl = PhiloGL;
+  var createGLContext = PhiloGL.createGLContext;
+  var loadTextures = PhiloGL.loadTextures;
+  var Program = PhiloGL.Program;
+  var PerspectiveCamera = PhiloGL.PerspectiveCamera;
+  var Scene = PhiloGL.Scene;
+  var Fx = PhiloGL.Fx;
+  var Vec3 = PhiloGL.Vec3;
+  var Sphere = PhiloGL.Sphere;
 
   var canvas = document.getElementById('lesson15-canvas');
 
-  var gl = pgl.createGLContext(canvas);
+  var gl = createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
@@ -13,18 +20,18 @@ var webGLStart = function() {
   gl.depthFunc(gl.LEQUAL);
   gl.viewport(0, 0, +canvas.width, +canvas.height);
 
-  var camera = new pgl.PerspectiveCamera({
+  var camera = new PerspectiveCamera({
     aspect: canvas.width/canvas.height,
-    position: new pgl.Vec3(0, 0, -6),
+    position: new Vec3(0, 0, -6),
   });
 
   Promise.all([
 
-    pgl.Program.fromShaderURIs(gl, 'spec-map.vs.glsl', 'spec-map.fs.glsl', {
+    Program.fromShaderURIs(gl, 'spec-map.vs.glsl', 'spec-map.fs.glsl', {
       path: '../../../shaders/',
     }),
 
-    pgl.loadTextures(gl, {
+    loadTextures(gl, {
       src: ['earth.jpg', 'earth-specular.gif'],
       parameters: [{
         magFilter: gl.LINEAR,
@@ -43,7 +50,7 @@ var webGLStart = function() {
     var tDiffuse = results[1][0];
     var tSpecular = results[1][1];
 
-    var earth = new pgl.O3D.Sphere({
+    var earth = new Sphere({
       nlat: 30,
       nlong: 30,
       radius: 2,
@@ -55,7 +62,7 @@ var webGLStart = function() {
     });
 
     program.use();
-    var scene = new pgl.Scene(gl, program, camera);
+    var scene = new Scene(gl, program, camera);
     var specularMap = $id('specular-map'),
         colorMap = $id('color-map'),
         //get light config from forms
@@ -128,7 +135,7 @@ var webGLStart = function() {
       scene.render();
 
       //request new frame
-      pgl.Fx.requestAnimationFrame(draw);
+      Fx.requestAnimationFrame(draw);
     }
 
     //Animate

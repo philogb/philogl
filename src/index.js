@@ -27,7 +27,6 @@ export * from './media';
 //            browserify/<script> imports.
 import Scene from './scene';
 import {hasWebGL, createGLContext} from './webgl';
-import * as O3D from './objects';
 import * as math from './math';
 import Fx from './addons/fx';
 import WorkerGroup from './addons/workers';
@@ -41,14 +40,29 @@ import {Events} from './event';
 import Buffer from './buffer';
 import {Texture2D} from './texture';
 import Framebuffer from './fbo';
+import Model from './objects/model';
+import Cone from './objects/cone';
+import Cube from './objects/cube';
+import Cylinder from './objects/cylinder';
+import IcoSphere from './objects/ico-sphere';
+import Plane from './objects/plane';
+import Sphere from './objects/sphere';
+import TruncatedCone from './objects/cone';
 
 if (typeof window !== 'undefined') {
     window.PhiloGL = {
+        Model: Model,
+        Cone: Cone,
+        Cube: Cube,
+        Cylinder: Cylinder,
+        IcoSphere: IcoSphere,
+        Plane: Plane,
+        Sphere: Sphere,
+        TruncatedCone: TruncatedCone,
         Framebuffer: Framebuffer,
         Texture2D: Texture2D,
         Buffer: Buffer,
         Events: Events,
-        O3D: O3D,
         Mat4: math.Mat4,
         Vec3: math.Vec3,
         Fx: Fx,
