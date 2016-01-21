@@ -200,7 +200,6 @@ export class XHRGroup {
 };
 
 export function JSONP(opt) {
-  // rye: TODO- use lodash.defaultsDeep instead of $merge.
   opt = merge({
     url: 'http:// philogljs.org/',
     data: {},
