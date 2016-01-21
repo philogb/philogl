@@ -4,7 +4,7 @@
 /* global window */
 /* global document */
 
-import $ from './jquery-mini';
+import {extend, empty, uid, splat} from './utils';
 
 // returns an O3D object or false otherwise.
 function toO3D(n) {
@@ -191,7 +191,7 @@ export class EventsProxy {
       break;
     case 'keydown':
     case 'keyup':
-      $.extend(evt, getKey(ge));
+      extend(evt, getKey(ge));
       break;
     case 'mouseup':
       evt.isRightClick = isRightClick(ge);
@@ -202,7 +202,7 @@ export class EventsProxy {
 
     var cacheTarget;
 
-    $.extend(evt, {
+    extend(evt, {
       x: epos[0].x,
       y: epos[0].y,
       posArray: epos,
@@ -382,23 +382,23 @@ export const Events = {
       enableMouse: true,
       enableKeyboard: true,
 
-      onClick: $.empty,
-      onRightClick: $.empty,
-      onDragStart: $.empty,
-      onDragMove: $.empty,
-      onDragEnd: $.empty,
-      onDragCancel: $.empty,
-      onTouchStart: $.empty,
-      onTouchMove: $.empty,
-      onTouchEnd: $.empty,
-      onTouchCancel: $.empty,
-      onTap: $.empty,
-      onMouseMove: $.empty,
-      onMouseEnter: $.empty,
-      onMouseLeave: $.empty,
-      onMouseWheel: $.empty,
-      onKeyDown: $.empty,
-      onKeyUp: $.empty,
+      onClick: empty,
+      onRightClick: empty,
+      onDragStart: empty,
+      onDragMove: empty,
+      onDragEnd: empty,
+      onDragCancel: empty,
+      onTouchStart: empty,
+      onTouchMove: empty,
+      onTouchEnd: empty,
+      onTouchCancel: empty,
+      onTap: empty,
+      onMouseMove: empty,
+      onMouseEnter: empty,
+      onMouseLeave: empty,
+      onMouseWheel: empty,
+      onKeyDown: empty,
+      onKeyUp: empty,
       ...opt
     };
 

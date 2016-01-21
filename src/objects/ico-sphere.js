@@ -12,7 +12,7 @@ export default class IcoSphere extends Model {
         pi2 = pi * 2;
 
     //Add a callback for when a vertex is created
-    opt.onAddVertex = opt.onAddVertex || $.empty;
+    opt.onAddVertex = opt.onAddVertex || function() {};
 
     // and octahedron vertices
     var t = (1 + sqrt(5)) / 2,

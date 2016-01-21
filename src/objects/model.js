@@ -6,7 +6,7 @@
 import {Vec3, Mat4} from '../math';
 import Scene from '../scene';
 import Buffer from '../buffer';
-import $ from '../jquery-mini';
+import {uid, splat, empty, type} from '../utils';
 
 const slice = Array.prototype.slice;
 
@@ -51,14 +51,14 @@ export default class Model {
   /* eslint-disable max-statements  */
   /* eslint-disable complexity  */
   constructor(opt = {}) {
-    this.id = opt.id || $.uid();
+    this.id = opt.id || uid();
     // picking options
     this.pickable = Boolean(opt.pickable);
     this.pick = opt.pick || () => false;
 
     this.vertices = opt.vertices;
     this.normals = opt.normals;
-    this.textures = opt.textures && $.splat(opt.textures);
+    this.textures = opt.textures && splat(opt.textures);
     this.colors = opt.colors;
     this.indices = opt.indices;
     this.shininess = opt.shininess || 0;
@@ -84,8 +84,8 @@ export default class Model {
     // whether to display the object at all
     this.display = 'display' in opt ? opt.display : true;
     // before and after render callbacks
-    this.onBeforeRender = opt.onBeforeRender || $.empty;
-    this.onAfterRender = opt.onAfterRender || $.empty;
+    this.onBeforeRender = opt.onBeforeRender || empty;
+    this.onAfterRender = opt.onAfterRender || empty;
     // set a custom program per o3d
     if (opt.program) {
       this.program = opt.program;
@@ -212,7 +212,7 @@ export default class Model {
       delete this.$texCoordsLength;
       return;
     }
-    if ($.type(val) === 'object') {
+    if (type(val) === 'object') {
       var ans = {};
       for (var prop in val) {
         var texCoordArray = val[prop];
@@ -448,7 +448,7 @@ export default class Model {
     }
 
     const gl = program.gl;
-    const multi = $.type(this.$texCoords) === 'object';
+    const multi = type(this.$texCoords) === 'object';
     let i, txs, l, tex;
 
     if (!this.buffers.texCoords) {
@@ -496,7 +496,7 @@ export default class Model {
 
   setTextures(program, force) {
     const gl = program.gl;
-    this.textures = this.textures ? $.splat(this.textures) : [];
+    this.textures = this.textures ? splat(this.textures) : [];
     let tex2D = 0;
     let texCube = 0;
     const mtexs = Scene.MAX_TEXTURES;

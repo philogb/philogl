@@ -1,4 +1,5 @@
-import $ from './jquery-mini';
+
+import {merge} from './utils';
 
 class Texture {
 
@@ -6,7 +7,7 @@ class Texture {
     this.gl = gl;
     this.target = gl.TEXTURE_2D;
 
-    opts = $.merge({
+    opts = merge({
       flipY: true,
       alignment: 1,
       magFilter: gl.NEAREST,

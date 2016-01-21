@@ -4,7 +4,7 @@
 
 import Shaders from './shaders';
 import {XHR, XHRGroup} from './io';
-import $ from './jquery-mini';
+import {merge} from './utils';
 
 // Creates a shader from a string source.
 function createShader(gl, shaderSource, shaderType) {
@@ -231,7 +231,7 @@ export default class Program {
   // Alternate constructor
   // Implement Program.fromShaderURIs (requires IO)
   static async fromShaderURIs(gl, vs, fs, opts) {
-    opts = $.merge({
+    opts = merge({
       path: '/',
       noCache: false
     }, opts);

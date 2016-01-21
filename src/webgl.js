@@ -1,11 +1,10 @@
 // webgl.js
 // Checks if WebGL is enabled and creates a context for using WebGL.
 /* global window */
-import $ from './jquery-mini';
 
 export function createGLContext(canvas, opt) {
   var gl = null;
-  canvas = typeof canvas === 'string' ? $(canvas) : canvas;
+  canvas = typeof canvas === 'string' ? document.getElementById(canvas) : canvas;
   let ctx;
   ctx = canvas.getContext('experimental-webgl', opt);
   if (!ctx) {

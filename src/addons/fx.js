@@ -1,24 +1,24 @@
 // Timer based animation
-import $ from '../jquery-mini';
+import {merge, empty, splat, extend} from '../utils';
 
 var Queue = [];
 
 export default class Fx {
   constructor(options = {}) {
     // rye: TODO- use lodash.defaultsDeep instead of $merge.
-    this.opt = $.merge({
+    this.opt = merge({
       delay: 0,
       duration: 1000,
       transition(x) { return x; },
-      onCompute: $.empty,
-      onComplete: $.empty
+      onCompute: empty,
+      onComplete: empty
     }, options);
   }
 
   start(options) {
     // rye: TODO- use lodash.defaultsDeep instead of $merge.
-    this.opt = $.merge(this.opt, options || {});
-    this.time = $.time();
+    this.opt = merge(this.opt, options || {});
+    this.time = Date.now();
     this.animating = true;
     Queue.push(this);
   }
@@ -27,7 +27,7 @@ export default class Fx {
   step() {
     //if not animating, then return
     if (!this.animating) return;
-    var currentTime = $.time(),
+    var currentTime = Date.now(),
         time = this.time,
         opt = this.opt,
         delay = opt.delay,
@@ -68,8 +68,8 @@ var Trans = Fx.Transition;
 Fx.prototype.time = null;
 
 function makeTrans (transition, params){
-  params = $.splat(params);
-  return $.extend(transition, {
+  params = splat(params);
+  return extend(transition, {
     easeIn(pos){
       return transition(pos, params);
     },
@@ -173,7 +173,7 @@ if (global) {
     }
   });
   if (!found) {
-    Fx.animationTime = $.time;
+    Fx.animationTime = Date.now;
   }
   //requestAnimationFrame - function branching
   found = false;
