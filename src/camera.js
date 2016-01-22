@@ -2,13 +2,13 @@
 // Provides a Camera with ModelView and Projection matrices
 
 import {Vec3, Mat4} from './math';
-import $ from './jquery-mini';
+import {merge} from './utils';
 
 
 class Camera {
 
   constructor(opts) {
-    opts = $.merge({
+    opts = merge({
       fov: 45,
       near: 0.1,
       far: 500,

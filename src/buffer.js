@@ -1,5 +1,5 @@
 
-import $ from './jquery-mini';
+import {extend} from './utils';
 
 export default class Buffer {
 
@@ -16,7 +16,7 @@ export default class Buffer {
   }
 
   _setOpts(opts) {
-    opts = $.extend({
+    opts = extend({
       data: this.data,
       attribute: this.attribute,
       bufferType: this.bufferType === undefined ? this.gl.ARRAY_BUFFER : this.bufferType,

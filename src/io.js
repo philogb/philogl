@@ -3,7 +3,7 @@
 /* eslint-disable guard-for-in */
 /* global XMLHttpRequest */
 /* global document */
-import $ from './jquery-mini';
+import {uid, splat, merge, empty}  from './utils';
 import Img from './media';
 import {Texture2D} from './texture.js';
 
@@ -20,11 +20,11 @@ export class XHR {
       // body: null,
       sendAsBinary: false,
       responseType: false,
-      onProgress: $.empty,
-      onSuccess: $.empty,
-      onError: $.empty,
-      onAbort: $.empty,
-      onComplete: $.empty,
+      onProgress: empty,
+      onSuccess: empty,
+      onError: empty,
+      onAbort: empty,
+      onComplete: empty,
       ...opt
     };
 
@@ -55,7 +55,7 @@ export class XHR {
       const {async} = opt;
 
       if (opt.noCache) {
-        opt.url += (opt.url.indexOf('?') >= 0 ? '&' : '?') + $.uid();
+        opt.url += (opt.url.indexOf('?') >= 0 ? '&' : '?') + uid();
       }
 
       req.open(opt.method, opt.url, async);
@@ -97,7 +97,7 @@ export class XHR {
     const async = opt.async;
 
     if (opt.noCache) {
-      opt.url += (opt.url.indexOf('?') >= 0 ? '&' : '?') + $.uid();
+      opt.url += (opt.url.indexOf('?') >= 0 ? '&' : '?') + uid();
     }
 
     req.open(opt.method, opt.url, async);
@@ -181,7 +181,7 @@ export class XHRGroup {
       ...opt
     };
 
-    var urls = $.splat(opt.urls);
+    var urls = splat(opt.urls);
     this.reqs = urls.map((url, i) => new XHR({
       url: url,
       method: opt.method,
@@ -200,12 +200,11 @@ export class XHRGroup {
 };
 
 export function JSONP(opt) {
-  // rye: TODO- use lodash.defaultsDeep instead of $merge.
-  opt = $.merge({
+  opt = merge({
     url: 'http:// philogljs.org/',
     data: {},
     noCache: false,
-    onComplete: $.empty,
+    onComplete: empty,
     callbackKey: 'callback'
   }, opt || {});
 
@@ -218,7 +217,7 @@ export function JSONP(opt) {
   data = data.join('&');
   // append unique id for cache
   if (opt.noCache) {
-    data += (data.indexOf('?') >= 0 ? '&' : '?') + $.uid();
+    data += (data.indexOf('?') >= 0 ? '&' : '?') + uid();
   }
   // create source url
   var src = opt.url +
@@ -278,11 +277,11 @@ async function loadImages(srcs) {
 
 // // Load multiple Image assets async
 // export function Images(opt) {
-//   opt = $.merge({
+//   opt = merge({
 //     src: [],
 //     noCache: false,
-//     onProgress: $.empty,
-//     onComplete: $.empty
+//     onProgress: empty,
+//     onComplete: empty
 //   }, opt || {});
 //
 //   let count = 0;
@@ -305,7 +304,7 @@ async function loadImages(srcs) {
 //
 //   // uid for image sources
 //   const noCache = opt.noCache;
-//   const uid = $.uid();
+//   const uid = uid();
 //   function getSuffix(s) {
 //     return (s.indexOf('?') >= 0 ? '&' : '?') + uid;
 //   }
@@ -332,7 +331,7 @@ export async function loadTextures(gl, opt) {
   images.forEach((img, i) => {
     var params = Array.isArray(opt.parameters) ? opt.parameters[i] : opt.parameters;
     params = params === undefined ? {} : params;
-    textures.push(new Texture2D(gl, $.merge({
+    textures.push(new Texture2D(gl, merge({
       data: img
     }, params)));
   });
@@ -344,7 +343,7 @@ export async function loadTextures(gl, opt) {
 //   opt = {
 //     src: [],
 //     noCache: false,
-//     onComplete: $.empty,
+//     onComplete: empty,
 //     ...opt
 //   };
 //
@@ -354,7 +353,7 @@ export async function loadTextures(gl, opt) {
 //     onComplete(images) {
 //       var textures = {};
 //       images.forEach((img, i) => {
-//         textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = $.merge({
+//         textures[opt.id && opt.id[i] || opt.src && opt.src[i]] = merge({
 //           data: {
 //             value: img
 //           }

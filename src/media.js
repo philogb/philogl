@@ -4,9 +4,8 @@
 import {PerspectiveCamera} from './camera';
 import Scene from './scene';
 import Program from './program';
-
-import {Plane} from './objects';
-import $ from './jquery-mini';
+import Plane from './objects/plane';
+import {splat} from './utils';
 
 // length given a 45 fov angle, and 0.2 distance to camera
 const length = 0.16568542494923805;
@@ -29,7 +28,7 @@ export default class Img {
     const program = app.program instanceof Program ?
       app.program :
       app.program[opt.program];
-    var textures = opt.fromTexture ? $.splat(opt.fromTexture) : [],
+    var textures = opt.fromTexture ? splat(opt.fromTexture) : [],
         framebuffer = opt.toFrameBuffer,
         screen = !!opt.toScreen,
         width = opt.width || app.canvas.width,

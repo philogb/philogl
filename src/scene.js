@@ -3,8 +3,8 @@
 
 import {Vec3} from './math';
 import Program from './program';
-import $ from './jquery-mini';
 import assert from 'assert';
+import {merge, uid, type} from './utils';
 
 function noop() {}
 
@@ -42,7 +42,7 @@ export default class Scene {
     //   ...opt
     // };
 
-    opt = $.merge(DEFAULT_SCENE_OPTS, opt);
+    opt = merge(DEFAULT_SCENE_OPTS, opt);
 
     this.program = opt.program ? program[opt.program] : program;
     this.camera = camera;
@@ -54,7 +54,7 @@ export default class Scene {
     for (var i = 0, models = this.models, l = arguments.length; i < l; i++) {
       var model = arguments[i];
       // Generate unique id for model
-      model.id = model.id || $.uid();
+      model.id = model.id || uid();
       models.push(model);
       // Create and load Buffers
       this.defineBuffers(model);
@@ -186,7 +186,7 @@ export default class Scene {
   render(opt = {}) {
     const camera = this.camera;
     const {renderProgram} = opt;
-    const pType = $.type(this.program);
+    const pType = type(this.program);
     const multiplePrograms = !renderProgram && pType === 'object';
     const options = {
       onBeforeRender: noop,
