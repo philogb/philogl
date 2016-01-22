@@ -6,7 +6,7 @@
 import {Vec3, Mat4} from '../math';
 import Scene from '../scene';
 import Buffer from '../buffer';
-import {uid, splat, empty, type} from '../utils';
+import {uid, splat, empty} from '../utils';
 
 const slice = Array.prototype.slice;
 
@@ -212,7 +212,7 @@ export default class Model {
       delete this.$texCoordsLength;
       return;
     }
-    if (type(val) === 'object') {
+    if (val.constructor.name === 'Object') {
       var ans = {};
       for (var prop in val) {
         var texCoordArray = val[prop];
@@ -448,7 +448,7 @@ export default class Model {
     }
 
     const gl = program.gl;
-    const multi = type(this.$texCoords) === 'object';
+    const multi = this.$texCoords.constructor.name === 'Object';
     let i, txs, l, tex;
 
     if (!this.buffers.texCoords) {
