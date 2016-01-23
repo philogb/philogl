@@ -15,13 +15,6 @@ export function merge() {
   return mix;
 };
 
-export function extend(to, from) {
-  for (var p in from) {
-    to[p] = from[p];
-  }
-  return to;
-};
-
 export function splat(a) {
   return Array.isArray(a) && a || [a];
 };

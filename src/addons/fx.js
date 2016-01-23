@@ -1,5 +1,5 @@
 // Timer based animation
-import {merge, empty, splat, extend} from '../utils';
+import {merge, empty, splat} from '../utils';
 
 var Queue = [];
 
@@ -67,7 +67,7 @@ Fx.prototype.time = null;
 
 function makeTrans (transition, params){
   params = splat(params);
-  return extend(transition, {
+  return Object.assign(transition, {
     easeIn(pos){
       return transition(pos, params);
     },
