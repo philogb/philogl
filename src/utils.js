@@ -19,7 +19,7 @@ export function splat(a) {
   return Array.isArray(a) && a || [a];
 };
 
-export function empty() {}
+export function noop() {}
 
 var _uid = Date.now();
 export function uid() {

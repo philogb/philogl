@@ -3,11 +3,9 @@
 /* eslint-disable guard-for-in */
 /* global XMLHttpRequest */
 /* global document */
-import {uid, splat, merge, empty}  from './utils';
+import {uid, splat, merge, noop}  from './utils';
 import Img from './media';
 import {Texture2D} from './texture.js';
-
-function noop() {};
 
 export class XHR {
 
@@ -20,11 +18,11 @@ export class XHR {
       // body: null,
       sendAsBinary: false,
       responseType: false,
-      onProgress: empty,
-      onSuccess: empty,
-      onError: empty,
-      onAbort: empty,
-      onComplete: empty,
+      onProgress: noop,
+      onSuccess: noop,
+      onError: noop,
+      onAbort: noop,
+      onComplete: noop,
       ...opt
     };
 
@@ -204,7 +202,7 @@ export function JSONP(opt) {
     url: 'http:// philogljs.org/',
     data: {},
     noCache: false,
-    onComplete: empty,
+    onComplete: noop,
     callbackKey: 'callback'
   }, opt || {});
 
@@ -280,8 +278,8 @@ async function loadImages(srcs) {
 //   opt = merge({
 //     src: [],
 //     noCache: false,
-//     onProgress: empty,
-//     onComplete: empty
+//     onProgress: noop,
+//     onComplete: noop
 //   }, opt || {});
 //
 //   let count = 0;
@@ -343,7 +341,7 @@ export async function loadTextures(gl, opt) {
 //   opt = {
 //     src: [],
 //     noCache: false,
-//     onComplete: empty,
+//     onComplete: noop,
 //     ...opt
 //   };
 //

@@ -1,5 +1,5 @@
 // Timer based animation
-import {merge, empty, splat} from '../utils';
+import {merge, noop, splat} from '../utils';
 
 var Queue = [];
 
@@ -9,8 +9,8 @@ export default class Fx {
       delay: 0,
       duration: 1000,
       transition(x) { return x; },
-      onCompute: empty,
-      onComplete: empty
+      onCompute: noop,
+      onComplete: noop
     }, options);
   }
 

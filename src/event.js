@@ -4,7 +4,7 @@
 /* global window */
 /* global document */
 
-import {empty, uid, splat} from './utils';
+import {noop, uid, splat} from './utils';
 
 // returns an O3D object or false otherwise.
 function toO3D(n) {
@@ -382,23 +382,23 @@ export const Events = {
       enableMouse: true,
       enableKeyboard: true,
 
-      onClick: empty,
-      onRightClick: empty,
-      onDragStart: empty,
-      onDragMove: empty,
-      onDragEnd: empty,
-      onDragCancel: empty,
-      onTouchStart: empty,
-      onTouchMove: empty,
-      onTouchEnd: empty,
-      onTouchCancel: empty,
-      onTap: empty,
-      onMouseMove: empty,
-      onMouseEnter: empty,
-      onMouseLeave: empty,
-      onMouseWheel: empty,
-      onKeyDown: empty,
-      onKeyUp: empty,
+      onClick: noop,
+      onRightClick: noop,
+      onDragStart: noop,
+      onDragMove: noop,
+      onDragEnd: noop,
+      onDragCancel: noop,
+      onTouchStart: noop,
+      onTouchMove: noop,
+      onTouchEnd: noop,
+      onTouchCancel: noop,
+      onTap: noop,
+      onMouseMove: noop,
+      onMouseEnter: noop,
+      onMouseLeave: noop,
+      onMouseWheel: noop,
+      onKeyDown: noop,
+      onKeyUp: noop,
       ...opt
     };
 
