@@ -1,4 +1,9 @@
-export function merge() {
+/**
+* Merge multiple objects into one.
+* @param {...object} objects - The objects to merge.
+* @returns {object}
+**/
+export function merge(objects) {
   var mix = {};
   for (var i = 0, l = arguments.length; i < l; i++){
     var object = arguments[i];
@@ -15,17 +20,35 @@ export function merge() {
   return mix;
 };
 
+/**
+* Wraps the argument in an array if it is not one.
+* @param {object} a - The object to wrap.
+* @returns {Array}
+**/
 export function splat(a) {
   return Array.isArray(a) && a || [a];
 };
 
+/**
+* Provides a standard noop function.
+**/
 export function noop() {}
 
 var _uid = Date.now();
+
+/**
+* Returns a UID.
+* @returns {int}
+**/
 export function uid() {
   return _uid++;
 }
 
+/**
+* Internal function for duplicating an object.
+* @param {object} elem - The object to recursively duplicate.
+* @returns {object}
+**/
 function detach(elem) {
   var t = elem.constructor.name, ans;
   if (t == 'Object') {
