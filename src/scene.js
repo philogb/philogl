@@ -180,8 +180,7 @@ export default class Scene {
   render(opt = {}) {
     const camera = this.camera;
     const {renderProgram} = opt;
-    const pType = this.program.constructor.name;
-    const multiplePrograms = !renderProgram && pType === 'Object';
+    const multiplePrograms = !renderProgram && this.program.constructor.name === 'Object';
     const options = {
       onBeforeRender: noop,
       onAfterRender: noop,

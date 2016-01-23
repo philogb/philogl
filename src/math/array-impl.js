@@ -210,7 +210,7 @@ var generics = {
   },
 
   clone(dest) {
-    if (dest.constructor.name == 'Vec3') {
+    if (dest instanceof Vec3) {
       return new Vec3(dest[0], dest[1], dest[2]);
     } else {
       return Vec3.setVec3(new typedArray(3), dest);
@@ -336,7 +336,7 @@ generics = {
   },
 
   clone(dest) {
-    if (dest.constructor.name === 'Mat4') {
+    if (dest instanceof Mat4) {
       return new Mat4(dest[0], dest[4], dest[8], dest[12],
                       dest[1], dest[5], dest[9], dest[13],
                       dest[2], dest[6], dest[10], dest[14],
@@ -881,7 +881,7 @@ generics = {
   },
 
   clone(dest) {
-    if (dest.constructor.name === 'Quat') {
+    if (dest instanceof Quat) {
       return new Quat(dest[0], dest[1], dest[2], dest[3]);
     } else {
       return Quat.setQuat(new typedArray(4), dest);
