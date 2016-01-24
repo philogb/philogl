@@ -28,18 +28,21 @@ if (typeof window !== 'undefined') {
     TruncatedCone: LumaGL.TruncatedCone,
     Framebuffer: LumaGL.Framebuffer,
     Texture2D: LumaGL.Texture2D,
+    TextureCube: LumaGL.TextureCube,
     Buffer: LumaGL.Buffer,
     Events: LumaGL.Events,
-    Mat4: LumaGL.math.Mat4,
-    Vec3: LumaGL.math.Vec3,
+    Mat4: LumaGL.Mat4,
+    Vec3: LumaGL.Vec3,
     Shaders: LumaGL.Shaders,
-    IO: LumaGL.IO,
     PerspectiveCamera: LumaGL.PerspectiveCamera,
     OrthoCamera: LumaGL.OrthoCamera,
     Scene: LumaGL.Scene,
     Program: LumaGL.Program,
     Media: {
       Image: LumaGL.Img
+    },
+    IO: {
+      XHR: LumaGL.XHR
     },
     // Add-ons
     WorkerGroup: WorkerGroup,
