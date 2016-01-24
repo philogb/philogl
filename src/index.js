@@ -45,7 +45,7 @@ import Program from './program';
 import {loadTextures} from './io';
 import {Events} from './event';
 import Buffer from './buffer';
-import {Texture2D} from './texture';
+import {Texture2D, TextureCube} from './texture';
 import Framebuffer from './fbo';
 import Model from './objects/model';
 import Cone from './objects/cone';
@@ -68,6 +68,7 @@ if (typeof window !== 'undefined') {
         TruncatedCone: TruncatedCone,
         Framebuffer: Framebuffer,
         Texture2D: Texture2D,
+        TextureCube: TextureCube,
         Buffer: Buffer,
         Events: Events,
         Mat4: math.Mat4,
