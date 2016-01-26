@@ -10,6 +10,8 @@ window.webGLStart = function() {
   var Buffer = PhiloGL.Buffer;
 
   var canvas = document.getElementById('lesson03-canvas');
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 
   var gl = createGLContext(canvas);
 

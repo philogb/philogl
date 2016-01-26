@@ -11,6 +11,8 @@ var webGLStart = function() {
   var Buffer = PhiloGL.Buffer;
 
   var canvas = document.getElementById('lesson05-canvas');
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 
   var gl = createGLContext(canvas);
 
@@ -139,7 +141,7 @@ var webGLStart = function() {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       //draw Cube
       rCube += 0.01;
-      cube.position.set(0, 0, -8);
+      cube.position.set(0, 0, -5);
       cube.rotation.set(rCube, rCube, rCube);
       //update element matrix
       cube.update();

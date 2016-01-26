@@ -15,6 +15,8 @@ var webGLStart = function() {
   var moon, pos;
 
   var canvas = document.getElementById('lesson11-canvas');
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 
   var gl = createGLContext(canvas);
 

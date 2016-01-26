@@ -13,7 +13,9 @@ var webGLStart = function() {
   var Cube = PhiloGL.Cube;
 
   var canvas = document.getElementById('lesson13-canvas');
-
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+  
   var gl = createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);

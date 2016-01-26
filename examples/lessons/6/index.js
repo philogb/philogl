@@ -11,7 +11,9 @@ var webGLStart = function() {
   var Events = PhiloGL.Events;
 
   var canvas = document.getElementById('lesson06-canvas');
-
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+  
   var gl = createGLContext(canvas);
 
   gl.viewport(0, 0, canvas.width, canvas.height);

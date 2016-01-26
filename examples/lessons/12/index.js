@@ -16,7 +16,9 @@ var webGLStart = function() {
   var moon, box, pos;
 
   var canvas = document.getElementById('lesson12-canvas');
-
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+  
   var gl = createGLContext(canvas);
 
   //Basic gl setup

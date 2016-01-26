@@ -102,6 +102,8 @@ var webGLStart = function() {
   });
 
   var canvas = document.getElementById('lesson04-canvas');
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 
   var gl = createGLContext(canvas);
 

@@ -14,7 +14,9 @@ var webGLStart = function() {
   var Shaders = PhiloGL.Shaders;
 
   var canvas = document.getElementById('lesson09-canvas');
-
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+  
   var gl = createGLContext(canvas);
 
   var tStar;

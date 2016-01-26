@@ -35,6 +35,8 @@ var webGLStart = function() {
   }).send();
 
   var canvas = document.getElementById('lesson16-canvas');
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 
   var gl = createGLContext(canvas);
 
@@ -238,7 +240,7 @@ var webGLStart = function() {
       }
 
       function drawOuterScene() {
-        gl.viewport(0, 0, screenWidth, screenHeight);
+        gl.viewport(0, 0, canvas.width, canvas.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         laptopTheta += 0.005;
