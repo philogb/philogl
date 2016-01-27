@@ -11,7 +11,9 @@ var webGLStart = function() {
   var Sphere = PhiloGL.Sphere;
 
   var canvas = document.getElementById('lesson15-canvas');
-
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+  
   var gl = createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);

@@ -25,6 +25,8 @@ var webGLStart = function() {
   var world;
 
   var canvas = document.getElementById('lesson10-canvas');
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 
   var gl = createGLContext(canvas);
 

@@ -21,7 +21,9 @@ var webGLStart = function() {
   }).send();
 
   var canvas = document.getElementById('lesson14-canvas');
-
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+  
   var gl = createGLContext(canvas);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);

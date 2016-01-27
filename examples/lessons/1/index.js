@@ -8,6 +8,8 @@ window.webGLStart = function() {
   var PerspectiveCamera = PhiloGL.PerspectiveCamera;
 
   var canvas = document.getElementById('lesson01-canvas');
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 
   var gl = createGLContext(canvas);
 
