@@ -56,6 +56,10 @@ export class Texture2D extends Texture {
       gl.activeTexture(gl.TEXTURE0 + index);
     }
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    if (index === undefined) {
+      return gl.getParameter(gl.ACTIVE_TEXTURE) - gl.TEXTURE0;
+    }
+    return index;
   }
 
   update(opts) {
@@ -96,6 +100,10 @@ export class TextureCube extends Texture {
       gl.activeTexture(gl.TEXTURE0 + index);
     }
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture);
+    if (index === undefined) {
+      return gl.getParameter(gl.ACTIVE_TEXTURE) - gl.TEXTURE0;
+    }
+    return index;
   }
 
   update(opts) {
