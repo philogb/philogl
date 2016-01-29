@@ -236,7 +236,7 @@ var webGLStart = function() {
         fb.bind();
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         innerScene.render();
-        fb.unbind();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       }
 
       function drawOuterScene() {
