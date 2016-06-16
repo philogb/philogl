@@ -28,7 +28,7 @@ uniform vec3 plainC;
 #include "env.glsl"
 #include "raytrace.glsl"
 
-vec4 sample(vec3 direction) {
+vec4 sampling(vec3 direction) {
   vec3 from = vPosition.xyz;
   vec3 hit = plainRT(direction, from, plainU, plainV, plainC);
   if (abs(hit.x) <= 1.0 && abs(hit.y) <= 1.0 && hit.z >= 0.0) {
@@ -51,7 +51,7 @@ vec4 shot(vec3 position) {
 
   vec3 eyeDirection = normalize(position.xyz - cameraPosition);
   vec3 reflectVec = reflect(eyeDirection, normal);
-  vec4 reflectColor = sample(reflectVec);
+  vec4 reflectColor = sampling(reflectVec);
   vec3 refractVec;
   vec4 refractColor = vec4(0);
   vec4 reflectFilter = vec4(1);
@@ -67,7 +67,7 @@ vec4 shot(vec3 position) {
   }
 
   refractVec = refract(eyeDirection, normal, n);
-  refractColor = sample(refractVec);
+  refractColor = sampling(refractVec);
 
   float cosSi = dot(-eyeDirection, normal);
   float refl = clamp(sqrt(1. - cosSi * cosSi) * n, -1., 1.);

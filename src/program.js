@@ -239,6 +239,7 @@
     $$family: 'program',
 
     setUniform: function(name, val) {
+      this.use();
       if (this.uniforms[name]) {
         this.uniforms[name](val);
       }
@@ -338,7 +339,8 @@
       fs: '',
       noCache: false,
       onSuccess: $.empty,
-      onError: $.empty
+      onError: $.empty,
+      async: true
     }, opt || {});
 
     var vertexShaderURI = opt.path + opt.vs,

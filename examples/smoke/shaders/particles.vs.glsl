@@ -29,19 +29,21 @@ void main(void) {
   
 //  vec3 vel = getAA(sampler1, position) + 1.;
   float life = samp.w;
-  color = vec4(1, 1, 1.1, 1);
-  color.xyz *= smoothstep(0.3, 0.9, life);
+  color = vec4(1.);
+  float lambda = smoothstep(0., 2.0, life);
+  color.rgb = vec3(1, 0, 0.) * (1. - lambda) + vec3(1., 1., 0.) * (lambda);
+
   gl_Position = projectionMatrix * worldMatrix * vec4(position, 1);
   vPosition = gl_Position;
   float alpha = 1. - pow((1. - life), .5);
-  gl_PointSize = devicePixelRatio * 40. / (gl_Position.z + 1.) * (max(0.5, alpha)); 
+  gl_PointSize = devicePixelRatio * 40. / (gl_Position.z + 1.) * (max(0.5, alpha));
   depth = (gl_Position.z  - 2.) / 5.;
   if (depth < near || far <= depth) {
     gl_PointSize = 0.;
     color = vec4(0.);
   }
   color.a *= alpha * alpha;
-  color.xyz *= 0.5 + vec3(2, 2, 1.7) / (.1 + pow(distance(lightPosition, position), 2.));
+  color.xyz *= 0.5 + vec3(2, 2, 1.7) / distance(lightPosition, position);
   color.xyz *= clamp(1. - (shadowSamp.z - samp.z) * 10., 0., 1.) * 0.5 + 0.5;
   
   vTexCoord = vec2(0);

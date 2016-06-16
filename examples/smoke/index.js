@@ -236,7 +236,7 @@ function webGLStart() {
           ],
           attachment: gl.COLOR_ATTACHMENT0,
           data: {
-            type: gl.FLOAT,
+            type: gl.UNSIGNED_BYTE,
             width: SHADOW_RESO,
             height: SHADOW_RESO
           }

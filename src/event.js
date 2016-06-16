@@ -220,8 +220,8 @@
       }
       var domElem = this.domElem;
       return {
-        width: domElem.width || domElem.offsetWidth,
-        height: domElem.height || domElem.offsetHeight
+        width: domElem.offsetWidth,
+        height: domElem.offsetHeight
       };
     },
 

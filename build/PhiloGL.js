@@ -2120,8 +2120,8 @@ $.splat = (function() {
       }
       var domElem = this.domElem;
       return {
-        width: domElem.width || domElem.offsetWidth,
-        height: domElem.height || domElem.offsetHeight
+        width: domElem.offsetWidth,
+        height: domElem.offsetHeight
       };
     },
 
@@ -2563,6 +2563,7 @@ $.splat = (function() {
     $$family: 'program',
 
     setUniform: function(name, val) {
+      this.use();
       if (this.uniforms[name]) {
         this.uniforms[name](val);
       }
@@ -2662,7 +2663,8 @@ $.splat = (function() {
       fs: '',
       noCache: false,
       onSuccess: $.empty,
-      onError: $.empty
+      onError: $.empty,
+      async: true
     }, opt || {});
 
     var vertexShaderURI = opt.path + opt.vs,

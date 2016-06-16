@@ -11,11 +11,11 @@ function SwapTexture(config, count) {
       parameters: [
         {
           name: gl.TEXTURE_MAG_FILTER,
-          value: gl.supports_OES_texture_float ? gl.LINEAR : gl.NEAREST
+          value: gl.NEAREST
         },
         {
           name: gl.TEXTURE_MIN_FILTER,
-          value: gl.supports_OES_texture_float ? gl.LINEAR : gl.NEAREST,
+          value: gl.NEAREST,
           generateMipmap: true
         },
         {
@@ -28,7 +28,7 @@ function SwapTexture(config, count) {
         }
       ],
       data: {
-        type: gl.supports_OES_texture_float ? gl.FLOAT : gl.UNSIGNED_BYTE
+        type: gl.FLOAT
       }
     },
     bindToRenderBuffer: false
