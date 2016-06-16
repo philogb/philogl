@@ -22,6 +22,6 @@ float height(vec2 position) {
 
 void main(void) {
   vTexCoord = texCoord1;
-  vPosition = vec4(position.xyz - normal * height(vTexCoord), 1);
+  vPosition = vec4(position.xyz - normal * height(vTexCoord) * 3., 1);
   gl_Position = projectionMatrix * worldMatrix * vPosition;
 }

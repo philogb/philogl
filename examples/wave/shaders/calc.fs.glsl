@@ -39,8 +39,8 @@ void main(void) {
 
   float sticky = 0.00;
   float k = 5.;
-  float regression = 0.0;
-  float fade = 0.97;
+  float regression = 0.;
+  float fade = 0.93;
   
   vec2 position = vTexCoord;
   float h = height(position, vec2(0)), // 

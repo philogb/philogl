@@ -1,13 +1,15 @@
 PhiloGL.unpack();
 window.addEventListener('DOMContentLoaded', webGLStart, false);
-var width, height;
+var width, height, pixelMult = devicePixelRatio;
 function resize() {
   var canvas = document.getElementById('wave'),
       style = window.getComputedStyle(canvas);
   height = parseFloat(style.getPropertyValue('height'));
-  canvas.height = height;
   width = parseFloat(style.getPropertyValue('width'));
-  canvas.width = width;
+  canvas.style.height = height + 'px';
+  canvas.style.width = width + 'px';
+  canvas.height = height * pixelMult;
+  canvas.width = width * pixelMult;
 }
 
 window.addEventListener('resize', resize);
@@ -37,7 +39,7 @@ function webGLStart() {
       dt = 1,
       drops = 5,
       IOR = 1.3330, // Water
-      N = 5;
+      N = 10;
 
   matStart.id();
 
@@ -209,6 +211,7 @@ function webGLStart() {
           ylen: 1,
           nx: 10,
           ny: 10,
+          offset: 0,
           program: 'shore',
           textures: ['rocks']
         });
@@ -256,6 +259,7 @@ function webGLStart() {
             camera = this.camera;
         scene.add(backgroundSphere);
         scene.add(waterSurface);
+        scene.add(shore);
         camera.fov = 37.8; // 35mm
         camera.far = 1e40;
         camera.update();
@@ -292,7 +296,7 @@ function webGLStart() {
         gl.clearColor(0, 0, 0, 1);
         gl.clearDepth(1);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.viewport(0, 0, width, height);
+        gl.viewport(0, 0, width * pixelMult, height * pixelMult);
         waterSurface.textures = [surfaceBuffer.from[0] + '-texture', 'SKY0', 'SKY1', 'SKY2', 'SKY3', 'rocks'];
         this.scene.render();
         if (lastDrop < time - 300) {

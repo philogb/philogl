@@ -2,19 +2,19 @@ window.addEventListener('DOMContentLoaded', webGLStart, false);
 
 function webGLStart() {
   var numSites = 1,
-    sites = [0, 0, 1],
-    siteColors = [0.5, 0.5, 0.7],
-    width = 800,
-    height = 600,
-    R = 200,
-    vs = [],
-    weight = [1],
-    fullscreen = false,
-    dragStart = [],
-    matStart = null,
-    mat = new PhiloGL.Mat4(),
-    imat = mat.clone(),
-    weighted = false;
+      sites = [0, 0, 1],
+      siteColors = [0.5, 0.5, 0.7],
+      width = 800,
+      height = 600,
+      R = 200,
+      vs = [],
+      weight = [1],
+      fullscreen = false,
+      dragStart = [],
+      matStart = null,
+      mat = new PhiloGL.Mat4(),
+      imat = mat.clone(),
+      weighted = false;
 
   mat.id();
   imat.id();
@@ -34,11 +34,13 @@ function webGLStart() {
   
   function resize() {
     var canvas = document.getElementById('voronoi'),
-      style = window.getComputedStyle(canvas);
+        style = window.getComputedStyle(canvas);
     height = parseFloat(style.getPropertyValue('height'));
-    canvas.height = height;
     width = parseFloat(style.getPropertyValue('width'));
-    canvas.width = width;
+    canvas.height = height * devicePixelRatio;
+    canvas.width = width * devicePixelRatio;
+    canvas.style.height = height + "px";
+    canvas.style.width = width + "px";
     this.app && this.app.update();
   }
 
@@ -47,8 +49,8 @@ function webGLStart() {
 
   function calcXYZ(e) {
     var x = e.x / R,
-      y = e.y / R,
-      z = 1.0 - x * x - y * y;
+        y = e.y / R,
+        z = 1.0 - x * x - y * y;
 
     if (z < 0) {
       while (z < 0) {
@@ -85,7 +87,7 @@ function webGLStart() {
         var id = new PhiloGL.Mat4();
         id.id();
         id.$rotateAxis(('wheelDeltaX' in e.event ? e.event.wheelDeltaX : 0) / 5 / R, [0, 1, 0])
-          .$rotateAxis(('wheelDeltaY' in e.event ? e.event.wheelDeltaY : e.wheel * 120) / 5 / R, [1, 0, 0]);
+            .$rotateAxis(('wheelDeltaY' in e.event ? e.event.wheelDeltaY : e.wheel * 120) / 5 / R, [1, 0, 0]);
         mat = id.mulMat4(mat);
         imat = mat.invert();
         var v3 = calcXYZ(e);
@@ -100,7 +102,7 @@ function webGLStart() {
         var id = new PhiloGL.Mat4();
         id.id();
         id.$rotateAxis((e.x - dragStart[0]) / R, [0, 1, 0])
-          .$rotateAxis((e.y - dragStart[1]) / R, [-1, 0, 0]);
+            .$rotateAxis((e.y - dragStart[1]) / R, [-1, 0, 0]);
         mat = id.mulMat4(matStart);
         imat = mat.invert();
         var v3 = calcXYZ(e);
@@ -113,7 +115,7 @@ function webGLStart() {
         var id = new PhiloGL.Mat4();
         id.id();
         id.$rotateAxis((e.x - dragStart[0]) / R, [0, 1, 0])
-          .$rotateAxis((e.y - dragStart[1]) / R, [-1, 0, 0]);
+            .$rotateAxis((e.y - dragStart[1]) / R, [-1, 0, 0]);
         mat = id.mulMat4(matStart);
         imat = mat.invert();
         var v3 = calcXYZ(e);
@@ -140,7 +142,7 @@ function webGLStart() {
     },
     onLoad: function (app) {
       var gl = app.gl,
-        program = app.program;
+          program = app.program;
       window.app = app;
       app.update = function () {
         draw();
@@ -149,12 +151,12 @@ function webGLStart() {
       function draw() {
         gl.clearColor(0, 0, 0, 1);
         gl.clearDepth(1);
-        gl.viewport(0, 0, width, height);
+        gl.viewport(0, 0, width * devicePixelRatio, height * devicePixelRatio);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         PhiloGL.Media.Image.postProcess({
           program: 'voronoi',
-          width: width,
-          height: height,
+          width: width * devicePixelRatio,
+          height: height * devicePixelRatio,
           toScreen: true,
           uniforms: {
             'numberSites': numSites,
